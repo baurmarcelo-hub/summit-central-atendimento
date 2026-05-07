@@ -809,5 +809,32 @@
 
     render();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <script>
+    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co/rest/v1/";
+    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    console.log("Supabase conectado com sucesso");
+async function testarClientes() {
+  const { data, error } = await supabaseClient
+    .from('clientes')
+    .select('*');
+
+  console.log('CLIENTES:', data);
+
+  if (error) {
+    console.error(error);
+  }
+}
+
+testarClientes();
+  </script>
 </body>
 </html>
+
