@@ -650,7 +650,7 @@
   </div>
 
   <script>
-    const conversations = [
+    let conversations = [
       {
         id: 1,
         name: "Marcelo",
@@ -821,19 +821,64 @@
     );
 
     console.log("Supabase conectado com sucesso");
-async function testarClientes() {
+async function carregarClientes() {
   const { data, error } = await supabaseClient
     .from('clientes')
     .select('*');
 
-  console.log('CLIENTES:', data);
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  conversations = data.map(cliente => ({
+    id: cliente.id,
+    name: cliente.nome,
+    phone: cliente.telefone,
+    email: cliente.email,
+    channel: 'WhatsApp',
+    lastMessage: 'Conversa iniciada',
+    time: 'agora',
+    unread: 0,
+    initials: cliente.nome.charAt(0).toUpperCase(),
+    messages: []
+  }));
+
+  selectedConversationId = conversations[0]?.id;
+
+  render();
+}
+
+carregarClientes();
+async function carregarClientes() {
+  const { data, error } = await supabaseClient
+    .from('clientes')
+    .select('*');
 
   if (error) {
     console.error(error);
+    return;
   }
+
+  conversations = data.map(cliente => ({
+    id: cliente.id,
+    name: cliente.nome,
+    phone: cliente.telefone,
+    email: cliente.email,
+    channel: 'WhatsApp',
+    lastMessage: 'Conversa iniciada',
+    time: 'agora',
+    unread: 0,
+    initials: cliente.nome.charAt(0).toUpperCase(),
+    messages: []
+  }));
+
+  selectedConversationId = conversations[0]?.id;
+
+  render();
 }
 
-testarClientes();
+carregarClientes();
   </script>
 </body>
 </html>
