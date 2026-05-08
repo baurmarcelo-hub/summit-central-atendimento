@@ -139,6 +139,15 @@
     }
 
     .user-box {
+#logoutBtn {
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  color: #ef4444;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
       border-top: 1px solid #edf0f5;
       padding-top: 16px;
       display: flex;
@@ -612,6 +621,8 @@
         <div>
           <strong id="userName">Usuário</strong><br />
           <small style="color:#12b76a">● Online</small>
+<br />
+<button id="logoutBtn">Sair</button>
         </div>
       </div>
     </aside>
@@ -747,6 +758,7 @@ const loginPassword = document.getElementById("loginPassword");
 const loginError = document.getElementById("loginError");
 const app = document.querySelector(".app");
 const userName = document.getElementById("userName");
+const logoutBtn = document.getElementById("logoutBtn");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -873,6 +885,22 @@ userName.textContent =
 }
 
 loginBtn.addEventListener("click", fazerLogin);
+async function fazerLogout() {
+
+  await supabaseClient.auth.signOut();
+
+  app.style.display = "none";
+
+  loginScreen.style.display = "flex";
+
+  loginEmail.value = "";
+  loginPassword.value = "";
+}
+
+logoutBtn.addEventListener(
+  "click",
+  fazerLogout
+);
 
 loginPassword.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
