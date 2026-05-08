@@ -843,6 +843,22 @@ async function carregarClientes() {
 }
 
 carregarClientes();
+supabaseClient
+  .channel("mensagens-realtime")
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "mensagens"
+    },
+    async (payload) => {
+      console.log("Nova mensagem recebida:", payload.new);
+
+      await carregarClientes();
+    }
+  )
+  .subscribe();
 </script>
 </body>
 </html>
