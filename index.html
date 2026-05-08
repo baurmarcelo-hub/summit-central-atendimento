@@ -18,7 +18,64 @@
       height: 100vh;
       overflow: hidden;
     }
+.login-screen {
+  height: 100vh;
+  width: 100vw;
+  background: #f6f8fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.login-card {
+  width: 380px;
+  background: #ffffff;
+  border: 1px solid #edf0f5;
+  border-radius: 22px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+}
+
+.login-card h2 {
+  margin-top: 24px;
+  font-size: 22px;
+}
+
+.login-card p {
+  margin: 8px 0 20px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.login-card input {
+  width: 100%;
+  height: 46px;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  padding: 0 14px;
+  margin-bottom: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.login-card button {
+  width: 100%;
+  height: 46px;
+  background: #16c784;
+  color: #ffffff;
+  border: 0;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+#loginError {
+  margin-top: 12px;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 700;
+}
     .app {
       display: grid;
       grid-template-columns: 240px 360px 1fr;
@@ -519,7 +576,24 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="logo">SUMMIT</div>
+      <div class="logo-subtitle">Central de Atendimento</div>
+
+      <h2>Entrar no sistema</h2>
+      <p>Acesse com seu e-mail e senha.</p>
+
+      <input id="loginEmail" type="email" placeholder="E-mail" />
+      <input id="loginPassword" type="password" placeholder="Senha" />
+
+      <button id="loginBtn">Entrar</button>
+
+      <div id="loginError"></div>
+    </div>
+  </div>
+
+  <div class="app" style="display:none;">
     <aside class="sidebar">
       <div>
         <div class="logo">SUMMIT</div>
@@ -666,6 +740,12 @@ let selectedConversationId = null;
     const sendBtn = document.getElementById("sendBtn");
     const chatUser = document.querySelector(".chat-user");
     const closeDetailsBtn = document.getElementById("closeDetailsBtn");
+const loginScreen = document.getElementById("loginScreen");
+const loginBtn = document.getElementById("loginBtn");
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+const loginError = document.getElementById("loginError");
+const app = document.querySelector(".app");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -766,6 +846,36 @@ let selectedConversationId = null;
 
   render();
 }
+async function fazerLogin() {
+  loginError.textContent = "";
+
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value.trim();
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    loginError.textContent = "E-mail ou senha inválidos.";
+    console.error(error);
+    return;
+  }
+
+  loginScreen.style.display = "none";
+  app.style.display = "grid";
+
+  await carregarClientes();
+}
+
+loginBtn.addEventListener("click", fazerLogin);
+
+loginPassword.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    fazerLogin();
+  }
+});
     sendBtn.addEventListener("click", sendMessage);
     chatUser.addEventListener("click", () => appEl.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => appEl.classList.remove("details-open"));
@@ -842,7 +952,6 @@ async function carregarClientes() {
   render();
 }
 
-carregarClientes();
 supabaseClient
   .channel("mensagens-realtime")
   .on(
