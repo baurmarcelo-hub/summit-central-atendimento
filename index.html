@@ -640,9 +640,17 @@
 
     <section class="conversation-panel">
       <div class="tabs">
-        <button class="tab" data-filter="em_atendimento">Em atendimento</button>
-	<button class="tab active" data-filter="aguardando">Aguardando</button>
-	<button class="tab" data-filter="finalizado">Resolvidos</button>
+        <button class="tab" data-filter="em_atendimento">
+  Em atendimento <span id="countAtendimento">0</span>
+</button>
+
+<button class="tab active" data-filter="aguardando">
+  Aguardando <span id="countAguardando">0</span>
+</button>
+
+<button class="tab" data-filter="finalizado">
+  Resolvidos <span id="countFinalizado">0</span>
+</button>
       </div>
 
       <div class="search-box">
@@ -754,6 +762,9 @@
     const logoutBtn = document.getElementById("logoutBtn");
     const acceptBtn = document.getElementById("acceptBtn");
     const tabs = document.querySelectorAll(".tab");
+    const countAtendimento = document.getElementById("countAtendimento");
+    const countAguardando = document.getElementById("countAguardando");
+    const countFinalizado = document.getElementById("countFinalizado");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -832,11 +843,20 @@ filteredConversations.forEach(conversation => {
 
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
+function atualizarContadores() {
+  const totalAguardando = conversations.filter(c => c.status === "aguardando").length;
+  const totalAtendimento = conversations.filter(c => c.status === "em_atendimento").length;
+  const totalFinalizado = conversations.filter(c => c.status === "finalizado").length;
 
+  countAguardando.textContent = totalAguardando;
+  countAtendimento.textContent = totalAtendimento;
+  countFinalizado.textContent = totalFinalizado;
+}
     function render() {
-      renderConversations();
-      renderChat();
-    }
+  atualizarContadores();
+  renderConversations();
+  renderChat();
+}
 
     async function carregarMensagens(conversaId) {
       const { data, error } = await supabaseClient
