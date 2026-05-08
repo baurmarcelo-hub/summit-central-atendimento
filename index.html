@@ -821,6 +821,29 @@
   );
 
   console.log("Supabase conectado com sucesso");
+async function carregarMensagens(conversaId) {
+
+  const { data, error } = await supabaseClient
+    .from("mensagens")
+    .select("*")
+    .eq("conversa_id", conversaId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return data.map(msg => ({
+    direction: msg.direcao,
+    text: msg.conteudo,
+    time: new Date(msg.created_at)
+      .toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+  }));
+}
 
   async function carregarClientes() {
     const { data, error } = await supabaseClient
@@ -846,7 +869,7 @@
       initials: String(
         cliente.nome || cliente.name || "C"
       ).charAt(0).toUpperCase(),
-      messages: []
+     messages: await carregarMensagens(cliente.id)
     }));
 
     selectedConversationId = conversations[0]?.id;
