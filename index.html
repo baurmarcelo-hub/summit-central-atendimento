@@ -869,7 +869,7 @@ async function carregarClientes() {
     lastMessage: 'Conversa iniciada',
     time: 'agora',
     unread: 0,
-    initials: cliente.nome.charAt(0).toUpperCase(),
+    initials: (cliente.nome || cliente.name || "C").charAt(0).toUpperCase(),
     messages: []
   }));
 
