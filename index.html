@@ -829,18 +829,26 @@ filteredConversations.forEach(conversation => {
       });
     }
 
-    function renderChat() {
-      const conversation = getSelectedConversation();
+    if (!conversation) {
 
-      if (!conversation) {
-        headerName.textContent = "Nenhuma conversa";
-        headerAvatar.textContent = "-";
-        detailName.textContent = "Nenhuma conversa";
-        detailPhone.textContent = "";
-        detailEmail.textContent = "";
-        detailAvatar.textContent = "-";
-        messagesEl.innerHTML = "";
-        return;
+  headerName.textContent = "Nenhuma conversa";
+  headerAvatar.textContent = "-";
+
+  headerSubtitle.textContent = "Sem conversa";
+
+  detailName.textContent = "Nenhuma conversa";
+  detailPhone.textContent = "-";
+  detailEmail.textContent = "-";
+  detailAvatar.textContent = "-";
+
+  detailChannel.textContent = "-";
+  detailStatus.textContent = "-";
+  detailResponsible.textContent = "-";
+
+  messagesEl.innerHTML = "";
+
+  return;
+}
       }
 
       headerName.textContent = conversation.name;
