@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SUMMIT - Central de Atendimento</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -18,64 +19,66 @@
       height: 100vh;
       overflow: hidden;
     }
-.login-screen {
-  height: 100vh;
-  width: 100vw;
-  background: #f6f8fb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.login-card {
-  width: 380px;
-  background: #ffffff;
-  border: 1px solid #edf0f5;
-  border-radius: 22px;
-  padding: 32px;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
-}
+    .login-screen {
+      height: 100vh;
+      width: 100vw;
+      background: #f6f8fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-.login-card h2 {
-  margin-top: 24px;
-  font-size: 22px;
-}
+    .login-card {
+      width: 380px;
+      background: #ffffff;
+      border: 1px solid #edf0f5;
+      border-radius: 22px;
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+    }
 
-.login-card p {
-  margin: 8px 0 20px;
-  color: #667085;
-  font-size: 14px;
-}
+    .login-card h2 {
+      margin-top: 24px;
+      font-size: 22px;
+    }
 
-.login-card input {
-  width: 100%;
-  height: 46px;
-  border: 1px solid #d9dee8;
-  border-radius: 12px;
-  padding: 0 14px;
-  margin-bottom: 12px;
-  outline: none;
-  font-size: 14px;
-}
+    .login-card p {
+      margin: 8px 0 20px;
+      color: #667085;
+      font-size: 14px;
+    }
 
-.login-card button {
-  width: 100%;
-  height: 46px;
-  background: #16c784;
-  color: #ffffff;
-  border: 0;
-  border-radius: 12px;
-  font-weight: 800;
-  cursor: pointer;
-  margin-top: 6px;
-}
+    .login-card input {
+      width: 100%;
+      height: 46px;
+      border: 1px solid #d9dee8;
+      border-radius: 12px;
+      padding: 0 14px;
+      margin-bottom: 12px;
+      outline: none;
+      font-size: 14px;
+    }
 
-#loginError {
-  margin-top: 12px;
-  color: #ef4444;
-  font-size: 13px;
-  font-weight: 700;
-}
+    .login-card button {
+      width: 100%;
+      height: 46px;
+      background: #16c784;
+      color: #ffffff;
+      border: 0;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    #loginError {
+      margin-top: 12px;
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
     .app {
       display: grid;
       grid-template-columns: 240px 360px 1fr;
@@ -139,21 +142,22 @@
     }
 
     .user-box {
-#logoutBtn {
-  margin-top: 8px;
-  border: 0;
-  background: transparent;
-  color: #ef4444;
-  font-size: 12px;
-  cursor: pointer;
-  font-weight: 700;
-}
       border-top: 1px solid #edf0f5;
       padding-top: 16px;
       display: flex;
       align-items: center;
       gap: 10px;
       font-size: 14px;
+    }
+
+    #logoutBtn {
+      margin-top: 8px;
+      border: 0;
+      background: transparent;
+      color: #ef4444;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 700;
     }
 
     .avatar-small {
@@ -292,13 +296,13 @@
     }
 
     .chat-area {
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100vh;
-  overflow: hidden;
-}
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
 
     .chat-header {
       height: 72px;
@@ -307,6 +311,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
     }
 
     .chat-user {
@@ -351,6 +356,7 @@
       padding: 0 20px;
       border-bottom: 1px solid #edf0f5;
       background: #fbfcfe;
+      flex-shrink: 0;
     }
 
     .chat-tab {
@@ -366,12 +372,12 @@
     }
 
     .messages {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 24px 28px;
-  background: #ffffff;
-}
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 24px 28px;
+      background: #ffffff;
+    }
 
     .date-divider {
       text-align: center;
@@ -429,15 +435,15 @@
     }
 
     .composer {
-  height: 86px;
-  flex-shrink: 0;
-  border-top: 1px solid #edf0f5;
-  padding: 14px 20px;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+      height: 86px;
+      flex-shrink: 0;
+      border-top: 1px solid #edf0f5;
+      padding: 14px 20px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
     .composer input {
       flex: 1;
@@ -588,6 +594,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="login-screen" id="loginScreen">
     <div class="login-card">
@@ -606,7 +613,7 @@
     </div>
   </div>
 
-  <div class="app" style="display:none;">
+  <div class="app" id="app" style="display:none;">
     <aside class="sidebar">
       <div>
         <div class="logo">SUMMIT</div>
@@ -625,8 +632,8 @@
         <div>
           <strong id="userName">Usuário</strong><br />
           <small style="color:#12b76a">● Online</small>
-<br />
-<button id="logoutBtn">Sair</button>
+          <br />
+          <button id="logoutBtn">Sair</button>
         </div>
       </div>
     </aside>
@@ -654,9 +661,8 @@
             <span id="headerSubtitle">Atendimento Comercial</span>
           </div>
         </div>
-        <button class="accept-btn" id="acceptBtn">
-  Aceitar Conversa
-</button>
+
+        <button class="accept-btn" id="acceptBtn">Aceitar Conversa</button>
       </header>
 
       <nav class="chat-tabs">
@@ -697,10 +703,6 @@
           <div class="detail-label">E-mail</div>
           <div class="detail-value" id="detailEmail">cliente@email.com</div>
         </div>
-        <div class="detail-line">
-          <div class="detail-label">Responsável</div>
-          <div class="detail-value">Fabiana Chaves</div>
-        </div>
       </div>
 
       <div class="detail-card">
@@ -712,41 +714,25 @@
         </div>
       </div>
 
-      <div class="detail-card">
-        <h3>Informações</h3>
-        <div class="detail-line">
-          <div class="detail-label">Canal</div>
-          <div class="detail-value">WhatsApp</div>
-        </div>
-        <div class="detail-line">
-          <div class="detail-label">Status</div>
-          <div class="detail-value" style="color:#12b76a">ATIVA</div>
-        </div>
-        <div class="detail-line">
-          <div class="detail-label">Prioridade</div>
-          <div class="detail-value" style="color:#f79009;">MÉDIA</div>
-        </div>
-        <div class="detail-line">
-          <div class="detail-label">Responsável</div>
-          <div class="detail-value">Marcelo Baur</div>
-        </div>
-        <div class="detail-line">
-          <div class="detail-label">Última interação</div>
-          <div class="detail-value">Hoje às 14:32</div>
-        </div>
-      </div>
-
       <button class="danger-btn">Finalizar Atendimento</button>
     </aside>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    let conversations = [];
-let selectedConversationId = null;
+    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
 
-    const appEl = document.querySelector(".app");
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    let conversations = [];
+    let selectedConversationId = null;
+
+    const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
     const messagesEl = document.getElementById("messages");
     const headerName = document.getElementById("headerName");
@@ -759,15 +745,14 @@ let selectedConversationId = null;
     const sendBtn = document.getElementById("sendBtn");
     const chatUser = document.querySelector(".chat-user");
     const closeDetailsBtn = document.getElementById("closeDetailsBtn");
-const loginScreen = document.getElementById("loginScreen");
-const loginBtn = document.getElementById("loginBtn");
-const loginEmail = document.getElementById("loginEmail");
-const loginPassword = document.getElementById("loginPassword");
-const loginError = document.getElementById("loginError");
-const app = document.querySelector(".app");
-const userName = document.getElementById("userName");
-const logoutBtn = document.getElementById("logoutBtn");
-const acceptBtn = document.getElementById("acceptBtn");
+    const loginScreen = document.getElementById("loginScreen");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginPassword = document.getElementById("loginPassword");
+    const loginError = document.getElementById("loginError");
+    const userName = document.getElementById("userName");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const acceptBtn = document.getElementById("acceptBtn");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -779,6 +764,7 @@ const acceptBtn = document.getElementById("acceptBtn");
       conversations.forEach(conversation => {
         const card = document.createElement("div");
         card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
+
         card.onclick = () => {
           selectedConversationId = conversation.id;
           render();
@@ -802,6 +788,18 @@ const acceptBtn = document.getElementById("acceptBtn");
 
     function renderChat() {
       const conversation = getSelectedConversation();
+
+      if (!conversation) {
+        headerName.textContent = "Nenhuma conversa";
+        headerAvatar.textContent = "-";
+        detailName.textContent = "Nenhuma conversa";
+        detailPhone.textContent = "";
+        detailEmail.textContent = "";
+        detailAvatar.textContent = "-";
+        messagesEl.innerHTML = "";
+        return;
+      }
+
       headerName.textContent = conversation.name;
       headerAvatar.textContent = conversation.initials;
       detailName.textContent = conversation.name;
@@ -810,280 +808,270 @@ const acceptBtn = document.getElementById("acceptBtn");
       detailAvatar.textContent = conversation.initials;
 
       messagesEl.innerHTML = `
-        <div class="date-divider"><span>07/05/2026</span></div>
+        <div class="date-divider"><span>Hoje</span></div>
       `;
 
       conversation.messages.forEach(message => {
         const row = document.createElement("div");
         row.className = `message-row ${message.direction}`;
+
         row.innerHTML = `
           <div class="bubble ${message.direction}">
             ${message.text}
             <div class="msg-time">${message.time}</div>
           </div>
         `;
+
         messagesEl.appendChild(row);
       });
 
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
-async function assumirConversa() {
-
-  const conversation = getSelectedConversation();
-
-  if (!conversation) return;
-
-  const {
-    data: { user }
-  } = await supabaseClient.auth.getUser();
-
-  const { error } = await supabaseClient
-    .from("conversas")
-    .update({
-      status: "em_atendimento",
-      atendente: user.email
-    })
-    .eq("id", conversation.id);
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  alert("Conversa assumida com sucesso!");
-
-  await carregarClientes();
-}
-
-    async function sendMessage() {
-
-  const text = input.value.trim();
-
-  if (!text) return;
-
-  const conversation = getSelectedConversation();
-
-  const { error } = await supabaseClient
-    .from("mensagens")
-    .insert([
-      {
-        conversa_id: conversation.id,
-        conteudo: text,
-        canal: "WhatsApp",
-        direcao: "out"
-      }
-    ]);
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  conversation.messages.push({
-    direction: "out",
-    text,
-    time: new Date().toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit"
-    })
-  });
-
-  conversation.lastMessage = text;
-  conversation.time = "agora";
-
-  input.value = "";
-
-  render();
-}
-async function fazerLogin() {
-  loginError.textContent = "";
-
-  const email = loginEmail.value.trim();
-  const password = loginPassword.value.trim();
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) {
-    loginError.textContent = "E-mail ou senha inválidos.";
-    console.error(error);
-    return;
-  }
-userName.textContent =
-  data.user.email;
-
-  loginScreen.style.display = "none";
-  app.style.display = "grid";
-
-  await carregarClientes();
-}
-
-loginBtn.addEventListener("click", fazerLogin);
-async function fazerLogout() {
-
-  await supabaseClient.auth.signOut();
-
-  app.style.display = "none";
-
-  loginScreen.style.display = "flex";
-
-  loginEmail.value = "";
-  loginPassword.value = "";
-}
-
-logoutBtn.addEventListener(
-  "click",
-  fazerLogout
-);
-
-loginPassword.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    fazerLogin();
-  }
-});
-    sendBtn.addEventListener("click", sendMessage);
-    acceptBtn.addEventListener("click", assumirConversa);
-    chatUser.addEventListener("click", () => appEl.classList.add("details-open"));
-    closeDetailsBtn.addEventListener("click", () => appEl.classList.remove("details-open"));
-    input.addEventListener("keydown", event => {
-      if (event.key === "Enter") sendMessage();
-    });
 
     function render() {
       renderConversations();
       renderChat();
     }
-  
-  </script>
- 
 
-<script>
-  const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    async function carregarMensagens(conversaId) {
+      const { data, error } = await supabaseClient
+        .from("mensagens")
+        .select("*")
+        .eq("conversa_id", conversaId)
+        .order("created_at", { ascending: true });
 
-  const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+      if (error) {
+        console.error("Erro ao carregar mensagens:", error);
+        return [];
+      }
 
-  console.log("Supabase conectado com sucesso");
+      return data.map(msg => ({
+        direction: msg.direcao,
+        text: msg.conteudo,
+        time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      }));
+    }
 
-async function carregarMensagens(conversaId) {
-  const { data, error } = await supabaseClient
-    .from("mensagens")
-    .select("*")
-    .eq("conversa_id", conversaId)
-    .order("created_at", { ascending: true });
+    async function carregarClientes() {
+      const { data: conversasData, error: conversasError } = await supabaseClient
+        .from("conversas")
+        .select("*")
+        .order("created_at", { ascending: true });
 
-  if (error) {
-    console.error(error);
-    return [];
-  }
+      if (conversasError) {
+        console.error("Erro ao carregar conversas:", conversasError);
+        return;
+      }
 
-  return data.map(msg => ({
-    direction: msg.direcao,
-    text: msg.conteudo,
-    time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit"
-    })
-  }));
-}
+      const { data: clientesData, error: clientesError } = await supabaseClient
+        .from("clientes")
+        .select("*");
 
-async function carregarClientes() {
-  const { data, error } = await supabaseClient
-    .from("conversas")
-    .select(`
-      id,
-      canal,
-      status,
-      atendente,
-      cliente_id,
-      clientes (
-        id,
-        nome,
-        telefone,
-        email
-      )
-    `);
+      if (clientesError) {
+        console.error("Erro ao carregar clientes:", clientesError);
+        return;
+      }
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+      conversations = await Promise.all(conversasData.map(async conversa => {
+        const cliente = clientesData.find(c => c.id === conversa.cliente_id);
 
-  conversations = await Promise.all(data.map(async conversa => ({
-    id: conversa.id,
-    clienteId: conversa.cliente_id,
-    status: conversa.status,
-    atendente: conversa.atendente,
-    name: conversa.clientes?.nome || "Cliente",
-    phone: conversa.clientes?.telefone || "",
-    email: conversa.clientes?.email || "",
-    channel: conversa.canal || "WhatsApp",
-    lastMessage: "Conversa iniciada",
-    time: "agora",
-    unread: 0,
-    initials: String(conversa.clientes?.nome || "C").charAt(0).toUpperCase(),
-    messages: await carregarMensagens(conversa.id)
-  })));
+        return {
+          id: conversa.id,
+          clienteId: conversa.cliente_id,
+          status: conversa.status,
+          atendente: conversa.atendente,
+          name: cliente?.nome || "Cliente sem nome",
+          phone: cliente?.telefone || "",
+          email: cliente?.email || "",
+          channel: conversa.canal || "WhatsApp",
+          lastMessage: "Conversa iniciada",
+          time: "agora",
+          unread: 0,
+          initials: String(cliente?.nome || "C").charAt(0).toUpperCase(),
+          messages: await carregarMensagens(conversa.id)
+        };
+      }));
 
-  selectedConversationId = conversations[0]?.id || null;
+      if (!selectedConversationId && conversations.length > 0) {
+        selectedConversationId = conversations[0].id;
+      }
 
-  render();
-}
+      render();
+    }
 
-supabaseClient
-  .channel("mensagens-realtime")
-  .on(
-    "postgres_changes",
-    {
-      event: "INSERT",
-      schema: "public",
-      table: "mensagens"
-    },
-    async (payload) => {
-      console.log("Nova mensagem recebida:", payload.new);
+    async function assumirConversa() {
+      const conversation = getSelectedConversation();
+
+      if (!conversation) {
+        alert("Nenhuma conversa selecionada.");
+        return;
+      }
+
+      const { data, error: userError } = await supabaseClient.auth.getUser();
+
+      if (userError || !data.user) {
+        console.error("Erro ao buscar usuário:", userError);
+        alert("Erro ao identificar usuário logado.");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("conversas")
+        .update({
+          status: "em_atendimento",
+          atendente: data.user.email
+        })
+        .eq("id", conversation.id);
+
+      if (error) {
+        console.error("Erro ao assumir conversa:", error);
+        alert("Erro ao assumir conversa. Verifique a policy UPDATE da tabela conversas.");
+        return;
+      }
+
+      alert("Conversa assumida com sucesso!");
 
       await carregarClientes();
     }
-  )
-  .subscribe();
-async function verificarSessao() {
-  const { data, error } = await supabaseClient.auth.getSession();
 
-  if (error) {
-    console.error("Erro ao verificar sessão:", error);
-    return;
-  }
+    async function sendMessage() {
+      const text = input.value.trim();
 
-  if (data.session) {
-    userName.textContent = data.session.user.email;
+      if (!text) return;
 
-    loginScreen.style.display = "none";
-    app.style.display = "grid";
+      const conversation = getSelectedConversation();
 
-    await carregarClientes();
-  } else {
-    app.style.display = "none";
-    loginScreen.style.display = "flex";
-  }
-}
+      if (!conversation) {
+        alert("Nenhuma conversa selecionada.");
+        return;
+      }
 
-verificarSessao();
+      const { error } = await supabaseClient
+        .from("mensagens")
+        .insert([
+          {
+            conversa_id: conversation.id,
+            conteudo: text,
+            canal: conversation.channel || "WhatsApp",
+            direcao: "out"
+          }
+        ]);
 
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      if (error) {
+        console.error("Erro ao enviar mensagem:", error);
+        alert("Erro ao enviar mensagem.");
+        return;
+      }
 
-  if (event === "SIGNED_OUT") {
+      input.value = "";
 
-    app.style.display = "none";
-    loginScreen.style.display = "flex";
-  }
+      await carregarClientes();
 
-});
-</script>
+      selectedConversationId = conversation.id;
+      render();
+    }
+
+    async function fazerLogin() {
+      loginError.textContent = "";
+
+      const email = loginEmail.value.trim();
+      const password = loginPassword.value.trim();
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        loginError.textContent = "E-mail ou senha inválidos.";
+        console.error("Erro no login:", error);
+        return;
+      }
+
+      userName.textContent = data.user.email;
+
+      loginScreen.style.display = "none";
+      app.style.display = "grid";
+
+      await carregarClientes();
+    }
+
+    async function fazerLogout() {
+      await supabaseClient.auth.signOut();
+
+      selectedConversationId = null;
+      conversations = [];
+
+      app.style.display = "none";
+      loginScreen.style.display = "flex";
+
+      loginEmail.value = "";
+      loginPassword.value = "";
+    }
+
+    async function verificarSessao() {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error) {
+        console.error("Erro ao verificar sessão:", error);
+        return;
+      }
+
+      if (data.session) {
+        userName.textContent = data.session.user.email;
+
+        loginScreen.style.display = "none";
+        app.style.display = "grid";
+
+        await carregarClientes();
+      } else {
+        app.style.display = "none";
+        loginScreen.style.display = "flex";
+      }
+    }
+
+    loginBtn.addEventListener("click", fazerLogin);
+    logoutBtn.addEventListener("click", fazerLogout);
+    sendBtn.addEventListener("click", sendMessage);
+    acceptBtn.addEventListener("click", assumirConversa);
+
+    chatUser.addEventListener("click", () => app.classList.add("details-open"));
+    closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
+
+    loginPassword.addEventListener("keydown", event => {
+      if (event.key === "Enter") fazerLogin();
+    });
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter") sendMessage();
+    });
+
+    supabaseClient
+      .channel("mensagens-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "mensagens"
+        },
+        async () => {
+          await carregarClientes();
+        }
+      )
+      .subscribe();
+
+    supabaseClient.auth.onAuthStateChange(async (event) => {
+      if (event === "SIGNED_OUT") {
+        app.style.display = "none";
+        loginScreen.style.display = "flex";
+      }
+    });
+
+    verificarSessao();
+  </script>
 </body>
 </html>
-
