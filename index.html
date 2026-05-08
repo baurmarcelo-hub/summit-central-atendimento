@@ -650,57 +650,8 @@
   </div>
 
   <script>
-    let conversations = [
-      {
-        id: 1,
-        name: "Marcelo",
-        phone: "(51) 99999-9999",
-        email: "marcelo@email.com",
-        channel: "WhatsApp",
-        lastMessage: "Oi, gostaria de saber preço",
-        time: "19m",
-        unread: 2,
-        initials: "M",
-        messages: [
-          { direction: "in", text: "Olá Marcelo", time: "10:31" },
-          { direction: "out", text: "Oi, tudo bem? Já vou verificar para ti.", time: "10:32" },
-          { direction: "out", text: "Me confirma qual produto tu precisa cotar?", time: "10:33" }
-        ]
-      },
-      {
-        id: 2,
-        name: "Clarice",
-        phone: "(51) 98888-7777",
-        email: "clarice@email.com",
-        channel: "WhatsApp",
-        lastMessage: "Oi quero comprar",
-        time: "24m",
-        unread: 1,
-        initials: "C",
-        messages: [
-          { direction: "in", text: "Olá Clarice", time: "11:01" },
-          { direction: "out", text: "Oi, Clarice. Posso te ajudar com o pedido.", time: "11:02" }
-        ]
-      },
-      {
-        id: 3,
-        name: "Maria",
-        phone: "(51) 97777-6666",
-        email: "maria@email.com",
-        channel: "E-mail",
-        lastMessage: "Oi Filho minha entrega?",
-        time: "2h",
-        unread: 0,
-        initials: "M",
-        messages: [
-          { direction: "in", text: "Olá Maria", time: "09:18" },
-          { direction: "out", text: "Oi, mãe. Vou conferir o status da entrega.", time: "09:20" },
-          { direction: "out", text: "Já retorno com a previsão certinha.", time: "09:21" }
-        ]
-      }
-    ];
-
-    let selectedConversationId = conversations[0].id;
+    let conversations = [];
+let selectedConversationId = null;
 
     const appEl = document.querySelector(".app");
     const conversationList = document.getElementById("conversationList");
