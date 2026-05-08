@@ -654,7 +654,9 @@
             <span id="headerSubtitle">Atendimento Comercial</span>
           </div>
         </div>
-        <button class="accept-btn">Aceitar Conversa</button>
+        <button class="accept-btn" id="acceptBtn">
+  Aceitar Conversa
+</button>
       </header>
 
       <nav class="chat-tabs">
@@ -763,6 +765,7 @@ const loginError = document.getElementById("loginError");
 const app = document.querySelector(".app");
 const userName = document.getElementById("userName");
 const logoutBtn = document.getElementById("logoutBtn");
+const acceptBtn = document.getElementById("acceptBtn");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -822,6 +825,34 @@ const logoutBtn = document.getElementById("logoutBtn");
 
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
+async function assumirConversa() {
+
+  const conversation = getSelectedConversation();
+
+  if (!conversation) return;
+
+  const usuario =
+    supabaseClient.auth.getUser
+      ? (await supabaseClient.auth.getUser()).data.user.email
+      : userName.textContent;
+
+  const { error } = await supabaseClient
+    .from("conversas")
+    .update({
+      status: "em_atendimento",
+      atendente: usuario
+    })
+    .eq("id", conversation.id);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  alert("Conversa assumida com sucesso!");
+
+  await carregarClientes();
+}
 
     async function sendMessage() {
 
@@ -912,6 +943,7 @@ loginPassword.addEventListener("keydown", (event) => {
   }
 });
     sendBtn.addEventListener("click", sendMessage);
+    acceptBtn.addEventListener("click", assumirConversa);
     chatUser.addEventListener("click", () => appEl.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => appEl.classList.remove("details-open"));
     input.addEventListener("keydown", event => {
