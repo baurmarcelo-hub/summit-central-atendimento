@@ -757,8 +757,7 @@ let selectedConversationId = null;
       renderConversations();
       renderChat();
     }
-
-    render();
+  
   </script>
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
@@ -772,8 +771,8 @@ let selectedConversationId = null;
   );
 
   console.log("Supabase conectado com sucesso");
-async function carregarMensagens(conversaId) {
 
+async function carregarMensagens(conversaId) {
   const { data, error } = await supabaseClient
     .from("mensagens")
     .select("*")
@@ -788,47 +787,42 @@ async function carregarMensagens(conversaId) {
   return data.map(msg => ({
     direction: msg.direcao,
     text: msg.conteudo,
-    time: new Date(msg.created_at)
-      .toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
+    time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    })
   }));
 }
 
-  async function carregarClientes() {
-    const { data, error } = await supabaseClient
-      .from('clientes')
-      .select('*');
+async function carregarClientes() {
+  const { data, error } = await supabaseClient
+    .from("clientes")
+    .select("*");
 
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    console.log("CLIENTES:", data);
-
-    conversations = data.map(cliente => ({
-      id: cliente.id,
-      name: cliente.nome || cliente.name || "Cliente",
-      phone: cliente.telefone || "",
-      email: cliente.email || "",
-      channel: "WhatsApp",
-      lastMessage: "Conversa iniciada",
-      time: "agora",
-      unread: 0,
-      initials: String(
-        cliente.nome || cliente.name || "C"
-      ).charAt(0).toUpperCase(),
-     messages: await carregarMensagens(cliente.id)
-    }));
-
-    selectedConversationId = conversations[0]?.id;
-
-    render();
+  if (error) {
+    console.error(error);
+    return;
   }
 
-  carregarClientes();
+  conversations = await Promise.all(data.map(async cliente => ({
+    id: cliente.id,
+    name: cliente.nome || cliente.name || "Cliente",
+    phone: cliente.telefone || "",
+    email: cliente.email || "",
+    channel: "WhatsApp",
+    lastMessage: "Conversa iniciada",
+    time: "agora",
+    unread: 0,
+    initials: String(cliente.nome || cliente.name || "C").charAt(0).toUpperCase(),
+    messages: await carregarMensagens(cliente.id)
+  })));
+
+  selectedConversationId = conversations[0]?.id || null;
+
+  render();
+}
+
+carregarClientes();
 </script>
 </body>
 </html>
