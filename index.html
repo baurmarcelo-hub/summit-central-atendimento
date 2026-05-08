@@ -840,7 +840,7 @@ async function carregarClientes() {
     lastMessage: 'Conversa iniciada',
     time: 'agora',
     unread: 0,
-    initials: cliente.nome.charAt(0).toUpperCase(),
+    initials: (cliente.nome || cliente.name || "?").charAt(0).toUpperCase(),
     messages: []
   }));
 
@@ -862,7 +862,7 @@ async function carregarClientes() {
 
   conversations = data.map(cliente => ({
     id: cliente.id,
-    name: cliente.nome,
+    name: cliente.nome || cliente.name,
     phone: cliente.telefone,
     email: cliente.email,
     channel: 'WhatsApp',
