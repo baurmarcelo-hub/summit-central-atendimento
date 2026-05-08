@@ -722,7 +722,7 @@
         </div>
       </div>
 
-      <button class="danger-btn">Finalizar Atendimento</button>
+      <button class="danger-btn" id="finishBtn">Finalizar Atendimento</button>
     </aside>
   </div>
 
@@ -761,6 +761,7 @@
     const userName = document.getElementById("userName");
     const logoutBtn = document.getElementById("logoutBtn");
     const acceptBtn = document.getElementById("acceptBtn");
+    const finishBtn = document.getElementById("finishBtn");
     const tabs = document.querySelectorAll(".tab");
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
@@ -969,7 +970,39 @@ document
 
 await carregarClientes();
     }
+async function finalizarAtendimento() {
+  const conversation = getSelectedConversation();
 
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("conversas")
+    .update({
+      status: "finalizado"
+    })
+    .eq("id", conversation.id);
+
+  if (error) {
+    console.error("Erro ao finalizar atendimento:", error);
+    alert("Erro ao finalizar atendimento.");
+    return;
+  }
+
+  alert("Atendimento finalizado com sucesso!");
+
+  currentFilter = "finalizado";
+
+  tabs.forEach(t => t.classList.remove("active"));
+
+  document
+    .querySelector('[data-filter="finalizado"]')
+    .classList.add("active");
+
+  await carregarClientes();
+}
     async function sendMessage() {
       const text = input.value.trim();
 
@@ -1070,6 +1103,7 @@ await carregarClientes();
     logoutBtn.addEventListener("click", fazerLogout);
     sendBtn.addEventListener("click", sendMessage);
     acceptBtn.addEventListener("click", assumirConversa);
+    finishBtn.addEventListener("click", finalizarAtendimento);
 
 tabs.forEach(tab => {
   tab.addEventListener("click", () => {
