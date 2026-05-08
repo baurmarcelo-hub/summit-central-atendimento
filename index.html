@@ -726,26 +726,46 @@ let selectedConversationId = null;
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
+    async function sendMessage() {
 
-      const conversation = getSelectedConversation();
-      const now = new Date();
-      const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const text = input.value.trim();
 
-      conversation.messages.push({
-        direction: "out",
-        text,
-        time
-      });
-      conversation.lastMessage = text;
-      conversation.time = "agora";
+  if (!text) return;
 
-      input.value = "";
-      render();
-    }
+  const conversation = getSelectedConversation();
 
+  const { error } = await supabaseClient
+    .from("mensagens")
+    .insert([
+      {
+        conversa_id: conversation.id,
+        conteudo: text,
+        canal: "WhatsApp",
+        direcao: "out"
+      }
+    ]);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  conversation.messages.push({
+    direction: "out",
+    text,
+    time: new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    })
+  });
+
+  conversation.lastMessage = text;
+  conversation.time = "agora";
+
+  input.value = "";
+
+  render();
+}
     sendBtn.addEventListener("click", sendMessage);
     chatUser.addEventListener("click", () => appEl.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => appEl.classList.remove("details-open"));
