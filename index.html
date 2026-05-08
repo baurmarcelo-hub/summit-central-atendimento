@@ -831,16 +831,15 @@ async function assumirConversa() {
 
   if (!conversation) return;
 
-  const usuario =
-    supabaseClient.auth.getUser
-      ? (await supabaseClient.auth.getUser()).data.user.email
-      : userName.textContent;
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
 
   const { error } = await supabaseClient
     .from("conversas")
     .update({
       status: "em_atendimento",
-      atendente: usuario
+      atendente: user.email
     })
     .eq("id", conversation.id);
 
