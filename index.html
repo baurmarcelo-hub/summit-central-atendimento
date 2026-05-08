@@ -640,9 +640,9 @@
 
     <section class="conversation-panel">
       <div class="tabs">
-        <button class="tab">Atendente 4</button>
-        <button class="tab active">Aguardando 4</button>
-        <button class="tab">Resolvidos</button>
+        <button class="tab" data-filter="em_atendimento">Em atendimento</button>
+	<button class="tab active" data-filter="aguardando">Aguardando</button>
+	<button class="tab" data-filter="finalizado">Resolvidos</button>
       </div>
 
       <div class="search-box">
@@ -730,7 +730,7 @@
     );
 
     let conversations = [];
-    let selectedConversationId = null;
+    let currentFilter = "aguardando";
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -753,6 +753,7 @@
     const userName = document.getElementById("userName");
     const logoutBtn = document.getElementById("logoutBtn");
     const acceptBtn = document.getElementById("acceptBtn");
+    const tabs = document.querySelectorAll(".tab");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -761,7 +762,11 @@
     function renderConversations() {
       conversationList.innerHTML = "";
 
-      conversations.forEach(conversation => {
+      const filteredConversations = conversations.filter(conversation => {
+  return conversation.status === currentFilter;
+});
+
+filteredConversations.forEach(conversation => {
         const card = document.createElement("div");
         card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
 
@@ -932,9 +937,17 @@
         return;
       }
 
-      alert("Conversa assumida com sucesso!");
+     alert("Conversa assumida com sucesso!");
 
-      await carregarClientes();
+currentFilter = "em_atendimento";
+
+tabs.forEach(t => t.classList.remove("active"));
+
+document
+  .querySelector('[data-filter="em_atendimento"]')
+  .classList.add("active");
+
+await carregarClientes();
     }
 
     async function sendMessage() {
@@ -1037,6 +1050,20 @@
     logoutBtn.addEventListener("click", fazerLogout);
     sendBtn.addEventListener("click", sendMessage);
     acceptBtn.addEventListener("click", assumirConversa);
+
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    currentFilter = tab.dataset.filter;
+
+    const primeiraConversa = conversations.find(c => c.status === currentFilter);
+    selectedConversationId = primeiraConversa?.id || null;
+
+    render();
+  });
+});
 
     chatUser.addEventListener("click", () => app.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
