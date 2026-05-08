@@ -1028,16 +1028,6 @@ verificarSessao();
 
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
 
-  if (event === "SIGNED_IN" && session) {
-
-    userName.textContent = session.user.email;
-
-    loginScreen.style.display = "none";
-    app.style.display = "grid";
-
-    await carregarClientes();
-  }
-
   if (event === "SIGNED_OUT") {
 
     app.style.display = "none";
