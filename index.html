@@ -993,13 +993,46 @@ async function carregarMensagens(conversaId) {
 
 async function carregarClientes() {
   const { data, error } = await supabaseClient
-    .from("clientes")
-    .select("*");
+    .from("conversas")
+    .select(`
+      id,
+      canal,
+      status,
+      atendente,
+      cliente_id,
+      clientes (
+        id,
+        nome,
+        telefone,
+        email
+      )
+    `);
 
   if (error) {
     console.error(error);
     return;
   }
+
+  conversations = await Promise.all(data.map(async conversa => ({
+    id: conversa.id,
+    clienteId: conversa.cliente_id,
+    status: conversa.status,
+    atendente: conversa.atendente,
+    name: conversa.clientes?.nome || "Cliente",
+    phone: conversa.clientes?.telefone || "",
+    email: conversa.clientes?.email || "",
+    channel: conversa.canal || "WhatsApp",
+    lastMessage: "Conversa iniciada",
+    time: "agora",
+    unread: 0,
+    initials: String(conversa.clientes?.nome || "C").charAt(0).toUpperCase(),
+    messages: await carregarMensagens(conversa.id)
+  })));
+
+  selectedConversationId = conversations[0]?.id || null;
+
+  render();
+}
 
   conversations = await Promise.all(data.map(async cliente => ({
     id: cliente.id,
