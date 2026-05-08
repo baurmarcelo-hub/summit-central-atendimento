@@ -1003,6 +1003,48 @@ supabaseClient
     }
   )
   .subscribe();
+async function verificarSessao() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    console.error("Erro ao verificar sessão:", error);
+    return;
+  }
+
+  if (data.session) {
+    userName.textContent = data.session.user.email;
+
+    loginScreen.style.display = "none";
+    app.style.display = "grid";
+
+    await carregarClientes();
+  } else {
+    app.style.display = "none";
+    loginScreen.style.display = "flex";
+  }
+}
+
+verificarSessao();
+
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+
+  if (event === "SIGNED_IN" && session) {
+
+    userName.textContent = session.user.email;
+
+    loginScreen.style.display = "none";
+    app.style.display = "grid";
+
+    await carregarClientes();
+  }
+
+  if (event === "SIGNED_OUT") {
+
+    app.style.display = "none";
+    loginScreen.style.display = "flex";
+  }
+
+});
 </script>
 </body>
 </html>
