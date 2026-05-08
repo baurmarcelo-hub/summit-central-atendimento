@@ -712,6 +712,28 @@
           <div class="detail-value" id="detailEmail">cliente@email.com</div>
         </div>
       </div>
+<div class="detail-line">
+  <div class="detail-label">Canal</div>
+  <div class="detail-value" id="detailChannel">WhatsApp</div>
+</div>
+
+<div class="detail-line">
+  <div class="detail-label">Status</div>
+  <div
+    class="detail-value"
+    id="detailStatus"
+    style="color:#12b76a"
+  >
+    aguardando
+  </div>
+</div>
+
+<div class="detail-line">
+  <div class="detail-label">Responsável</div>
+  <div class="detail-value" id="detailResponsible">
+    Não atribuído
+  </div>
+</div>
 
       <div class="detail-card">
         <h3>Tags</h3>
@@ -749,6 +771,10 @@
     const detailPhone = document.getElementById("detailPhone");
     const detailEmail = document.getElementById("detailEmail");
     const detailAvatar = document.getElementById("detailAvatar");
+    const headerSubtitle = document.getElementById("headerSubtitle");
+    const detailChannel = document.getElementById("detailChannel");
+    const detailStatus = document.getElementById("detailStatus");
+    const detailResponsible = document.getElementById("detailResponsible");
     const input = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
     const chatUser = document.querySelector(".chat-user");
@@ -818,11 +844,21 @@ filteredConversations.forEach(conversation => {
       }
 
       headerName.textContent = conversation.name;
-      headerAvatar.textContent = conversation.initials;
-      detailName.textContent = conversation.name;
-      detailPhone.textContent = conversation.phone;
-      detailEmail.textContent = conversation.email;
-      detailAvatar.textContent = conversation.initials;
+headerAvatar.textContent = conversation.initials;
+
+headerSubtitle.textContent =
+  `${conversation.channel} • ${conversation.status}`;
+
+detailName.textContent = conversation.name;
+detailPhone.textContent = conversation.phone;
+detailEmail.textContent = conversation.email;
+detailAvatar.textContent = conversation.initials;
+
+detailChannel.textContent = conversation.channel;
+detailStatus.textContent = conversation.status;
+
+detailResponsible.textContent =
+  conversation.atendente || "Não atribuído";
 
       messagesEl.innerHTML = `
         <div class="date-divider"><span>Hoje</span></div>
@@ -933,6 +969,10 @@ function atualizarContadores() {
 
       if (!conversation) {
         alert("Nenhuma conversa selecionada.");
+	headerSubtitle.textContent = "Sem conversa";
+	detailChannel.textContent = "-";
+	detailStatus.textContent = "-";
+	detailResponsible.textContent = "-";
         return;
       }
 
