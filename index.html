@@ -829,65 +829,77 @@ filteredConversations.forEach(conversation => {
       });
     }
 
-    if (!conversation) {
+function renderChat() {
 
-  headerName.textContent = "Nenhuma conversa";
-  headerAvatar.textContent = "-";
+  const conversation = getSelectedConversation();
 
-  headerSubtitle.textContent = "Sem conversa";
+  if (!conversation) {
 
-  detailName.textContent = "Nenhuma conversa";
-  detailPhone.textContent = "-";
-  detailEmail.textContent = "-";
-  detailAvatar.textContent = "-";
+    headerName.textContent = "Nenhuma conversa";
+    headerAvatar.textContent = "-";
 
-  detailChannel.textContent = "-";
-  detailStatus.textContent = "-";
-  detailResponsible.textContent = "-";
+    headerSubtitle.textContent = "Sem conversa";
 
-  messagesEl.innerHTML = "";
+    detailName.textContent = "Nenhuma conversa";
+    detailPhone.textContent = "-";
+    detailEmail.textContent = "-";
+    detailAvatar.textContent = "-";
 
-  return;
+    detailChannel.textContent = "-";
+    detailStatus.textContent = "-";
+    detailResponsible.textContent = "-";
+
+    messagesEl.innerHTML = "";
+
+    return;
+  }
+
+  headerName.textContent = conversation.name;
+  headerAvatar.textContent = conversation.initials;
+
+  headerSubtitle.textContent =
+    `${conversation.channel} • ${conversation.status}`;
+
+  detailName.textContent = conversation.name;
+  detailPhone.textContent = conversation.phone;
+  detailEmail.textContent = conversation.email;
+  detailAvatar.textContent = conversation.initials;
+
+  detailChannel.textContent = conversation.channel;
+  detailStatus.textContent = conversation.status;
+
+  detailResponsible.textContent =
+    conversation.atendente || "Não atribuído";
+
+  messagesEl.innerHTML = `
+    <div class="date-divider">
+      <span>Hoje</span>
+    </div>
+  `;
+
+  conversation.messages.forEach(message => {
+
+    const row = document.createElement("div");
+
+    row.className =
+      `message-row ${message.direction}`;
+
+    row.innerHTML = `
+      <div class="bubble ${message.direction}">
+        ${message.text}
+        <div class="msg-time">
+          ${message.time}
+        </div>
+      </div>
+    `;
+
+    messagesEl.appendChild(row);
+
+  });
+
+  messagesEl.scrollTop =
+    messagesEl.scrollHeight;
 }
-      }
-
-      headerName.textContent = conversation.name;
-headerAvatar.textContent = conversation.initials;
-
-headerSubtitle.textContent =
-  `${conversation.channel} • ${conversation.status}`;
-
-detailName.textContent = conversation.name;
-detailPhone.textContent = conversation.phone;
-detailEmail.textContent = conversation.email;
-detailAvatar.textContent = conversation.initials;
-
-detailChannel.textContent = conversation.channel;
-detailStatus.textContent = conversation.status;
-
-detailResponsible.textContent =
-  conversation.atendente || "Não atribuído";
-
-      messagesEl.innerHTML = `
-        <div class="date-divider"><span>Hoje</span></div>
-      `;
-
-      conversation.messages.forEach(message => {
-        const row = document.createElement("div");
-        row.className = `message-row ${message.direction}`;
-
-        row.innerHTML = `
-          <div class="bubble ${message.direction}">
-            ${message.text}
-            <div class="msg-time">${message.time}</div>
-          </div>
-        `;
-
-        messagesEl.appendChild(row);
-      });
-
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
 function atualizarContadores() {
   const totalAguardando = conversations.filter(c => c.status === "aguardando").length;
   const totalAtendimento = conversations.filter(c => c.status === "em_atendimento").length;
