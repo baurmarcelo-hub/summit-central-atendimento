@@ -929,13 +929,16 @@ function atualizarContadores() {
       }
 
       return data.map(msg => ({
-        direction: msg.direcao,
-        text: msg.conteudo,
-        time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })
-      }));
+  direction: msg.direcao,
+  text: msg.conteudo,
+
+  created_at: msg.created_at,
+
+  time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  })
+}));
     }
 
     async function carregarClientes() {
