@@ -988,6 +988,18 @@ function atualizarContadores() {
   };
 }));
 
+conversations.sort((a, b) => {
+  const ultimaA = a.messages.length
+    ? new Date(a.messages[a.messages.length - 1].created_at || 0)
+    : 0;
+
+  const ultimaB = b.messages.length
+    ? new Date(b.messages[b.messages.length - 1].created_at || 0)
+    : 0;
+
+  return ultimaB - ultimaA;
+});
+
       if (!selectedConversationId && conversations.length > 0) {
         selectedConversationId = conversations[0].id;
       }
