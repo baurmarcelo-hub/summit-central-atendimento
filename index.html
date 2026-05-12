@@ -931,6 +931,7 @@ let unreadMap = {};
 
 let currentFilter = "aguardando";
 let selectedConversationId = null;
+let typingTimeout = null;
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -1041,6 +1042,25 @@ function openImageModal(url) {
 function closeImageModal() {
   imageModal.classList.remove("open");
   imageModalImg.src = "";
+}
+
+function mostrarDigitando() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) return;
+
+  headerSubtitle.textContent = "digitando...";
+
+  clearTimeout(typingTimeout);
+
+  typingTimeout = setTimeout(() => {
+    const conversaAtual = getSelectedConversation();
+
+    if (!conversaAtual) return;
+
+    headerSubtitle.textContent =
+      `${conversaAtual.channel} • ${conversaAtual.status}`;
+  }, 1500);
 }
 
 function renderChat() {
@@ -1602,6 +1622,8 @@ document.addEventListener("keydown", (event) => {
     input.addEventListener("keydown", event => {
       if (event.key === "Enter") sendMessage();
     });
+
+input.addEventListener("input", mostrarDigitando);
 
     supabaseClient
   .channel("mensagens-realtime")
