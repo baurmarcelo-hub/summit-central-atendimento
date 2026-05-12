@@ -592,6 +592,16 @@
         display: none;
       }
     }
+.attach-btn {
+  width: 48px;
+  height: 52px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 20px;
+}
+
   </style>
 </head>
 
@@ -686,10 +696,22 @@
 
       <section class="messages" id="messages"></section>
 
-      <footer class="composer">
-        <input id="messageInput" type="text" placeholder="Digite sua mensagem..." />
-        <button class="send-btn" id="sendBtn">➤</button>
-      </footer>
+     <footer class="composer">
+  <input id="fileInput" type="file" style="display:none;" />
+
+  <button
+    type="button"
+    class="attach-btn"
+    id="attachBtn"
+    title="Anexar arquivo"
+  >
+    📎
+  </button>
+
+  <input id="messageInput" type="text" placeholder="Digite sua mensagem..." />
+
+  <button class="send-btn" id="sendBtn">➤</button>
+</footer>
     </main>
 
     <aside class="details-panel">
@@ -784,6 +806,8 @@ let selectedConversationId = null;
     const detailResponsible = document.getElementById("detailResponsible");
     const input = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
+    const attachBtn = document.getElementById("attachBtn");
+    const fileInput = document.getElementById("fileInput");
     const chatUser = document.querySelector(".chat-user");
     const closeDetailsBtn = document.getElementById("closeDetailsBtn");
     const loginScreen = document.getElementById("loginScreen");
@@ -918,14 +942,21 @@ function renderChat() {
     row.className =
       `message-row ${message.direction}`;
 
-    row.innerHTML = `
-      <div class="bubble ${message.direction}">
-        ${message.text}
-        <div class="msg-time">
-          ${message.time}
-        </div>
-      </div>
-    `;
+   const mediaHtml = message.media_url
+  ? message.media_mime?.startsWith("image/")
+    ? `<img src="${message.media_url}" style="max-width:220px;border-radius:12px;margin-bottom:8px;display:block;" />`
+    : `<a href="${message.media_url}" target="_blank" style="display:block;margin-bottom:8px;font-weight:700;color:#0e9f6e;">📎 ${message.media_nome || "Arquivo"}</a>`
+  : "";
+
+row.innerHTML = `
+  <div class="bubble ${message.direction}">
+    ${mediaHtml}
+    ${message.text || ""}
+    <div class="msg-time">
+      ${message.time}
+    </div>
+  </div>
+`;
 
     messagesEl.appendChild(row);
 
@@ -964,6 +995,10 @@ function atualizarContadores() {
       return data.map(msg => ({
   direction: msg.direcao,
   text: msg.conteudo,
+  tipo: msg.tipo || "texto",
+  media_url: msg.media_url,
+  media_nome: msg.media_nome,
+  media_mime: msg.media_mime,
 
   created_at: msg.created_at,
 
@@ -1122,42 +1157,84 @@ async function finalizarAtendimento() {
 
   await carregarClientes();
 }
+
+async function uploadArquivo(file) {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+  const filePath = `mensagens/${fileName}`;
+
+  const { error } = await supabaseClient.storage
+    .from("mensagens")
+    .upload(filePath, file);
+
+  if (error) {
+    console.error("Erro ao fazer upload:", error);
+    alert("Erro ao enviar arquivo.");
+    return null;
+  }
+
+  const { data } = supabaseClient.storage
+    .from("mensagens")
+    .getPublicUrl(filePath);
+
+  return {
+    url: data.publicUrl,
+    nome: file.name,
+    mime: file.type,
+    tamanho: file.size
+  };
+}
     async function sendMessage() {
-      const text = input.value.trim();
+  const text = input.value.trim();
+  const file = fileInput.files[0];
 
-      if (!text) return;
+  if (!text && !file) return;
 
-      const conversation = getSelectedConversation();
+  const conversation = getSelectedConversation();
 
-      if (!conversation) {
-        alert("Nenhuma conversa selecionada.");
-        return;
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  let arquivo = null;
+
+  if (file) {
+    arquivo = await uploadArquivo(file);
+
+    if (!arquivo) return;
+  }
+
+  const { error } = await supabaseClient
+    .from("mensagens")
+    .insert([
+      {
+        conversa_id: conversation.id,
+        conteudo: text,
+        canal: conversation.channel || "WhatsApp",
+        direcao: "out",
+        tipo: file ? "arquivo" : "texto",
+        media_url: arquivo?.url || null,
+        media_nome: arquivo?.nome || null,
+        media_mime: arquivo?.mime || null,
+        media_tamanho: arquivo?.tamanho || null
       }
+    ]);
 
-      const { error } = await supabaseClient
-        .from("mensagens")
-        .insert([
-          {
-            conversa_id: conversation.id,
-            conteudo: text,
-            canal: conversation.channel || "WhatsApp",
-            direcao: "out"
-          }
-        ]);
+  if (error) {
+    console.error("Erro ao enviar mensagem:", error);
+    alert("Erro ao enviar mensagem.");
+    return;
+  }
 
-      if (error) {
-        console.error("Erro ao enviar mensagem:", error);
-        alert("Erro ao enviar mensagem.");
-        return;
-      }
+  input.value = "";
+  fileInput.value = "";
 
-      input.value = "";
+  await carregarClientes();
 
-      await carregarClientes();
-
-      selectedConversationId = conversation.id;
-      render();
-    }
+  selectedConversationId = conversation.id;
+  render();
+}
 
     async function fazerLogin() {
       loginError.textContent = "";
@@ -1221,6 +1298,17 @@ async function finalizarAtendimento() {
     loginBtn.addEventListener("click", fazerLogin);
     logoutBtn.addEventListener("click", fazerLogout);
     sendBtn.addEventListener("click", sendMessage);
+attachBtn.addEventListener("click", () => {
+  fileInput.click();
+});
+
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+
+  if (file) {
+    input.value = file.name;
+  }
+});
     acceptBtn.addEventListener("click", assumirConversa);
     finishBtn.addEventListener("click", finalizarAtendimento);
 searchInput.addEventListener("input", () => {
