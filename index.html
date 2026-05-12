@@ -1467,6 +1467,38 @@ tabs.forEach(tab => {
 
     chatUser.addEventListener("click", () => app.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
+if (imageModalClose) {
+
+  imageModalClose.onclick = closeImageModal;
+
+}
+
+if (imageModal) {
+
+  imageModal.onclick = (event) => {
+
+    if (event.target === imageModal) {
+
+      closeImageModal();
+
+    }
+
+  };
+
+}
+
+document.addEventListener("keydown", (event) => {
+
+  if (
+    event.key === "Escape" &&
+    imageModal.classList.contains("open")
+  ) {
+
+    closeImageModal();
+
+  }
+
+});
 
 
     loginPassword.addEventListener("keydown", event => {
