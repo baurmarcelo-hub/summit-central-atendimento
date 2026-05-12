@@ -926,8 +926,9 @@
 
 .conversation-name-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin-bottom: 4px;
 }
 
@@ -952,6 +953,30 @@
 
 .status-finalizado {
   background: #dcfce7;
+  color: #16a34a;
+}
+
+.tab[data-filter="aguardando"] span {
+  color: #d97706;
+}
+
+.tab[data-filter="em_atendimento"] span {
+  color: #2563eb;
+}
+
+.tab[data-filter="finalizado"] span {
+  color: #16a34a;
+}
+
+.tab[data-filter="aguardando"]:not(.active) {
+  color: #d97706;
+}
+
+.tab[data-filter="em_atendimento"]:not(.active) {
+  color: #2563eb;
+}
+
+.tab[data-filter="finalizado"]:not(.active) {
   color: #16a34a;
 }
 
