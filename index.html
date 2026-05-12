@@ -188,20 +188,50 @@
     }
 
     .tab {
-      border: 0;
-      background: #eef1f5;
-      padding: 9px 14px;
-      border-radius: 14px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      color: #344055;
-    }
+  border: 1px solid transparent;
 
-    .tab.active {
-      background: #101828;
-      color: #ffffff;
-    }
+  background: #f4f6f8;
+
+  padding: 10px 15px;
+
+  border-radius: 14px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  color: #475467;
+
+  transition:
+    all 0.18s ease;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab:hover {
+  background: #ffffff;
+
+  border-color: #dbe3ef;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 12px rgba(16, 24, 40, 0.05);
+}
+
+.tab.active {
+  background: #101828;
+
+  color: #ffffff;
+
+  border-color: #101828;
+
+  box-shadow:
+    0 6px 18px rgba(16, 24, 40, 0.12);
+}
 
     .search-box {
       position: relative;
