@@ -764,8 +764,10 @@
     );
 
     let conversations = [];
-    let currentFilter = "aguardando";
-    let selectedConversationId = null;
+let unreadMap = {};
+
+let currentFilter = "aguardando";
+let selectedConversationId = null;
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -826,9 +828,14 @@ function renderConversations() {
     card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
 
     card.onclick = () => {
-      selectedConversationId = conversation.id;
-      render();
-    };
+
+  unreadMap[conversation.id] = 0;
+
+  selectedConversationId = conversation.id;
+
+  render();
+
+};
 
     card.innerHTML = `
       <div class="client-avatar">${conversation.initials}</div>
@@ -1010,7 +1017,7 @@ function atualizarContadores() {
       ? mensagens[mensagens.length - 1].time
       : "",
 
-    unread: 0,
+    unread: unreadMap[conversa.id] || 0,
     initials: String(cliente?.nome || "C").charAt(0).toUpperCase(),
 
     messages: mensagens
@@ -1246,19 +1253,33 @@ tabs.forEach(tab => {
     });
 
     supabaseClient
-      .channel("mensagens-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "mensagens"
-        },
-        async () => {
-          await carregarClientes();
-        }
-      )
-      .subscribe();
+  .channel("mensagens-realtime")
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "mensagens"
+    },
+    async (payload) => {
+
+      const novaMensagem = payload.new;
+
+      if (
+        novaMensagem.direcao === "in" &&
+        novaMensagem.conversa_id !== selectedConversationId
+      ) {
+
+        unreadMap[novaMensagem.conversa_id] =
+          (unreadMap[novaMensagem.conversa_id] || 0) + 1;
+
+      }
+
+      await carregarClientes();
+
+    }
+  )
+  .subscribe();
 
     supabaseClient.auth.onAuthStateChange(async (event) => {
       if (event === "SIGNED_OUT") {
