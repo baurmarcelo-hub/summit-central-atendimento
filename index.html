@@ -693,6 +693,44 @@
   font-weight: 800;
   cursor: pointer;
 }
+
+.chat-area.drag-over {
+  outline: 3px dashed #16c784;
+  outline-offset: -12px;
+  background: #f0fff8;
+}
+
+.drop-hint {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  pointer-events: none;
+}
+
+.drop-hint.open {
+  display: flex;
+}
+
+.drop-hint-box {
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 28px 34px;
+  box-shadow: 0 20px 60px rgba(16, 24, 40, 0.25);
+  text-align: center;
+  font-weight: 900;
+  color: #101828;
+}
+
+.drop-hint-box span {
+  display: block;
+  font-size: 38px;
+  margin-bottom: 8px;
+}
+
   </style>
 </head>
 
@@ -870,6 +908,13 @@
   <img id="imageModalImg" src="" alt="Preview da imagem" />
 </div>
 
+<div class="drop-hint" id="dropHint">
+  <div class="drop-hint-box">
+    <span>📎</span>
+    Solte o arquivo para anexar
+  </div>
+</div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
@@ -904,6 +949,8 @@ let selectedConversationId = null;
     const sendBtn = document.getElementById("sendBtn");
     const attachBtn = document.getElementById("attachBtn");
     const fileInput = document.getElementById("fileInput");
+    const chatArea = document.querySelector(".chat-area");
+const dropHint = document.getElementById("dropHint");
     const chatUser = document.querySelector(".chat-user");
     const closeDetailsBtn = document.getElementById("closeDetailsBtn");
     const loginScreen = document.getElementById("loginScreen");
@@ -1431,6 +1478,16 @@ async function uploadArquivo(file) {
       }
     }
 
+function setDroppedFile(file) {
+  if (!file) return;
+
+  const dataTransfer = new DataTransfer();
+  dataTransfer.items.add(file);
+
+  fileInput.files = dataTransfer.files;
+  input.value = file.name;
+}
+
     loginBtn.addEventListener("click", fazerLogin);
     logoutBtn.addEventListener("click", fazerLogout);
     sendBtn.addEventListener("click", sendMessage);
@@ -1444,6 +1501,32 @@ fileInput.addEventListener("change", () => {
   if (file) {
     input.value = file.name;
   }
+});
+
+["dragenter", "dragover"].forEach(eventName => {
+  chatArea.addEventListener(eventName, event => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    chatArea.classList.add("drag-over");
+    dropHint.classList.add("open");
+  });
+});
+
+["dragleave", "drop"].forEach(eventName => {
+  chatArea.addEventListener(eventName, event => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    chatArea.classList.remove("drag-over");
+    dropHint.classList.remove("open");
+  });
+});
+
+chatArea.addEventListener("drop", event => {
+  const file = event.dataTransfer.files[0];
+
+  setDroppedFile(file);
 });
     acceptBtn.addEventListener("click", assumirConversa);
     finishBtn.addEventListener("click", finalizarAtendimento);
