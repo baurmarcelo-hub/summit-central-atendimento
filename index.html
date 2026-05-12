@@ -657,6 +657,42 @@
   margin-top: 2px;
 }
 
+.image-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+}
+
+.image-modal.open {
+  display: flex;
+}
+
+.image-modal img {
+  max-width: 92vw;
+  max-height: 88vh;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
+.image-modal-close {
+  position: fixed;
+  top: 22px;
+  right: 26px;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #101828;
+  font-size: 28px;
+  font-weight: 800;
+  cursor: pointer;
+}
   </style>
 </head>
 
@@ -878,6 +914,9 @@ let selectedConversationId = null;
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
     const countFinalizado = document.getElementById("countFinalizado");
+    const imageModal = document.getElementById("imageModal");
+    const imageModalImg = document.getElementById("imageModalImg");
+    const imageModalClose = document.getElementById("imageModalClose");
     const searchInput = document.getElementById("searchInput");
 
     function getSelectedConversation() {
@@ -942,6 +981,16 @@ function renderConversations() {
   });
 }
 
+function openImageModal(url) {
+  imageModalImg.src = url;
+  imageModal.classList.add("open");
+}
+
+function closeImageModal() {
+  imageModal.classList.remove("open");
+  imageModalImg.src = "";
+}
+
 function renderChat() {
 
   const conversation = getSelectedConversation();
@@ -1000,11 +1049,11 @@ function renderChat() {
  const mediaHtml = message.media_url
   ? message.media_mime?.startsWith("image/")
     ? `
-      <img
+ <img
   src="${message.media_url}"
   class="chat-image"
   alt="${message.media_nome || "Imagem"}"
-  onclick="window.open('${message.media_url}', '_blank')"
+  onclick="openImageModal('${message.media_url}')"
 />
     `
     : `
@@ -1413,6 +1462,19 @@ tabs.forEach(tab => {
 
     chatUser.addEventListener("click", () => app.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
+imageModalClose.addEventListener("click", closeImageModal);
+
+imageModal.addEventListener("click", event => {
+  if (event.target === imageModal) {
+    closeImageModal();
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    closeImageModal();
+  }
+});
 
     loginPassword.addEventListener("keydown", event => {
       if (event.key === "Enter") fazerLogin();
@@ -1460,5 +1522,11 @@ tabs.forEach(tab => {
 
     verificarSessao();
   </script>
+
+<div class="image-modal" id="imageModal">
+  <button class="image-modal-close" id="imageModalClose">×</button>
+  <img id="imageModalImg" src="" alt="Preview da imagem" />
+</div>
+
 </body>
 </html>
