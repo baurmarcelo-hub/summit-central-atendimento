@@ -225,26 +225,38 @@
     }
 
     .conversation-card {
-      background: transparent;
-      border-radius: 16px;
-      padding: 12px;
-      display: grid;
-      grid-template-columns: 46px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      cursor: pointer;
-      margin-bottom: 8px;
-      border: 1px solid transparent;
-    }
+  background: transparent;
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
 
     .conversation-card.active {
       background: #e7fff4;
       border-color: #bdf3d8;
     }
 
-    .conversation-card:hover {
-      background: #f2f5f9;
-    }
+   .conversation-card:hover {
+  background: #ffffff;
+  border-color: #dbe3ef;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 14px rgba(16, 24, 40, 0.06);
+}
 
     .client-avatar {
       width: 46px;
