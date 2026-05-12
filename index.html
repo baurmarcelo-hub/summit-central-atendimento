@@ -656,6 +656,7 @@
   color: #7b8494;
   margin-top: 2px;
 }
+
   </style>
 </head>
 
@@ -999,23 +1000,34 @@ function renderChat() {
  const mediaHtml = message.media_url
   ? message.media_mime?.startsWith("image/")
     ? `
-      <a href="${message.media_url}" target="_blank">
-        <img
-          src="${message.media_url}"
-          class="chat-image"
-          alt="${message.media_nome || "Imagem"}"
-        />
-      </a>
+      <img
+  src="${message.media_url}"
+  class="chat-image"
+  alt="${message.media_nome || "Imagem"}"
+  onclick="window.open('${message.media_url}', '_blank')"
+/>
     `
     : `
-      <a href="${message.media_url}" target="_blank" class="file-card">
-        <div class="file-icon">📎</div>
-        <div class="file-info">
-          <div class="file-name">${message.media_nome || "Arquivo"}</div>
-          <div class="file-label">Clique para abrir</div>
-        </div>
-      </a>
-    `
+  <a
+    href="${message.media_url}"
+    target="_blank"
+    class="file-card"
+  >
+    <div class="file-icon">
+      📄
+    </div>
+
+    <div class="file-info">
+      <div class="file-name">
+        ${message.media_nome || "Arquivo"}
+      </div>
+
+      <div class="file-label">
+        Abrir arquivo
+      </div>
+    </div>
+  </a>
+`
   : "";
 
 row.innerHTML = `
