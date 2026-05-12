@@ -181,11 +181,12 @@
       flex-direction: column;
     }
 
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
+   .tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
 
     .tab {
   border: 1px solid transparent;
@@ -206,9 +207,17 @@
   transition:
     all 0.18s ease;
 
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  min-width: 110px;
+height: 64px;
+
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 2px;
+
+text-align: center;
+line-height: 1.15;
 }
 
 .tab:hover {
