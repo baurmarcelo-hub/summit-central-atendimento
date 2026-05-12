@@ -1649,7 +1649,7 @@ input.addEventListener("input", mostrarDigitando);
   .on(
     "postgres_changes",
     {
-      event: "INSERT",
+      event: "*",
       schema: "public",
       table: "mensagens"
     },
