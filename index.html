@@ -1526,13 +1526,16 @@ if (!conversation) {
 
 acceptBtn.classList.add("hidden");
 finishBtn.classList.add("hidden");
+composer.classList.add("hidden");
 
 if (conversation.status === "aguardando") {
   acceptBtn.classList.remove("hidden");
+  composer.classList.remove("hidden");
 }
 
 if (conversation.status === "em_atendimento") {
   finishBtn.classList.remove("hidden");
+  composer.classList.remove("hidden");
 }
 
 if (conversation.status === "finalizado") {
