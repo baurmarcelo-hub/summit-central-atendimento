@@ -831,6 +831,8 @@ function renderConversations() {
 
   unreadMap[conversation.id] = 0;
 
+  conversation.unread = 0;
+
   selectedConversationId = conversation.id;
 
   render();
