@@ -1208,6 +1208,7 @@ let typingTimeout = null;
     const chatTabs = document.querySelector(".chat-tabs");
     const composer = document.querySelector(".composer");
     const messageSearchBox = document.querySelector(".message-search-box");
+    const chatHeader = document.querySelector(".chat-header");
     const headerName = document.getElementById("headerName");
     const headerAvatar = document.getElementById("headerAvatar");
     const detailName = document.getElementById("detailName");
@@ -1451,6 +1452,8 @@ function renderChat() {
 
 if (!conversation) {
 
+  chatHeader.classList.add("hidden");
+
   headerName.textContent = "Nenhuma conversa";
   headerAvatar.textContent = "💬";
 
@@ -1500,6 +1503,7 @@ if (!conversation) {
   chatTabs.classList.remove("hidden");
   composer.classList.remove("hidden");
   messageSearchBox.classList.remove("hidden");
+  chatHeader.classList.remove("hidden");
 
   headerName.textContent = conversation.name;
   headerAvatar.textContent = conversation.initials;
