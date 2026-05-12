@@ -1080,6 +1080,10 @@ const dropHint = document.getElementById("dropHint");
     const imageModalImg = document.getElementById("imageModalImg");
     const imageModalClose = document.getElementById("imageModalClose");
     const searchInput = document.getElementById("searchInput");
+    const replyingBox = document.getElementById("replyingBox");
+    const replyingAuthor = document.getElementById("replyingAuthor");
+    const replyingText = document.getElementById("replyingText");
+    const cancelReplyBtn = document.getElementById("cancelReplyBtn");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -1151,6 +1155,28 @@ function openImageModal(url) {
 function closeImageModal() {
   imageModal.classList.remove("open");
   imageModalImg.src = "";
+}
+
+function mostrarReplyPreview(message) {
+  const conversation = getSelectedConversation();
+
+  if (!conversation || !message) return;
+
+  replyingBox.style.display = "block";
+
+  replyingAuthor.textContent =
+    message.direction === "out" ? "Você" : conversation.name;
+
+  replyingText.textContent =
+    message.text || message.media_nome || "Arquivo";
+}
+
+function cancelarReply() {
+  replyingToMessage = null;
+
+  replyingBox.style.display = "none";
+  replyingAuthor.textContent = "";
+  replyingText.textContent = "";
 }
 
 function mostrarDigitando() {
@@ -1653,6 +1679,7 @@ function setDroppedFile(file) {
     loginBtn.addEventListener("click", fazerLogin);
     logoutBtn.addEventListener("click", fazerLogout);
     sendBtn.addEventListener("click", sendMessage);
+cancelReplyBtn.addEventListener("click", cancelarReply);
 attachBtn.addEventListener("click", () => {
   fileInput.click();
 });
