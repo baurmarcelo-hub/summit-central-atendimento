@@ -731,6 +731,16 @@
   margin-bottom: 8px;
 }
 
+.message-status {
+  margin-left: 5px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #8b94a5;
+}
+
+.message-status.status-lida {
+  color: #2563eb;
+}
   </style>
 </head>
 
@@ -1155,9 +1165,16 @@ row.innerHTML = `
   <div class="bubble ${message.direction}">
     ${mediaHtml}
     ${message.text || ""}
-    <div class="msg-time">
-      ${message.time}
-    </div>
+   <div class="msg-time">
+  ${message.time}
+  ${
+    message.direction === "out"
+      ? `<span class="message-status status-${message.status_entrega}">
+          ${message.status_entrega === "lida" ? "✓✓" : message.status_entrega === "entregue" ? "✓✓" : "✓"}
+        </span>`
+      : ""
+  }
+</div>
   </div>
 `;
 
@@ -1202,6 +1219,7 @@ function atualizarContadores() {
   media_url: msg.media_url,
   media_nome: msg.media_nome,
   media_mime: msg.media_mime,
+  status_entrega: msg.status_entrega || "enviada",
 
   created_at: msg.created_at,
 
@@ -1416,6 +1434,7 @@ async function uploadArquivo(file) {
         conteudo: text,
         canal: conversation.channel || "WhatsApp",
         direcao: "out",
+        status_entrega: "enviada",
         tipo: file ? "arquivo" : "texto",
         media_url: arquivo?.url || null,
         media_nome: arquivo?.nome || null,
