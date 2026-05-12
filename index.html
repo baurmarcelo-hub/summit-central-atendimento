@@ -1823,27 +1823,42 @@ async function finalizarAtendimento() {
     return;
   }
 
+  const novoStatus =
+    conversation.status === "finalizado"
+      ? "em_atendimento"
+      : "finalizado";
+
+  const mensagemSucesso =
+    conversation.status === "finalizado"
+      ? "Conversa reaberta com sucesso!"
+      : "Atendimento finalizado com sucesso!";
+
+  const novoFiltro =
+    conversation.status === "finalizado"
+      ? "em_atendimento"
+      : "finalizado";
+
   const { error } = await supabaseClient
     .from("conversas")
     .update({
-      status: "finalizado"
+      status: novoStatus
     })
     .eq("id", conversation.id);
 
   if (error) {
-    console.error("Erro ao finalizar atendimento:", error);
-    alert("Erro ao finalizar atendimento.");
+    console.error("Erro ao atualizar atendimento:", error);
+    alert("Erro ao atualizar atendimento.");
     return;
   }
 
-  alert("Atendimento finalizado com sucesso!");
+  alert(mensagemSucesso);
 
-  currentFilter = "finalizado";
+  currentFilter = novoFiltro;
 
   tabs.forEach(t => t.classList.remove("active"));
 
   document
-    .querySelector('[data-filter="finalizado"]')
+    .querySelector(`[data-filter="${novoFiltro}"]`)
     .classList.add("active");
 
   await carregarClientes();
