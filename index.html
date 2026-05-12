@@ -741,6 +741,50 @@
 .message-status.status-lida {
   color: #2563eb;
 }
+
+.reply-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0;
+  transition: 0.15s;
+}
+
+.bubble {
+  position: relative;
+}
+
+.bubble:hover .reply-btn {
+  opacity: 1;
+}
+
+.reply-preview {
+  background: rgba(0,0,0,0.06);
+  border-left: 4px solid #16c784;
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.reply-preview strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 3px;
+  color: #0e9f6e;
+}
+
+.reply-preview span {
+  font-size: 12px;
+  color: #475467;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
   </style>
 </head>
 
@@ -834,6 +878,60 @@
       </nav>
 
       <section class="messages" id="messages"></section>
+<div
+  id="replyingBox"
+  style="
+    display:none;
+    padding:10px 16px;
+    border-top:1px solid #edf0f5;
+    background:#f8fafc;
+  "
+>
+  <div
+    style="
+      background:#ffffff;
+      border-left:4px solid #16c784;
+      border-radius:12px;
+      padding:10px 12px;
+      position:relative;
+    "
+  >
+    <button
+      id="cancelReplyBtn"
+      style="
+        position:absolute;
+        top:8px;
+        right:10px;
+        border:0;
+        background:transparent;
+        cursor:pointer;
+        font-size:16px;
+      "
+    >
+      ×
+    </button>
+
+    <strong
+      id="replyingAuthor"
+      style="
+        display:block;
+        color:#16c784;
+        font-size:12px;
+        margin-bottom:4px;
+      "
+    >
+      Respondendo
+    </strong>
+
+    <div
+      id="replyingText"
+      style="
+        font-size:13px;
+        color:#344054;
+      "
+    ></div>
+  </div>
+</div>
 
      <footer class="composer">
   <input id="fileInput" type="file" style="display:none;" />
@@ -941,6 +1039,7 @@ let unreadMap = {};
 
 let currentFilter = "aguardando";
 let selectedConversationId = null;
+let replyingToMessage = null;
 let typingTimeout = null;
 
     const app = document.getElementById("app");
@@ -1121,14 +1220,28 @@ function renderChat() {
     </div>
   `;
 
-  conversation.messages.forEach(message => {
+ conversation.messages.forEach(message => {
 
-    const row = document.createElement("div");
+  const row = document.createElement("div");
 
-    row.className =
-      `message-row ${message.direction}`;
+  row.className = `message-row ${message.direction}`;
 
- const mediaHtml = message.media_url
+  row.dataset.messageId = message.id;
+
+  const replyMessage = conversation.messages.find(
+    m => m.id === message.reply_to_message_id
+  );
+
+  const replyHtml = replyMessage
+    ? `
+      <div class="reply-preview">
+        <strong>${replyMessage.direction === "out" ? "Você" : conversation.name}</strong>
+        <span>${replyMessage.text || replyMessage.media_nome || "Arquivo"}</span>
+      </div>
+    `
+    : "";
+
+  const mediaHtml = message.media_url
   ? message.media_mime?.startsWith("image/")
     ? `
  <img
@@ -1163,6 +1276,8 @@ function renderChat() {
 
 row.innerHTML = `
   <div class="bubble ${message.direction}">
+    <button class="reply-btn" title="Responder">↩</button>
+    ${replyHtml}
     ${mediaHtml}
     ${message.text || ""}
    <div class="msg-time">
@@ -1179,6 +1294,14 @@ row.innerHTML = `
 `;
 
     messagesEl.appendChild(row);
+
+const replyBtn = row.querySelector(".reply-btn");
+
+replyBtn.addEventListener("click", () => {
+  replyingToMessage = message;
+  mostrarReplyPreview(message);
+  input.focus();
+});
 
   });
 
