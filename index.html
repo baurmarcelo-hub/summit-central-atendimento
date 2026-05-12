@@ -1361,14 +1361,19 @@ function atualizarContadores() {
         return [];
       }
 
-      return data.map(msg => ({
+  	return data.map(msg => ({
+  id: msg.id,
+
   direction: msg.direcao,
   text: msg.conteudo,
+
   tipo: msg.tipo || "texto",
   media_url: msg.media_url,
   media_nome: msg.media_nome,
   media_mime: msg.media_mime,
+
   status_entrega: msg.status_entrega || "enviada",
+  reply_to_message_id: msg.reply_to_message_id,
 
   created_at: msg.created_at,
 
@@ -1575,6 +1580,9 @@ async function uploadArquivo(file) {
     if (!arquivo) return;
   }
 
+console.log("ReplyingToMessage:", replyingToMessage);
+console.log("ID reply:", replyingToMessage?.id);
+
   const { error } = await supabaseClient
     .from("mensagens")
     .insert([
@@ -1582,6 +1590,7 @@ async function uploadArquivo(file) {
         conversa_id: conversation.id,
         conteudo: text,
 	reply_to_message_id: replyingToMessage?.id || null,
+
         canal: conversation.channel || "WhatsApp",
         direcao: "out",
         status_entrega: "enviada",
