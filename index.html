@@ -602,6 +602,60 @@
   font-size: 20px;
 }
 
+.chat-image {
+  max-width: 260px;
+  max-height: 260px;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  display: block;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: #182033;
+  max-width: 260px;
+}
+
+.file-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #e7fff4;
+  color: #0e9f6e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.file-info {
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-label {
+  font-size: 11px;
+  color: #7b8494;
+  margin-top: 2px;
+}
   </style>
 </head>
 
@@ -942,10 +996,26 @@ function renderChat() {
     row.className =
       `message-row ${message.direction}`;
 
-   const mediaHtml = message.media_url
+ const mediaHtml = message.media_url
   ? message.media_mime?.startsWith("image/")
-    ? `<img src="${message.media_url}" style="max-width:220px;border-radius:12px;margin-bottom:8px;display:block;" />`
-    : `<a href="${message.media_url}" target="_blank" style="display:block;margin-bottom:8px;font-weight:700;color:#0e9f6e;">📎 ${message.media_nome || "Arquivo"}</a>`
+    ? `
+      <a href="${message.media_url}" target="_blank">
+        <img
+          src="${message.media_url}"
+          class="chat-image"
+          alt="${message.media_nome || "Imagem"}"
+        />
+      </a>
+    `
+    : `
+      <a href="${message.media_url}" target="_blank" class="file-card">
+        <div class="file-icon">📎</div>
+        <div class="file-info">
+          <div class="file-name">${message.media_nome || "Arquivo"}</div>
+          <div class="file-label">Clique para abrir</div>
+        </div>
+      </a>
+    `
   : "";
 
 row.innerHTML = `
