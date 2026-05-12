@@ -244,9 +244,35 @@
 }
 
     .conversation-card.active {
-      background: #e7fff4;
-      border-color: #bdf3d8;
-    }
+  background: linear-gradient(
+    135deg,
+    #eefaf4 0%,
+    #f8fffb 100%
+  );
+
+  border-color: #b7ebd0;
+
+  box-shadow:
+    0 6px 18px rgba(16, 24, 40, 0.06);
+
+  position: relative;
+}
+
+.conversation-card.active::before {
+  content: "";
+
+  position: absolute;
+
+  left: -1px;
+  top: 10px;
+  bottom: 10px;
+
+  width: 4px;
+
+  border-radius: 999px;
+
+  background: #16c784;
+}
 
    .conversation-card:hover {
   background: #ffffff;
