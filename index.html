@@ -1528,6 +1528,17 @@ chatArea.addEventListener("drop", event => {
 
   setDroppedFile(file);
 });
+
+["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+
+  document.addEventListener(eventName, event => {
+
+    event.preventDefault();
+    event.stopPropagation();
+
+  });
+
+});
     acceptBtn.addEventListener("click", assumirConversa);
     finishBtn.addEventListener("click", finalizarAtendimento);
 searchInput.addEventListener("input", () => {
