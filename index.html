@@ -827,15 +827,13 @@ function renderConversations() {
     const card = document.createElement("div");
     card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
 
-    card.onclick = () => {
+    card.onclick = async () => {
 
   unreadMap[conversation.id] = 0;
 
-  conversation.unread = 0;
-
   selectedConversationId = conversation.id;
 
-  render();
+  await carregarClientes();
 
 };
 
