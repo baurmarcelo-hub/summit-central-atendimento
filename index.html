@@ -1524,6 +1524,24 @@ if (!conversation) {
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
 
+acceptBtn.classList.add("hidden");
+finishBtn.classList.add("hidden");
+
+if (conversation.status === "aguardando") {
+  acceptBtn.classList.remove("hidden");
+}
+
+if (conversation.status === "em_atendimento") {
+  finishBtn.classList.remove("hidden");
+}
+
+if (conversation.status === "finalizado") {
+  finishBtn.classList.remove("hidden");
+  finishBtn.textContent = "Reabrir Conversa";
+} else {
+  finishBtn.textContent = "Finalizar Atendimento";
+}
+
   messagesEl.innerHTML = `
     <div class="date-divider">
       <span>Hoje</span>
