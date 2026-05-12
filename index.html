@@ -819,6 +819,69 @@
   border-radius: 4px;
 }
 
+.global-search-box {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.global-search-box input {
+  width: 100%;
+  border: 1px solid #d9dee8;
+  background: #ffffff;
+  height: 42px;
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 13px;
+  outline: none;
+}
+
+.global-search-results {
+  display: none;
+  background: #ffffff;
+  border: 1px solid #e7eaf0;
+  border-radius: 14px;
+  margin-top: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  z-index: 10;
+}
+
+.global-search-result {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+}
+
+.global-search-result:last-child {
+  border-bottom: 0;
+}
+
+.global-search-result:hover {
+  background: #f8fafc;
+}
+
+.global-search-client {
+  font-size: 13px;
+  font-weight: 800;
+  color: #101828;
+  margin-bottom: 3px;
+}
+
+.global-search-text {
+  font-size: 12px;
+  color: #667085;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.global-search-time {
+  font-size: 11px;
+  color: #98a2b3;
+  margin-top: 3px;
+}
+
   </style>
 </head>
 
@@ -883,6 +946,17 @@
       <div class="search-box">
   <input
     id="searchInput"
+
+<div class="global-search-box">
+  <input
+    id="globalMessageSearchInput"
+    type="text"
+    placeholder="Buscar mensagens em todas as conversas..."
+  />
+
+  <div id="globalSearchResults" class="global-search-results"></div>
+</div>
+
     type="text"
     placeholder="Buscar por cliente, telefone ou e-mail..."
   />
@@ -1122,6 +1196,8 @@ let typingTimeout = null;
     const imageModalImg = document.getElementById("imageModalImg");
     const imageModalClose = document.getElementById("imageModalClose");
     const searchInput = document.getElementById("searchInput");
+    const globalMessageSearchInput = document.getElementById("globalMessageSearchInput");
+    const globalSearchResults = document.getElementById("globalSearchResults");
     const messageSearchInput = document.getElementById("messageSearchInput");
     const replyingBox = document.getElementById("replyingBox");
     const replyingAuthor = document.getElementById("replyingAuthor");
@@ -1131,6 +1207,87 @@ let typingTimeout = null;
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
     }
+
+async function buscarMensagensGlobais() {
+  const termo = globalMessageSearchInput.value.trim();
+
+  if (termo.length < 2) {
+    globalSearchResults.style.display = "none";
+    globalSearchResults.innerHTML = "";
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("mensagens")
+    .select(`
+      id,
+      conversa_id,
+      conteudo,
+      media_nome,
+      created_at,
+      conversas (
+        id,
+        status,
+        canal,
+        clientes (
+          nome,
+          telefone,
+          email
+        )
+      )
+    `)
+    .or(`conteudo.ilike.%${termo}%,media_nome.ilike.%${termo}%`)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error("Erro na busca global:", error);
+    globalSearchResults.style.display = "none";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    globalSearchResults.style.display = "block";
+    globalSearchResults.innerHTML = `
+      <div class="global-search-result">
+        <div class="global-search-text">Nenhuma mensagem encontrada</div>
+      </div>
+    `;
+    return;
+  }
+
+  globalSearchResults.style.display = "block";
+
+  globalSearchResults.innerHTML = data.map(item => {
+    const cliente = item.conversas?.clientes;
+
+    const nome = cliente?.nome || "Cliente sem nome";
+    const texto = item.conteudo || item.media_nome || "Arquivo";
+    const hora = new Date(item.created_at).toLocaleString("pt-BR");
+
+    return `
+      <div
+        class="global-search-result"
+        data-conversa-id="${item.conversa_id}"
+      >
+        <div class="global-search-client">${nome}</div>
+        <div class="global-search-text">${texto}</div>
+        <div class="global-search-time">${hora}</div>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".global-search-result[data-conversa-id]").forEach(result => {
+    result.addEventListener("click", async () => {
+      selectedConversationId = Number(result.dataset.conversaId);
+
+      globalSearchResults.style.display = "none";
+      globalMessageSearchInput.value = "";
+
+      await carregarClientes();
+    });
+  });
+}
 
 function renderConversations() {
   conversationList.innerHTML = "";
@@ -1798,6 +1955,8 @@ chatArea.addEventListener("drop", event => {
 searchInput.addEventListener("input", () => {
   renderConversations();
 });
+
+globalMessageSearchInput.addEventListener("input", buscarMensagensGlobais);
 
 messageSearchInput.addEventListener("input", () => {
   renderChat();
