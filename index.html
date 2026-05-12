@@ -920,6 +920,10 @@
   line-height: 1.5;
 }
 
+.hidden {
+  display: none !important;
+}
+
   </style>
 </head>
 
@@ -1201,6 +1205,9 @@ let typingTimeout = null;
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
     const messagesEl = document.getElementById("messages");
+    const chatTabs = document.querySelector(".chat-tabs");
+    const composer = document.querySelector(".composer");
+    const messageSearchBox = document.querySelector(".message-search-box");
     const headerName = document.getElementById("headerName");
     const headerAvatar = document.getElementById("headerAvatar");
     const detailName = document.getElementById("detailName");
@@ -1443,9 +1450,12 @@ function renderChat() {
   const conversation = getSelectedConversation();
 
 if (!conversation) {
-  headerName.textContent = "Nenhuma conversa selecionada";
+
+  headerName.textContent = "Nenhuma conversa";
   headerAvatar.textContent = "💬";
-  headerSubtitle.textContent = "Selecione uma conversa para iniciar o atendimento";
+
+  headerSubtitle.textContent =
+    "Selecione uma conversa para iniciar";
 
   detailName.textContent = "Nenhuma conversa";
   detailPhone.textContent = "-";
@@ -1456,21 +1466,40 @@ if (!conversation) {
   detailStatus.textContent = "-";
   detailResponsible.textContent = "-";
 
+  acceptBtn.classList.add("hidden");
+  chatTabs.classList.add("hidden");
+  composer.classList.add("hidden");
+  messageSearchBox.classList.add("hidden");
+
   messagesEl.innerHTML = `
     <div class="empty-state">
       <div class="empty-state-box">
-        <div class="empty-state-icon">💬</div>
-        <h3>Nenhuma conversa selecionada</h3>
+
+        <div class="empty-state-icon">
+          💬
+        </div>
+
+        <h3>
+          Nenhuma conversa selecionada
+        </h3>
+
         <p>
-          Escolha uma conversa na lista ao lado para visualizar o histórico,
-          responder mensagens e consultar os dados do cliente.
+          Escolha uma conversa na lista ao lado
+          para visualizar mensagens, responder
+          clientes e acompanhar o atendimento.
         </p>
+
       </div>
     </div>
   `;
 
   return;
 }
+
+  acceptBtn.classList.remove("hidden");
+  chatTabs.classList.remove("hidden");
+  composer.classList.remove("hidden");
+  messageSearchBox.classList.remove("hidden");
 
   headerName.textContent = conversation.name;
   headerAvatar.textContent = conversation.initials;
