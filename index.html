@@ -654,8 +654,12 @@
       </div>
 
       <div class="search-box">
-        <input type="text" placeholder="Buscar conversas..." />
-      </div>
+  <input
+    id="searchInput"
+    type="text"
+    placeholder="Buscar por cliente, telefone ou e-mail..."
+  />
+</div>
 
       <div class="conversation-list" id="conversationList"></div>
     </section>
@@ -751,8 +755,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_URL = "SUA CHAVE AQUI";
+    const SUPABASE_ANON_KEY = "SUA CHAVE AQUI";
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -793,42 +797,64 @@
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
     const countFinalizado = document.getElementById("countFinalizado");
+    const searchInput = document.getElementById("searchInput");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
     }
 
-    function renderConversations() {
-      conversationList.innerHTML = "";
+function renderConversations() {
+  conversationList.innerHTML = "";
 
-      const filteredConversations = conversations.filter(conversation => {
-  return conversation.status === currentFilter;
-});
+  const searchTerm = searchInput.value.trim().toLowerCase();
 
-filteredConversations.forEach(conversation => {
-        const card = document.createElement("div");
-        card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
+  const filteredConversations = conversations.filter(conversation => {
+    const matchStatus = conversation.status === currentFilter;
 
-        card.onclick = () => {
-          selectedConversationId = conversation.id;
-          render();
-        };
+    const matchSearch =
+      !searchTerm ||
+      conversation.name?.toLowerCase().includes(searchTerm) ||
+      conversation.phone?.toLowerCase().includes(searchTerm) ||
+      conversation.email?.toLowerCase().includes(searchTerm) ||
+      conversation.channel?.toLowerCase().includes(searchTerm);
 
-        card.innerHTML = `
-          <div class="client-avatar">${conversation.initials}</div>
-          <div style="min-width:0;">
-            <div class="conversation-name">${conversation.name}</div>
-            <div class="last-message">${conversation.lastMessage}</div>
+    return matchStatus && matchSearch;
+  });
+
+  filteredConversations.forEach(conversation => {
+    const card = document.createElement("div");
+    card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
+
+    card.onclick = () => {
+      selectedConversationId = conversation.id;
+      render();
+    };
+
+    card.innerHTML = `
+      <div class="client-avatar">${conversation.initials}</div>
+      <div style="min-width:0;">
+
+        <div class="conversation-name-row">
+          <div class="conversation-name">${conversation.name}</div>
+
+          <div class="status-badge status-${conversation.status}">
+            ${conversation.status.replace("_", " ")}
           </div>
-          <div class="meta">
-            <div>${conversation.time}</div>
-            ${conversation.unread ? `<div class="badge">${conversation.unread}</div>` : ""}
-          </div>
-        `;
+        </div>
 
-        conversationList.appendChild(card);
-      });
-    }
+        <div class="last-message">${conversation.lastMessage}</div>
+
+      </div>
+
+      <div class="meta">
+        <div>${conversation.time}</div>
+        ${conversation.unread ? `<div class="badge">${conversation.unread}</div>` : ""}
+      </div>
+    `;
+
+    conversationList.appendChild(card);
+  });
+}
 
 function renderChat() {
 
@@ -1190,6 +1216,9 @@ async function finalizarAtendimento() {
     sendBtn.addEventListener("click", sendMessage);
     acceptBtn.addEventListener("click", assumirConversa);
     finishBtn.addEventListener("click", finalizarAtendimento);
+searchInput.addEventListener("input", () => {
+  renderConversations();
+});
 
 tabs.forEach(tab => {
   tab.addEventListener("click", () => {
