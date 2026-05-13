@@ -2960,10 +2960,11 @@ async function iniciarGravacaoAudio() {
 
     audioChunks = [];
 
-    const mimeType =
-  MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-    ? "audio/webm;codecs=opus"
-    : "audio/webm";
+    let mimeType = "audio/ogg;codecs=opus";
+
+if (!MediaRecorder.isTypeSupported(mimeType)) {
+  mimeType = "audio/webm";
+}
 
 mediaRecorder = new MediaRecorder(stream, {
   mimeType: mimeType,
@@ -2998,7 +2999,7 @@ mediaRecorder.onstop = async () => {
 
       const audioFile = new File(
         [audioBlob],
-        `audio-${Date.now()}.webm`,
+        `audio-${Date.now()}.ogg`
         { type: mimeType }
       );
 
