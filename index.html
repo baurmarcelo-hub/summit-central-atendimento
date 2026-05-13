@@ -2017,6 +2017,20 @@ if (conversation.status === "finalizado") {
   messagePagination[conversation.id];
 
 messagesEl.innerHTML = `
+  <div
+    id="loadingOldMessages"
+    style="
+      display:none;
+      text-align:center;
+      padding:10px;
+      font-size:12px;
+      color:#667085;
+      font-weight:600;
+    "
+  >
+    Carregando mensagens antigas...
+  </div>
+
   <div class="date-divider">
     <span>Hoje</span>
   </div>
@@ -2252,6 +2266,12 @@ async function carregarMensagensAntigas(conversaId) {
   }
 
   pagination.loading = true;
+const loadingOldMessages =
+  document.getElementById("loadingOldMessages");
+
+if (loadingOldMessages) {
+  loadingOldMessages.style.display = "block";
+}
 
   const { data, error } = await supabaseClient
     .from("mensagens")
@@ -2261,6 +2281,9 @@ async function carregarMensagensAntigas(conversaId) {
     .range(pagination.offset, pagination.offset + 29);
 
   pagination.loading = false;
+if (loadingOldMessages) {
+  loadingOldMessages.style.display = "none";
+}
 
   if (error) {
     console.error("Erro ao carregar mensagens antigas:", error);
