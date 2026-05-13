@@ -186,9 +186,43 @@
 
    .tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.owner-filter {
+  display: flex;
   gap: 8px;
   margin-bottom: 14px;
+  padding: 4px;
+  background: #f4f6f8;
+  border: 1px solid #e6ebf2;
+  border-radius: 14px;
+}
+
+.owner-filter-btn {
+  flex: 1;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.owner-filter-btn:hover {
+  background: #ffffff;
+  color: #2563eb;
+}
+
+.owner-filter-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 3px 10px rgba(16, 24, 40, 0.06);
 }
 
     .tab {
@@ -1421,8 +1455,14 @@ line-height: 1.15;
   <button class="tab" data-filter="finalizado">
     Resolvidos <span id="countFinalizado">0</span>
   </button>
+</div>
 
-  <button class="tab" id="minhasTab" data-filter="minhas">
+<div class="owner-filter">
+  <button class="owner-filter-btn active" data-owner-filter="todas">
+    Todas
+  </button>
+
+  <button class="owner-filter-btn" data-owner-filter="minhas">
     Minhas <span id="countMinhas">0</span>
   </button>
 </div>
@@ -1672,7 +1712,7 @@ let messagesByConversation = {};
 let loadingMessagesConversationId = null;
 let messagePagination = {};
 let usuarioLogadoNome = "";
-let filtroMinhasAtivo = false;
+let ownerFilter = "todas";
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -1713,7 +1753,7 @@ let filtroMinhasAtivo = false;
     const countAguardando = document.getElementById("countAguardando");
     const countFinalizado = document.getElementById("countFinalizado");
     const countMinhas = document.getElementById("countMinhas");
-    const minhasTab = document.getElementById("minhasTab");
+    const ownerFilterBtns = document.querySelectorAll(".owner-filter-btn");
     const imageModal = document.getElementById("imageModal");
     const imageModalImg = document.getElementById("imageModalImg");
     const imageModalClose = document.getElementById("imageModalClose");
@@ -1901,10 +1941,12 @@ function renderConversations() {
   const searchTerm = searchInput.value.trim().toLowerCase();
 
   const filteredConversations = conversations.filter(conversation => {
-    const matchStatus =
-  currentFilter === "minhas"
-    ? conversation.atendente === usuarioLogadoNome
-    : conversation.status === currentFilter;
+    const matchStatus = conversation.status === currentFilter;
+
+const matchOwner =
+  ownerFilter === "todas"
+    ? true
+    : conversation.atendente === usuarioLogadoNome;
 
     const matchSearch =
       !searchTerm ||
@@ -1913,7 +1955,7 @@ function renderConversations() {
       conversation.email?.toLowerCase().includes(searchTerm) ||
       conversation.channel?.toLowerCase().includes(searchTerm);
 
-    return matchStatus && matchSearch;
+    return matchStatus && matchOwner && matchSearch;
   });
 
   filteredConversations.forEach(conversation => {
@@ -2905,17 +2947,55 @@ tabs.forEach(tab => {
     currentFilter = tab.dataset.filter;
 
     const primeiraConversa = conversations.find(c => {
-  if (currentFilter === "minhas") {
-    return c.atendente === usuarioLogadoNome;
-  }
+  const matchStatus = c.status === currentFilter;
 
-  return c.status === currentFilter;
+  const matchOwner =
+    ownerFilter === "todas"
+      ? true
+      : c.atendente === usuarioLogadoNome;
+
+  return matchStatus && matchOwner;
 });
     selectedConversationId = primeiraConversa?.id || null;
 
 forceScrollToBottom = true;
 
 render();
+  });
+});
+
+ownerFilterBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    ownerFilterBtns.forEach(b =>
+      b.classList.remove("active")
+    );
+
+    btn.classList.add("active");
+
+    ownerFilter = btn.dataset.ownerFilter;
+
+    const primeiraConversa = conversations.find(c => {
+
+      const matchStatus =
+        c.status === currentFilter;
+
+      const matchOwner =
+        ownerFilter === "todas"
+          ? true
+          : c.atendente === usuarioLogadoNome;
+
+      return matchStatus && matchOwner;
+
+    });
+
+    selectedConversationId =
+      primeiraConversa?.id || null;
+
+    forceScrollToBottom = true;
+
+    render();
+
   });
 });
 
