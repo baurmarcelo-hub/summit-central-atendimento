@@ -186,7 +186,7 @@
 
    .tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin-bottom: 14px;
 }
@@ -1410,18 +1410,22 @@ line-height: 1.15;
 
     <section class="conversation-panel">
       <div class="tabs">
-        <button class="tab" data-filter="em_atendimento">
-  Em atendimento <span id="countAtendimento">0</span>
-</button>
+  <button class="tab" data-filter="em_atendimento">
+    Em atendimento <span id="countAtendimento">0</span>
+  </button>
 
-<button class="tab active" data-filter="aguardando">
-  Aguardando <span id="countAguardando">0</span>
-</button>
+  <button class="tab active" data-filter="aguardando">
+    Aguardando <span id="countAguardando">0</span>
+  </button>
 
-<button class="tab" data-filter="finalizado">
-  Resolvidos <span id="countFinalizado">0</span>
-</button>
-      </div>
+  <button class="tab" data-filter="finalizado">
+    Resolvidos <span id="countFinalizado">0</span>
+  </button>
+
+  <button class="tab" id="minhasTab" data-filter="minhas">
+    Minhas <span id="countMinhas">0</span>
+  </button>
+</div>
 
       <div class="search-box">
   <input
@@ -1667,6 +1671,8 @@ let forceScrollToBottom = false;
 let messagesByConversation = {};
 let loadingMessagesConversationId = null;
 let messagePagination = {};
+let usuarioLogadoNome = "";
+let filtroMinhasAtivo = false;
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -1706,6 +1712,8 @@ let messagePagination = {};
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
     const countFinalizado = document.getElementById("countFinalizado");
+    const countMinhas = document.getElementById("countMinhas");
+    const minhasTab = document.getElementById("minhasTab");
     const imageModal = document.getElementById("imageModal");
     const imageModalImg = document.getElementById("imageModalImg");
     const imageModalClose = document.getElementById("imageModalClose");
@@ -1893,7 +1901,10 @@ function renderConversations() {
   const searchTerm = searchInput.value.trim().toLowerCase();
 
   const filteredConversations = conversations.filter(conversation => {
-    const matchStatus = conversation.status === currentFilter;
+    const matchStatus =
+  currentFilter === "minhas"
+    ? conversation.atendente === usuarioLogadoNome
+    : conversation.status === currentFilter;
 
     const matchSearch =
       !searchTerm ||
@@ -2213,12 +2224,19 @@ if (forceScrollToBottom || distanceFromBottom < 200) {
 }
 function atualizarContadores() {
   const totalAguardando = conversations.filter(c => c.status === "aguardando").length;
+
   const totalAtendimento = conversations.filter(c => c.status === "em_atendimento").length;
+
   const totalFinalizado = conversations.filter(c => c.status === "finalizado").length;
+
+  const totalMinhas = conversations.filter(
+    c => c.atendente === usuarioLogadoNome
+  ).length;
 
   countAguardando.textContent = totalAguardando;
   countAtendimento.textContent = totalAtendimento;
   countFinalizado.textContent = totalFinalizado;
+  countMinhas.textContent = totalMinhas;
 }
     function render() {
   atualizarContadores();
@@ -2527,20 +2545,29 @@ render();
   const responsavel =
     nomeCompleto || perfilData?.email || data.user.email;
 
-  const { error } = await supabaseClient
-    .from("conversas")
-    .update({
-  status: "em_atendimento",
-  atendente: responsavel,
-  updated_at: new Date().toISOString()
-})
-    .eq("id", conversation.id);
+  const { data: conversaAtualizada, error } = await supabaseClient
+  .from("conversas")
+  .update({
+    status: "em_atendimento",
+    atendente: responsavel,
+    updated_at: new Date().toISOString()
+  })
+  .eq("id", conversation.id)
+  .eq("status", "aguardando")
+  .select()
+  .single();
 
-  if (error) {
-    console.error("Erro ao assumir conversa:", error);
-    alert("Erro ao assumir conversa. Verifique a policy UPDATE da tabela conversas.");
-    return;
-  }
+  if (error || !conversaAtualizada) {
+  console.error("Erro ao assumir conversa:", error);
+
+  alert(
+    "Esta conversa já foi assumida por outro atendente ou não está mais aguardando."
+  );
+
+  await carregarClientes();
+
+  return;
+}
 
   alert("Conversa assumida com sucesso!");
 
@@ -2729,7 +2756,10 @@ async function carregarPerfilUsuario(user) {
 
   const nomeCompleto = `${data.nome || ""} ${data.sobrenome || ""}`.trim();
 
-  userName.textContent = nomeCompleto || data.email || user.email;
+  usuarioLogadoNome = nomeCompleto || data.email || user.email;
+  
+  userName.textContent = usuarioLogadoNome;;
+
 }
 
     async function fazerLogin() {
@@ -2874,7 +2904,13 @@ tabs.forEach(tab => {
 
     currentFilter = tab.dataset.filter;
 
-    const primeiraConversa = conversations.find(c => c.status === currentFilter);
+    const primeiraConversa = conversations.find(c => {
+  if (currentFilter === "minhas") {
+    return c.atendente === usuarioLogadoNome;
+  }
+
+  return c.status === currentFilter;
+});
     selectedConversationId = primeiraConversa?.id || null;
 
 forceScrollToBottom = true;
