@@ -2827,7 +2827,13 @@ conversa.messages = [novaMsgFormatada];
         return ultimaB - ultimaA;
       });
 
-      render();
+      atualizarContadores();
+renderConversations();
+
+if (novaMensagem.conversa_id === selectedConversationId) {
+  forceScrollToBottom = true;
+  renderChat();
+}
 
     }
   )
