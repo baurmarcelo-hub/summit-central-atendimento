@@ -1817,9 +1817,10 @@ function criarCardConversa(conversation) {
 
   card.onclick = async () => {
 
-    unreadMap[conversation.id] = 0;
+  unreadMap[conversation.id] = 0;
+  conversation.unread = 0;
 
-    selectedConversationId = conversation.id;
+  selectedConversationId = conversation.id;
 
     forceScrollToBottom = true;
 
@@ -1828,6 +1829,8 @@ function criarCardConversa(conversation) {
     render();
 
   };
+
+const unread = unreadMap[conversation.id] || conversation.unread || 0;
 
   card.innerHTML = `
     <div class="client-avatar">${conversation.initials}</div>
@@ -1857,10 +1860,10 @@ function criarCardConversa(conversation) {
       <div>${conversation.time}</div>
 
       ${
-        conversation.unread
-          ? `<div class="badge">${conversation.unread}</div>`
-          : ""
-      }
+  unread > 0
+    ? `<div class="badge">${unread}</div>`
+    : ""
+}
 
     </div>
   `;
