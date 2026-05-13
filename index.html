@@ -2747,55 +2747,49 @@ input.addEventListener("input", mostrarDigitando);
     },
     async (payload) => {
 
-      const novaMensagem = payload.new;
+const novaMensagem = payload.new;
 
-      const conversa = conversations.find(
+const conversa = conversations.find(
   c => c.id === novaMensagem.conversa_id
 );
 
 if (!conversa) return;
 
-if (!messagesByConversation[novaMensagem.conversa_id]) {
-  messagesByConversation[novaMensagem.conversa_id] = [];
-}
+const novaMsgFormatada = {
+  id: novaMensagem.id,
 
-const mensagemJaExiste = messagesByConversation[novaMensagem.conversa_id].find(
-  m => m.id === novaMensagem.id
+  direction: novaMensagem.direcao,
+  text: novaMensagem.conteudo,
+
+  tipo: novaMensagem.tipo || "texto",
+  media_url: novaMensagem.media_url,
+  media_nome: novaMensagem.media_nome,
+  media_mime: novaMensagem.media_mime,
+
+  status_entrega:
+    novaMensagem.status_entrega || "enviada",
+
+  reply_to_message_id:
+    novaMensagem.reply_to_message_id,
+
+  created_at: novaMensagem.created_at,
+
+  time: new Date(
+    novaMensagem.created_at
+  ).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  })
+};
+
+const adicionouMensagem = adicionarMensagemNaConversa(
+  novaMensagem.conversa_id,
+  novaMsgFormatada
 );
 
-if (mensagemJaExiste) return;
+if (!adicionouMensagem) return;
 
-      const novaMsgFormatada = {
-        id: novaMensagem.id,
-
-        direction: novaMensagem.direcao,
-        text: novaMensagem.conteudo,
-
-        tipo: novaMensagem.tipo || "texto",
-        media_url: novaMensagem.media_url,
-        media_nome: novaMensagem.media_nome,
-        media_mime: novaMensagem.media_mime,
-
-        status_entrega:
-          novaMensagem.status_entrega || "enviada",
-
-        reply_to_message_id:
-          novaMensagem.reply_to_message_id,
-
-        created_at: novaMensagem.created_at,
-
-        time: new Date(
-          novaMensagem.created_at
-        ).toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })
-      };
-
-      messagesByConversation[novaMensagem.conversa_id].push(novaMsgFormatada);
-
-      conversa.messages = [novaMsgFormatada];
-
+conversa.messages = [novaMsgFormatada];
       conversa.lastMessage =
         novaMsgFormatada.text ||
         novaMsgFormatada.media_nome ||
