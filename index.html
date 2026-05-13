@@ -2161,6 +2161,23 @@ function atualizarContadores() {
   renderChat();
 }
 
+function adicionarMensagemNaConversa(conversaId, mensagem) {
+
+  if (!messagesByConversation[conversaId]) {
+    messagesByConversation[conversaId] = [];
+  }
+
+  const mensagemJaExiste =
+    messagesByConversation[conversaId]
+      .find(m => m.id === mensagem.id);
+
+  if (mensagemJaExiste) return false;
+
+  messagesByConversation[conversaId].push(mensagem);
+
+  return true;
+}
+
     async function carregarMensagens(conversaId) {
       const { data, error } = await supabaseClient
         .from("mensagens")
