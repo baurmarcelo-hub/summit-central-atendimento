@@ -2859,9 +2859,16 @@ messagesEl.addEventListener("scroll", async () => {
   const previousHeight =
     messagesEl.scrollHeight;
 
-  await carregarMensagensAntigas(conversation.id);
+  const loadingOldMessages =
+  document.getElementById("loadingOldMessages");
 
-  renderChat();
+if (loadingOldMessages) {
+  loadingOldMessages.style.display = "block";
+}
+
+await carregarMensagensAntigas(conversation.id);
+
+renderChat();
 
   requestAnimationFrame(() => {
 
