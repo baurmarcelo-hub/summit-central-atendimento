@@ -2180,15 +2180,18 @@ function adicionarMensagemNaConversa(conversaId, mensagem) {
 
     async function carregarMensagens(conversaId) {
       const { data, error } = await supabaseClient
-        .from("mensagens")
-        .select("*")
-        .eq("conversa_id", conversaId)
-        .order("created_at", { ascending: true });
+  	.from("mensagens")
+  	.select("*")
+  	.eq("conversa_id", conversaId)
+  	.order("created_at", { ascending: false })
+  	.limit(30);
 
       if (error) {
         console.error("Erro ao carregar mensagens:", error);
         return [];
       }
+
+	data.reverse();
 
   	return data.map(msg => ({
   id: msg.id,
