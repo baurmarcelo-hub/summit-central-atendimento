@@ -870,6 +870,43 @@ line-height: 1.15;
   font-size: 20px;
 }
 
+.audio-btn {
+  width: 48px;
+  height: 52px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.18s ease;
+}
+
+.audio-btn:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.audio-btn.recording {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  animation: pulseAudio 1s infinite;
+}
+
+@keyframes pulseAudio {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
 .chat-image {
   max-width: 260px;
   max-height: 260px;
@@ -1380,22 +1417,6 @@ line-height: 1.15;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
 }
 
-<link
-  rel="preconnect"
-  href="https://fonts.googleapis.com"
-/>
-
-<link
-  rel="preconnect"
-  href="https://fonts.gstatic.com"
-  crossorigin
-/>
-
-<link
-  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-  rel="stylesheet"
-/>
-
   </style>
 </head>
 
@@ -1600,17 +1621,26 @@ line-height: 1.15;
   <input id="fileInput" type="file" style="display:none;" />
 
   <button
-    type="button"
-    class="attach-btn"
-    id="attachBtn"
-    title="Anexar arquivo"
-  >
-    📎
-  </button>
+  type="button"
+  class="attach-btn"
+  id="attachBtn"
+  title="Anexar arquivo"
+>
+  📎
+</button>
 
-  <input id="messageInput" type="text" placeholder="Digite sua mensagem..." />
+<button
+  type="button"
+  class="audio-btn"
+  id="audioBtn"
+  title="Gravar áudio"
+>
+  🎙️
+</button>
 
-  <button class="send-btn" id="sendBtn">➤</button>
+<input id="messageInput" type="text" placeholder="Digite sua mensagem..." />
+
+<button class="send-btn" id="sendBtn">➤</button>
 </footer>
     </main>
 
@@ -1691,8 +1721,8 @@ line-height: 1.15;
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_URL = "SUA CHAVE AQUI";
+    const SUPABASE_ANON_KEY = "SUA CHAVE AQUI";
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -1713,6 +1743,9 @@ let loadingMessagesConversationId = null;
 let messagePagination = {};
 let usuarioLogadoNome = "";
 let ownerFilter = "todas";
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecordingAudio = false;
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -1734,6 +1767,7 @@ let ownerFilter = "todas";
     const input = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
     const attachBtn = document.getElementById("attachBtn");
+    const audioBtn = document.getElementById("audioBtn");
     const fileInput = document.getElementById("fileInput");
     const chatArea = document.querySelector(".chat-area");
     const dropHint = document.getElementById("dropHint");
@@ -1839,16 +1873,22 @@ async function buscarMensagensGlobais() {
     `;
   }).join("");
 
-  document.querySelectorAll(".global-search-result[data-conversa-id]").forEach(result => {
-  result.addEventListener("click", () => {
-    selectedConversationId = Number(result.dataset.conversaId);
+  document
+  .querySelectorAll(".global-search-result[data-conversa-id]")
+  .forEach(result => {
+    result.addEventListener("click", async () => {
+      selectedConversationId = Number(result.dataset.conversaId);
 
-    globalSearchResults.style.display = "none";
-    globalMessageSearchInput.value = "";
+      globalSearchResults.style.display = "none";
+      globalMessageSearchInput.value = "";
 
-    render();
+      forceScrollToBottom = true;
+
+      await carregarMensagensDaConversa(selectedConversationId);
+
+      render();
+    });
   });
-});
 }
 
 function criarCardConversa(conversation) {
@@ -2718,9 +2758,15 @@ async function uploadArquivo(file) {
   const conversation = getSelectedConversation();
 
   if (!conversation) {
-    alert("Nenhuma conversa selecionada.");
-    return;
-  }
+
+  alert("Nenhuma conversa selecionada.");
+
+  isSendingMessage = false;
+  sendBtn.disabled = false;
+  sendBtn.style.opacity = "1";
+
+  return;
+}
 
   let arquivo = null;
 
@@ -2779,6 +2825,22 @@ sendBtn.disabled = false;
 sendBtn.style.opacity = "1";
 
 atualizarEstadoBotaoEnviar();
+
+}
+
+function atualizarEstadoBotaoEnviar() {
+
+  const temTexto =
+    input.value.trim().length > 0;
+
+  const temArquivo =
+    fileInput.files.length > 0;
+
+  sendBtn.disabled =
+    !temTexto && !temArquivo;
+
+  sendBtn.style.opacity =
+    sendBtn.disabled ? "0.5" : "1";
 
 }
 
@@ -2866,6 +2928,78 @@ async function carregarPerfilUsuario(user) {
       }
     }
 
+async function iniciarGravacaoAudio() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
+
+    audioChunks = [];
+
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = event => {
+      if (event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, {
+        type: "audio/webm"
+      });
+
+      const audioFile = new File(
+        [audioBlob],
+        `audio-${Date.now()}.webm`,
+        { type: "audio/webm" }
+      );
+
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(audioFile);
+
+      fileInput.files = dataTransfer.files;
+
+      input.value = "Áudio gravado";
+
+      atualizarEstadoBotaoEnviar();
+
+      stream.getTracks().forEach(track => track.stop());
+    };
+
+    mediaRecorder.start();
+
+    isRecordingAudio = true;
+
+    audioBtn.classList.add("recording");
+    audioBtn.textContent = "⏹️";
+    audioBtn.title = "Parar gravação";
+  } catch (error) {
+    console.error("Erro ao iniciar gravação:", error);
+    alert("Não foi possível acessar o microfone.");
+  }
+}
+
+function pararGravacaoAudio() {
+  if (!mediaRecorder) return;
+
+  mediaRecorder.stop();
+
+  isRecordingAudio = false;
+
+  audioBtn.classList.remove("recording");
+  audioBtn.textContent = "🎙️";
+  audioBtn.title = "Gravar áudio";
+}
+
+function alternarGravacaoAudio() {
+  if (isRecordingAudio) {
+    pararGravacaoAudio();
+  } else {
+    iniciarGravacaoAudio();
+  }
+}
+
 function setDroppedFile(file) {
   if (!file) return;
 
@@ -2879,10 +3013,22 @@ function setDroppedFile(file) {
     loginBtn.addEventListener("click", fazerLogin);
     logoutBtn.addEventListener("click", fazerLogout);
     sendBtn.addEventListener("click", sendMessage);
-cancelReplyBtn.addEventListener("click", cancelarReply);
+    cancelReplyBtn.addEventListener("click", cancelarReply);
+
+input.addEventListener(
+  "input",
+  atualizarEstadoBotaoEnviar
+);
+
+fileInput.addEventListener(
+  "change",
+  atualizarEstadoBotaoEnviar
+);
 attachBtn.addEventListener("click", () => {
   fileInput.click();
 });
+
+audioBtn.addEventListener("click", alternarGravacaoAudio);
 
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
@@ -2916,6 +3062,7 @@ chatArea.addEventListener("drop", event => {
   const file = event.dataTransfer.files[0];
 
   setDroppedFile(file);
+  atualizarEstadoBotaoEnviar();
 });
 
 ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
@@ -3102,7 +3249,7 @@ renderChat();
   .on(
     "postgres_changes",
     {
-      event: "*",
+      event: "INSERT",
       schema: "public",
       table: "mensagens"
     },
