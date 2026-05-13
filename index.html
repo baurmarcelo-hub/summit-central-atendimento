@@ -1417,6 +1417,12 @@ line-height: 1.15;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
 }
 
+.chat-audio {
+  width: 260px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+}
+
   </style>
 </head>
 
@@ -2228,34 +2234,47 @@ mensagensDaConversa
   const mediaHtml = message.media_url
   ? message.media_mime?.startsWith("image/")
     ? `
- <img
-  src="${message.media_url}"
-  class="chat-image"
-  alt="${message.media_nome || "Imagem"}"
-  onclick="openImageModal('${message.media_url}')"
-/>
+      <img
+        src="${message.media_url}"
+        class="chat-image"
+        alt="${message.media_nome || "Imagem"}"
+        onclick="openImageModal('${message.media_url}')"
+      />
+    `
+    : message.media_mime?.startsWith("audio/")
+    ? `
+      <audio
+        controls
+        class="chat-audio"
+        preload="metadata"
+      >
+        <source
+          src="${message.media_url}"
+          type="${message.media_mime}"
+        />
+      </audio>
     `
     : `
-  <a
-    href="${message.media_url}"
-    target="_blank"
-    class="file-card"
-  >
-    <div class="file-icon">
-      📄
-    </div>
+      <a
+        href="${message.media_url}"
+        target="_blank"
+        class="file-card"
+      >
+        <div class="file-icon">
+          📄
+        </div>
 
-    <div class="file-info">
-      <div class="file-name">
-        ${message.media_nome || "Arquivo"}
-      </div>
+        <div class="file-info">
+          <div class="file-name">
+            ${message.media_nome || "Arquivo"}
+          </div>
 
-      <div class="file-label">
-        Abrir arquivo
-      </div>
-    </div>
-  </a>
-`
+          <div class="file-label">
+            Abrir arquivo
+          </div>
+        </div>
+      </a>
+    `
   : "";
 
 row.innerHTML = `
