@@ -2135,8 +2135,13 @@ replyBtn.addEventListener("click", () => {
   messagesEl.clientHeight;
 
 if (forceScrollToBottom || distanceFromBottom < 200) {
-  messagesEl.scrollTop =
-    messagesEl.scrollHeight;
+  requestAnimationFrame(() => {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    setTimeout(() => {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }, 50);
+  });
 
   forceScrollToBottom = false;
 }
