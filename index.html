@@ -2017,62 +2017,13 @@ if (conversation.status === "finalizado") {
   messagePagination[conversation.id];
 
 messagesEl.innerHTML = `
-  ${
-    pagination?.hasMore
-      ? `
-        <div style="text-align:center;margin-bottom:14px;">
-          <button
-            id="loadOlderMessagesBtn"
-            style="
-              border:0;
-              background:#ffffff;
-              border:1px solid #dbe3ef;
-              padding:10px 14px;
-              border-radius:12px;
-              font-size:12px;
-              font-weight:700;
-              cursor:pointer;
-            "
-          >
-            Carregar mensagens antigas
-          </button>
-        </div>
-      `
-      : ""
-  }
-
   <div class="date-divider">
     <span>Hoje</span>
   </div>
 `;
-
-const loadOlderBtn =
-  document.getElementById("loadOlderMessagesBtn");
-
-if (loadOlderBtn) {
-
-  loadOlderBtn.onclick = async () => {
-
-    const previousHeight =
-      messagesEl.scrollHeight;
-
-    await carregarMensagensAntigas(conversation.id);
-
-    renderChat();
-
-    requestAnimationFrame(() => {
-
-      const newHeight =
-        messagesEl.scrollHeight;
-
-      messagesEl.scrollTop =
-        newHeight - previousHeight;
-
-    });
-
-  };
-
-}
+    <span>Hoje</span>
+  </div>
+`;
 
   const messageSearchTerm = messageSearchInput.value.trim().toLowerCase();
 
@@ -2870,6 +2821,39 @@ document.addEventListener("keydown", (event) => {
     });
 
 input.addEventListener("input", mostrarDigitando);
+messagesEl.addEventListener("scroll", async () => {
+
+  const conversation = getSelectedConversation();
+
+  if (!conversation) return;
+
+  const pagination =
+    messagePagination[conversation.id];
+
+  if (!pagination?.hasMore) return;
+
+  if (pagination.loading) return;
+
+  if (messagesEl.scrollTop > 120) return;
+
+  const previousHeight =
+    messagesEl.scrollHeight;
+
+  await carregarMensagensAntigas(conversation.id);
+
+  renderChat();
+
+  requestAnimationFrame(() => {
+
+    const newHeight =
+      messagesEl.scrollHeight;
+
+    messagesEl.scrollTop =
+      newHeight - previousHeight;
+
+  });
+
+});
 
     supabaseClient
   .channel("mensagens-realtime")
