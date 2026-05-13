@@ -1876,14 +1876,11 @@ function atualizarCardConversa(conversation) {
 
   const novoCard = criarCardConversa(conversation);
 
-  if (!cardExistente) {
-
-    conversationList.prepend(novoCard);
-
-    return;
+  if (cardExistente) {
+    cardExistente.remove();
   }
 
-  cardExistente.replaceWith(novoCard);
+  conversationList.prepend(novoCard);
 
 }
 
