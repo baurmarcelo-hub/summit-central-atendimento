@@ -1667,6 +1667,7 @@ let selectedConversationId = null;
 let replyingToMessage = null;
 let typingTimeout = null;
 let isSendingMessage = false;
+let forceScrollToBottom = false;
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -1830,6 +1831,8 @@ function renderConversations() {
   unreadMap[conversation.id] = 0;
 
   selectedConversationId = conversation.id;
+
+  forceScrollToBottom = true;
 
   render();
 
@@ -2119,9 +2122,11 @@ replyBtn.addEventListener("click", () => {
   messagesEl.scrollTop -
   messagesEl.clientHeight;
 
-if (distanceFromBottom < 200) {
+if (forceScrollToBottom || distanceFromBottom < 200) {
   messagesEl.scrollTop =
     messagesEl.scrollHeight;
+
+  forceScrollToBottom = false;
 }
 }
 function atualizarContadores() {
@@ -2586,7 +2591,9 @@ tabs.forEach(tab => {
     const primeiraConversa = conversations.find(c => c.status === currentFilter);
     selectedConversationId = primeiraConversa?.id || null;
 
-    render();
+forceScrollToBottom = true;
+
+render();
   });
 });
 
