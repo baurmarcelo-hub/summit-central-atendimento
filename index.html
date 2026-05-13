@@ -3018,7 +3018,7 @@ mediaRecorder.onstop = async () => {
       stream.getTracks().forEach(track => track.stop());
     };
 
-    mediaRecorder.start();
+    mediaRecorder.start(250);
 
     isRecordingAudio = true;
 
