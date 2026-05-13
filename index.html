@@ -1463,8 +1463,8 @@ line-height: 1.15;
   </button>
 
   <button class="owner-filter-btn" data-owner-filter="minhas">
-    Minhas <span id="countMinhas">0</span>
-  </button>
+  Minhas
+</button>
 </div>
 
       <div class="search-box">
@@ -1752,7 +1752,6 @@ let ownerFilter = "todas";
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
     const countFinalizado = document.getElementById("countFinalizado");
-    const countMinhas = document.getElementById("countMinhas");
     const ownerFilterBtns = document.querySelectorAll(".owner-filter-btn");
     const imageModal = document.getElementById("imageModal");
     const imageModalImg = document.getElementById("imageModalImg");
@@ -1765,6 +1764,7 @@ let ownerFilter = "todas";
     const replyingAuthor = document.getElementById("replyingAuthor");
     const replyingText = document.getElementById("replyingText");
     const cancelReplyBtn = document.getElementById("cancelReplyBtn");
+    const ownerFilterBox = document.querySelector(".owner-filter");
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -1939,6 +1939,11 @@ function renderConversations() {
   conversationList.innerHTML = "";
 
   const searchTerm = searchInput.value.trim().toLowerCase();
+
+if (ownerFilterBox) {
+  ownerFilterBox.style.display =
+    currentFilter === "aguardando" ? "none" : "flex";
+}
 
   const filteredConversations = conversations.filter(conversation => {
     const matchStatus = conversation.status === currentFilter;
@@ -2271,14 +2276,10 @@ function atualizarContadores() {
 
   const totalFinalizado = conversations.filter(c => c.status === "finalizado").length;
 
-  const totalMinhas = conversations.filter(
-    c => c.atendente === usuarioLogadoNome
-  ).length;
-
   countAguardando.textContent = totalAguardando;
   countAtendimento.textContent = totalAtendimento;
   countFinalizado.textContent = totalFinalizado;
-  countMinhas.textContent = totalMinhas;
+  
 }
     function render() {
   atualizarContadores();
@@ -2945,6 +2946,17 @@ tabs.forEach(tab => {
     tab.classList.add("active");
 
     currentFilter = tab.dataset.filter;
+if (currentFilter === "aguardando") {
+  ownerFilter = "todas";
+
+  ownerFilterBtns.forEach(btn => {
+    btn.classList.remove("active");
+
+    if (btn.dataset.ownerFilter === "todas") {
+      btn.classList.add("active");
+    }
+  });
+}
 
     const primeiraConversa = conversations.find(c => {
   const matchStatus = c.status === currentFilter;
