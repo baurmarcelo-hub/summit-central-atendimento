@@ -1712,7 +1712,9 @@ async function buscarMensagensGlobais() {
       globalSearchResults.style.display = "none";
       globalMessageSearchInput.value = "";
 
-      await carregarClientes();
+      setTimeout(() => {
+  carregarClientes();
+}, 150);
     });
   });
 }
@@ -2318,13 +2320,10 @@ async function uploadArquivo(file) {
   }
 
   input.value = "";
-  fileInput.value = "";
-  cancelarReply();
+fileInput.value = "";
+cancelarReply();
 
-  await carregarClientes();
-
-  selectedConversationId = conversation.id;
-  render();
+selectedConversationId = conversation.id;
 }
 
     async function fazerLogin() {
@@ -2349,7 +2348,9 @@ async function uploadArquivo(file) {
       loginScreen.style.display = "none";
       app.style.display = "grid";
 
-      await carregarClientes();
+      setTimeout(() => {
+  carregarClientes();
+}, 150);
     }
 
     async function fazerLogout() {
