@@ -1664,6 +1664,8 @@ let replyingToMessage = null;
 let typingTimeout = null;
 let isSendingMessage = false;
 let forceScrollToBottom = false;
+let messagesByConversation = {};
+let loadingMessagesConversationId = null;
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -1822,13 +1824,15 @@ function renderConversations() {
     const card = document.createElement("div");
     card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
 
-    card.onclick = () => {
+    card.onclick = async () => {
 
   unreadMap[conversation.id] = 0;
 
   selectedConversationId = conversation.id;
 
   forceScrollToBottom = true;
+
+  await carregarMensagensDaConversa(conversation.id);
 
   render();
 
@@ -2014,9 +2018,21 @@ if (conversation.status === "finalizado") {
     </div>
   `;
 
- const messageSearchTerm = messageSearchInput.value.trim().toLowerCase();
+  const messageSearchTerm = messageSearchInput.value.trim().toLowerCase();
 
-conversation.messages
+const mensagensDaConversa =
+  messagesByConversation[conversation.id] || [];
+
+if (loadingMessagesConversationId === conversation.id) {
+  messagesEl.innerHTML = `
+    <div class="date-divider">
+      <span>Carregando mensagens...</span>
+    </div>
+  `;
+  return;
+}
+
+mensagensDaConversa
   .filter(message => {
     if (!messageSearchTerm) return true;
 
@@ -2033,9 +2049,9 @@ conversation.messages
 
   row.dataset.messageId = message.id;
 
-  const replyMessage = conversation.messages.find(
-    m => m.id === message.reply_to_message_id
-  );
+  const replyMessage = mensagensDaConversa.find(
+  m => m.id === message.reply_to_message_id
+);
 
   const replyHtml = replyMessage
     ? `
@@ -2175,6 +2191,22 @@ function atualizarContadores() {
 }));
     }
 
+async function carregarMensagensDaConversa(conversaId) {
+  if (!conversaId) return;
+
+  if (messagesByConversation[conversaId]) {
+    return;
+  }
+
+  loadingMessagesConversationId = conversaId;
+
+  const mensagens = await carregarMensagens(conversaId);
+
+  messagesByConversation[conversaId] = mensagens;
+
+  loadingMessagesConversationId = null;
+}
+
     async function carregarClientes() {
       const { data: conversasData, error: conversasError } = await supabaseClient
         .from("conversas")
@@ -2195,10 +2227,45 @@ function atualizarContadores() {
         return;
       }
 
+async function carregarUltimaMensagem(conversaId) {
+  const { data, error } = await supabaseClient
+    .from("mensagens")
+    .select("*")
+    .eq("conversa_id", conversaId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error("Erro ao carregar última mensagem:", error);
+    return null;
+  }
+
+  const msg = data?.[0];
+
+  if (!msg) return null;
+
+  return {
+    id: msg.id,
+    direction: msg.direcao,
+    text: msg.conteudo,
+    tipo: msg.tipo || "texto",
+    media_url: msg.media_url,
+    media_nome: msg.media_nome,
+    media_mime: msg.media_mime,
+    status_entrega: msg.status_entrega || "enviada",
+    reply_to_message_id: msg.reply_to_message_id,
+    created_at: msg.created_at,
+    time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    })
+  };
+}
+
       conversations = await Promise.all(conversasData.map(async conversa => {
   const cliente = clientesData.find(c => c.id === conversa.cliente_id);
 
-  const mensagens = await carregarMensagens(conversa.id);
+  const ultimaMensagem = await carregarUltimaMensagem(conversa.id);
 
   return {
     id: conversa.id,
@@ -2210,18 +2277,18 @@ function atualizarContadores() {
     email: cliente?.email || "",
     channel: conversa.canal || "WhatsApp",
 
-    lastMessage: mensagens.length > 0
-      ? mensagens[mensagens.length - 1].text
-      : "Conversa iniciada",
+    lastMessage: ultimaMensagem
+  ? (ultimaMensagem.text || ultimaMensagem.media_nome || "Arquivo")
+  : "Conversa iniciada",
 
-    time: mensagens.length > 0
-      ? mensagens[mensagens.length - 1].time
-      : "",
+time: ultimaMensagem
+  ? ultimaMensagem.time
+  : "",
 
     unread: unreadMap[conversa.id] || 0,
     initials: String(cliente?.nome || "C").charAt(0).toUpperCase(),
 
-    messages: mensagens
+    messages: ultimaMensagem ? [ultimaMensagem] : []
   };
 }));
 
@@ -2238,10 +2305,14 @@ conversations.sort((a, b) => {
 });
 
       if (!selectedConversationId && conversations.length > 0) {
-        selectedConversationId = conversations[0].id;
-      }
+  selectedConversationId = conversations[0].id;
+}
 
-      render();
+if (selectedConversationId) {
+  await carregarMensagensDaConversa(selectedConversationId);
+}
+
+render();
     }
 
     async function assumirConversa() {
@@ -2657,16 +2728,20 @@ input.addEventListener("input", mostrarDigitando);
       const novaMensagem = payload.new;
 
       const conversa = conversations.find(
-        c => c.id === novaMensagem.conversa_id
-      );
+  c => c.id === novaMensagem.conversa_id
+);
 
-      const mensagemJaExiste = conversa.messages.find(
-      m => m.id === novaMensagem.id
-      );
+if (!conversa) return;
 
-      if (mensagemJaExiste) return;
+if (!messagesByConversation[novaMensagem.conversa_id]) {
+  messagesByConversation[novaMensagem.conversa_id] = [];
+}
 
-      if (!conversa) return;
+const mensagemJaExiste = messagesByConversation[novaMensagem.conversa_id].find(
+  m => m.id === novaMensagem.id
+);
+
+if (mensagemJaExiste) return;
 
       const novaMsgFormatada = {
         id: novaMensagem.id,
@@ -2695,7 +2770,9 @@ input.addEventListener("input", mostrarDigitando);
         })
       };
 
-      conversa.messages.push(novaMsgFormatada);
+      messagesByConversation[novaMensagem.conversa_id].push(novaMsgFormatada);
+
+      conversa.messages = [novaMsgFormatada];
 
       conversa.lastMessage =
         novaMsgFormatada.text ||
