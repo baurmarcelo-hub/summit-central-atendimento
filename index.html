@@ -523,9 +523,9 @@ line-height: 1.15;
     }
 
     .message-row {
-      display: flex;
-      margin-bottom: 14px;
-    }
+  display: flex;
+  margin-bottom: 5px;
+}
 
     .message-row.out {
       justify-content: flex-end;
@@ -536,13 +536,14 @@ line-height: 1.15;
     }
 
     .bubble {
-  max-width: 58%;
-  padding: 12px 14px 9px;
-  border-radius: 18px;
-  font-size: 14px;
-  line-height: 1.45;
-  box-shadow:
-    0 4px 14px rgba(16, 24, 40, 0.07);
+  max-width: 60%;
+  width: fit-content;
+  min-width: 90px;
+  padding: 7px 9px 5px;
+  border-radius: 8px;
+  font-size: 14.2px;
+  line-height: 1.35;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.10);
   border: 1px solid transparent;
 }
 
@@ -574,9 +575,10 @@ line-height: 1.15;
     .msg-time {
   font-size: 11px;
   color: #7b8494;
-  margin-top: 8px;
+  margin-top: 2px;
   text-align: right;
   opacity: 0.9;
+  line-height: 1;
 }
 
     .composer {
@@ -1009,6 +1011,8 @@ line-height: 1.15;
 .message-text {
   white-space: pre-wrap;
   word-break: break-word;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .message-search-box {
