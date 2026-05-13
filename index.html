@@ -2013,11 +2013,66 @@ if (conversation.status === "finalizado") {
   finishBtn.textContent = "Finalizar Atendimento";
 }
 
-  messagesEl.innerHTML = `
-    <div class="date-divider">
-      <span>Hoje</span>
-    </div>
-  `;
+  const pagination =
+  messagePagination[conversation.id];
+
+messagesEl.innerHTML = `
+  ${
+    pagination?.hasMore
+      ? `
+        <div style="text-align:center;margin-bottom:14px;">
+          <button
+            id="loadOlderMessagesBtn"
+            style="
+              border:0;
+              background:#ffffff;
+              border:1px solid #dbe3ef;
+              padding:10px 14px;
+              border-radius:12px;
+              font-size:12px;
+              font-weight:700;
+              cursor:pointer;
+            "
+          >
+            Carregar mensagens antigas
+          </button>
+        </div>
+      `
+      : ""
+  }
+
+  <div class="date-divider">
+    <span>Hoje</span>
+  </div>
+`;
+
+const loadOlderBtn =
+  document.getElementById("loadOlderMessagesBtn");
+
+if (loadOlderBtn) {
+
+  loadOlderBtn.onclick = async () => {
+
+    const previousHeight =
+      messagesEl.scrollHeight;
+
+    await carregarMensagensAntigas(conversation.id);
+
+    renderChat();
+
+    requestAnimationFrame(() => {
+
+      const newHeight =
+        messagesEl.scrollHeight;
+
+      messagesEl.scrollTop =
+        newHeight - previousHeight;
+
+    });
+
+  };
+
+}
 
   const messageSearchTerm = messageSearchInput.value.trim().toLowerCase();
 
@@ -2230,7 +2285,83 @@ async function carregarMensagensDaConversa(conversaId) {
 
   messagesByConversation[conversaId] = mensagens;
 
+  messagePagination[conversaId] = {
+    offset: mensagens.length,
+    hasMore: mensagens.length >= 30,
+    loading: false
+  };
+
   loadingMessagesConversationId = null;
+}
+
+async function carregarMensagensAntigas(conversaId) {
+  if (!conversaId) return;
+
+  const pagination = messagePagination[conversaId];
+
+  if (!pagination || pagination.loading || !pagination.hasMore) {
+    return;
+  }
+
+  pagination.loading = true;
+
+  const { data, error } = await supabaseClient
+    .from("mensagens")
+    .select("*")
+    .eq("conversa_id", conversaId)
+    .order("created_at", { ascending: false })
+    .range(pagination.offset, pagination.offset + 29);
+
+  pagination.loading = false;
+
+  if (error) {
+    console.error("Erro ao carregar mensagens antigas:", error);
+    return;
+  }
+
+  const mensagensAntigas = (data || [])
+    .reverse()
+    .map(msg => ({
+      id: msg.id,
+      direction: msg.direcao,
+      text: msg.conteudo,
+
+      tipo: msg.tipo || "texto",
+      media_url: msg.media_url,
+      media_nome: msg.media_nome,
+      media_mime: msg.media_mime,
+
+      status_entrega: msg.status_entrega || "enviada",
+      reply_to_message_id: msg.reply_to_message_id,
+
+      created_at: msg.created_at,
+
+      time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    }));
+
+  if (mensagensAntigas.length === 0) {
+    pagination.hasMore = false;
+    return;
+  }
+
+  const mensagensAtuais = messagesByConversation[conversaId] || [];
+
+  const idsAtuais = new Set(mensagensAtuais.map(m => m.id));
+
+  const novasMensagensAntigas = mensagensAntigas.filter(
+    m => !idsAtuais.has(m.id)
+  );
+
+  messagesByConversation[conversaId] = [
+    ...novasMensagensAntigas,
+    ...mensagensAtuais
+  ];
+
+  pagination.offset += mensagensAntigas.length;
+  pagination.hasMore = mensagensAntigas.length >= 30;
 }
 
     async function carregarClientes() {
