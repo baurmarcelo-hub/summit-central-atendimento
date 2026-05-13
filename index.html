@@ -2965,33 +2965,40 @@ async function iniciarGravacaoAudio() {
     audioChunks = [];
 
     const mimeType =
-      MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "audio/webm";
+  MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+    ? "audio/webm;codecs=opus"
+    : "audio/webm";
 
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: mimeType,
-      audioBitsPerSecond: 128000
-    });
+mediaRecorder = new MediaRecorder(stream, {
+  mimeType: mimeType,
+  audioBitsPerSecond: 128000
+});
 
-    mediaRecorder.ondataavailable = event => {
-      if (event.data && event.data.size > 0) {
-        audioChunks.push(event.data);
-      }
-    };
+mediaRecorder.ondataavailable = event => {
+  if (event.data && event.data.size > 0) {
+    audioChunks.push(event.data);
+  }
+};
 
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, {
-        type: mimeType
-      });
+mediaRecorder.onstop = async () => {
+  const audioBlob = new Blob(audioChunks, {
+    type: mimeType
+  });
 
-      console.log("Tamanho do áudio:", audioBlob.size);
+  console.log("Tamanho do áudio:", audioBlob.size);
 
-      if (audioBlob.size < 1000) {
-        alert("O áudio ficou vazio. Verifique o microfone e tente novamente.");
-        stream.getTracks().forEach(track => track.stop());
-        return;
-      }
+  const audioTesteUrl = URL.createObjectURL(audioBlob);
+  const audioTeste = new Audio(audioTesteUrl);
+
+  audioTeste.play();
+
+  console.log("Preview local:", audioTesteUrl);
+
+  if (audioBlob.size < 1000) {
+    alert("O áudio ficou vazio. Verifique o microfone e tente novamente.");
+    stream.getTracks().forEach(track => track.stop());
+    return;
+  }
 
       const audioFile = new File(
         [audioBlob],
