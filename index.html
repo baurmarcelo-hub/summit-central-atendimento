@@ -2426,10 +2426,14 @@ cancelarReply();
 
 selectedConversationId = conversation.id;
 
+forceScrollToBottom = true;
+
 isSendingMessage = false;
 
 sendBtn.disabled = false;
 sendBtn.style.opacity = "1";
+
+atualizarEstadoBotaoEnviar();
 
 }
 
