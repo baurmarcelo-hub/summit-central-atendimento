@@ -1803,6 +1803,90 @@ async function buscarMensagensGlobais() {
 });
 }
 
+function criarCardConversa(conversation) {
+
+  const card = document.createElement("div");
+
+  card.className =
+    "conversation-card" +
+    (conversation.id === selectedConversationId
+      ? " active"
+      : "");
+
+  card.dataset.conversationId = conversation.id;
+
+  card.onclick = async () => {
+
+    unreadMap[conversation.id] = 0;
+
+    selectedConversationId = conversation.id;
+
+    forceScrollToBottom = true;
+
+    await carregarMensagensDaConversa(conversation.id);
+
+    render();
+
+  };
+
+  card.innerHTML = `
+    <div class="client-avatar">${conversation.initials}</div>
+
+    <div style="min-width:0;">
+
+      <div class="conversation-name-row">
+
+        <div class="conversation-name">
+          ${conversation.name}
+        </div>
+
+        <div class="status-badge status-${conversation.status}">
+          ${conversation.status.replace("_", " ")}
+        </div>
+
+      </div>
+
+      <div class="last-message">
+        ${conversation.lastMessage}
+      </div>
+
+    </div>
+
+    <div class="meta">
+
+      <div>${conversation.time}</div>
+
+      ${
+        conversation.unread
+          ? `<div class="badge">${conversation.unread}</div>`
+          : ""
+      }
+
+    </div>
+  `;
+
+  return card;
+}
+
+function atualizarCardConversa(conversation) {
+
+  const cardExistente = document.querySelector(
+    `[data-conversation-id="${conversation.id}"]`
+  );
+
+  const novoCard = criarCardConversa(conversation);
+
+  if (!cardExistente) {
+
+    conversationList.prepend(novoCard);
+
+    return;
+  }
+
+  cardExistente.replaceWith(novoCard);
+
+}
+
 function renderConversations() {
   conversationList.innerHTML = "";
 
@@ -1822,46 +1906,9 @@ function renderConversations() {
   });
 
   filteredConversations.forEach(conversation => {
-    const card = document.createElement("div");
-    card.className = "conversation-card" + (conversation.id === selectedConversationId ? " active" : "");
+    const card = criarCardConversa(conversation);
 
-    card.onclick = async () => {
-
-  unreadMap[conversation.id] = 0;
-
-  selectedConversationId = conversation.id;
-
-  forceScrollToBottom = true;
-
-  await carregarMensagensDaConversa(conversation.id);
-
-  render();
-
-};
-
-    card.innerHTML = `
-      <div class="client-avatar">${conversation.initials}</div>
-      <div style="min-width:0;">
-
-        <div class="conversation-name-row">
-          <div class="conversation-name">${conversation.name}</div>
-
-          <div class="status-badge status-${conversation.status}">
-            ${conversation.status.replace("_", " ")}
-          </div>
-        </div>
-
-        <div class="last-message">${conversation.lastMessage}</div>
-
-      </div>
-
-      <div class="meta">
-        <div>${conversation.time}</div>
-        ${conversation.unread ? `<div class="badge">${conversation.unread}</div>` : ""}
-      </div>
-    `;
-
-    conversationList.appendChild(card);
+conversationList.appendChild(card);
   });
 }
 
@@ -2974,7 +3021,7 @@ conversa.messages = [novaMsgFormatada];
       });
 
       atualizarContadores();
-renderConversations();
+atualizarCardConversa(conversa);
 
 if (novaMensagem.conversa_id === selectedConversationId) {
   forceScrollToBottom = true;
