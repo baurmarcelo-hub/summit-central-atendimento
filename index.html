@@ -2512,9 +2512,22 @@ render();
 
       const { error } = await supabaseClient
         .from("conversas")
-        .update({
-          status: "em_atendimento",
-          atendente: data.user.email
+        const { data: perfilData } = await supabaseClient
+  .from("usuarios_perfis")
+  .select("nome, sobrenome")
+  .eq("id", data.user.id)
+  .single();
+
+const nomeCompleto =
+  `${perfilData?.nome || ""} ${perfilData?.sobrenome || ""}`.trim();
+
+const { error } = await supabaseClient
+  .from("conversas")
+  .update({
+    status: "em_atendimento",
+    atendente: nomeCompleto
+  })
+  .eq("id", conversation.id);
         })
         .eq("id", conversation.id);
 
@@ -2692,6 +2705,26 @@ atualizarEstadoBotaoEnviar();
 
 }
 
+async function carregarPerfilUsuario(user) {
+  if (!user) return;
+
+  const { data, error } = await supabaseClient
+    .from("usuarios_perfis")
+    .select("nome, sobrenome, email, cargo, foto_url")
+    .eq("id", user.id)
+    .single();
+
+  if (error) {
+    console.error("Erro ao carregar perfil do usuário:", error);
+    userName.textContent = user.email;
+    return;
+  }
+
+  const nomeCompleto = `${data.nome || ""} ${data.sobrenome || ""}`.trim();
+
+  userName.textContent = nomeCompleto || data.email || user.email;
+}
+
     async function fazerLogin() {
       loginError.textContent = "";
 
@@ -2709,7 +2742,7 @@ atualizarEstadoBotaoEnviar();
         return;
       }
 
-      userName.textContent = data.user.email;
+      await carregarPerfilUsuario(data.user);
 
       loginScreen.style.display = "none";
       app.style.display = "grid";
@@ -2741,7 +2774,7 @@ atualizarEstadoBotaoEnviar();
       }
 
       if (data.session) {
-        userName.textContent = data.session.user.email;
+        await carregarPerfilUsuario(data.session.user);
 
         loginScreen.style.display = "none";
         app.style.display = "grid";
