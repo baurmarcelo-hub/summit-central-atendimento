@@ -247,16 +247,41 @@ line-height: 1.15;
       margin-bottom: 14px;
     }
 
-    .search-box input {
-      width: 100%;
-      border: 1px solid #dfe4ec;
-      background: #ffffff;
-      height: 42px;
-      border-radius: 12px;
-      padding: 0 14px;
-      font-size: 14px;
-      outline: none;
-    }
+    .global-search-box input {
+
+  width: 100%;
+
+  border: 1px solid #e6ebf2;
+
+  background: #f8fafc;
+
+  height: 46px;
+
+  border-radius: 14px;
+
+  padding: 0 16px;
+
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    all 0.18s ease;
+}
+
+.global-search-box input:hover {
+  background: #ffffff;
+}
+
+.global-search-box input:focus {
+
+  background: #ffffff;
+
+  border-color: #93c5fd;
+
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.08);
+}
 
     .conversation-list {
       overflow-y: auto;
@@ -566,14 +591,43 @@ line-height: 1.15;
     }
 
     .composer input {
-      flex: 1;
-      height: 52px;
-      border: 1px solid #d9dee8;
-      border-radius: 14px;
-      padding: 0 16px;
-      font-size: 14px;
-      outline: none;
-    }
+
+  flex: 1;
+
+  height: 52px;
+
+  border: 1px solid #e6ebf2;
+
+  border-radius: 16px;
+
+  padding: 0 18px;
+
+  font-size: 14px;
+
+  outline: none;
+
+  background: #f8fafc;
+
+  transition:
+    all 0.18s ease;
+
+  box-shadow:
+    inset 0 1px 2px rgba(16, 24, 40, 0.03);
+}
+
+.composer input:hover {
+  background: #ffffff;
+}
+
+.composer input:focus {
+
+  background: #ffffff;
+
+  border-color: #93c5fd;
+
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.08);
+}
 
    .send-btn {
   width: 54px;
@@ -965,13 +1019,39 @@ line-height: 1.15;
 }
 
 .message-search-box input {
+
   width: 100%;
-  height: 38px;
-  border: 1px solid #d9dee8;
-  border-radius: 12px;
-  padding: 0 14px;
+
+  height: 42px;
+
+  border: 1px solid #e6ebf2;
+
+  border-radius: 14px;
+
+  padding: 0 16px;
+
   font-size: 13px;
+
   outline: none;
+
+  background: #f8fafc;
+
+  transition:
+    all 0.18s ease;
+}
+
+.message-search-box input:hover {
+  background: #ffffff;
+}
+
+.message-search-box input:focus {
+
+  background: #ffffff;
+
+  border-color: #93c5fd;
+
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.08);
 }
 
 .message-highlight {
