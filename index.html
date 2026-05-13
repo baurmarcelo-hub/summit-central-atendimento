@@ -1263,18 +1263,29 @@ line-height: 1.15;
 
       <div class="search-box">
   <input
-    id="searchInput"
-    type="text"
-    placeholder="Buscar por cliente, telefone ou e-mail..."
-  />
+  id="searchInput"
+  name="summit_client_search"
+  type="search"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  placeholder="Buscar por cliente, telefone ou e-mail..."
+/>
 </div>
 
 <div class="global-search-box">
   <input
-    id="globalMessageSearchInput"
-    type="text"
-    placeholder="Buscar mensagens em todas as conversas..."
-  />
+    <input
+  id="globalMessageSearchInput"
+  name="summit_global_message_search"
+  type="search"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  placeholder="Buscar mensagens em todas as conversas..."
+/>
 
   <div
     id="globalSearchResults"
@@ -1307,10 +1318,15 @@ line-height: 1.15;
 
 <div class="message-search-box">
   <input
-    id="messageSearchInput"
-    type="text"
-    placeholder="Buscar nesta conversa..."
-  />
+  id="messageSearchInput"
+  name="summit_conversation_search"
+  type="search"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  placeholder="Buscar nesta conversa..."
+/>
 </div>
 
       <section class="messages" id="messages"></section>
