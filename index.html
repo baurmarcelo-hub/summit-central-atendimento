@@ -2491,64 +2491,68 @@ render();
     }
 
     async function assumirConversa() {
-      const conversation = getSelectedConversation();
+  const conversation = getSelectedConversation();
 
-      if (!conversation) {
-        alert("Nenhuma conversa selecionada.");
-	headerSubtitle.textContent = "Sem conversa";
-	detailChannel.textContent = "-";
-	detailStatus.textContent = "-";
-	detailResponsible.textContent = "-";
-        return;
-      }
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    headerSubtitle.textContent = "Sem conversa";
+    detailChannel.textContent = "-";
+    detailStatus.textContent = "-";
+    detailResponsible.textContent = "-";
+    return;
+  }
 
-      const { data, error: userError } = await supabaseClient.auth.getUser();
+  const { data, error: userError } = await supabaseClient.auth.getUser();
 
-      if (userError || !data.user) {
-        console.error("Erro ao buscar usuário:", userError);
-        alert("Erro ao identificar usuário logado.");
-        return;
-      }
+  if (userError || !data.user) {
+    console.error("Erro ao buscar usuário:", userError);
+    alert("Erro ao identificar usuário logado.");
+    return;
+  }
 
-      const { error } = await supabaseClient
-        .from("conversas")
-        const { data: perfilData } = await supabaseClient
-  .from("usuarios_perfis")
-  .select("nome, sobrenome")
-  .eq("id", data.user.id)
-  .single();
+  const { data: perfilData, error: perfilError } = await supabaseClient
+    .from("usuarios_perfis")
+    .select("nome, sobrenome, email")
+    .eq("id", data.user.id)
+    .single();
 
-const nomeCompleto =
-  `${perfilData?.nome || ""} ${perfilData?.sobrenome || ""}`.trim();
+  if (perfilError) {
+    console.error("Erro ao buscar perfil:", perfilError);
+  }
 
-const { error } = await supabaseClient
-  .from("conversas")
-  .update({
-    status: "em_atendimento",
-    atendente: nomeCompleto
-  })
-  .eq("id", conversation.id);
-        })
-        .eq("id", conversation.id);
+  const nomeCompleto =
+    `${perfilData?.nome || ""} ${perfilData?.sobrenome || ""}`.trim();
 
-      if (error) {
-        console.error("Erro ao assumir conversa:", error);
-        alert("Erro ao assumir conversa. Verifique a policy UPDATE da tabela conversas.");
-        return;
-      }
+  const responsavel =
+    nomeCompleto || perfilData?.email || data.user.email;
 
-     alert("Conversa assumida com sucesso!");
+  const { error } = await supabaseClient
+    .from("conversas")
+    .update({
+      status: "em_atendimento",
+      atendente: responsavel
+    })
+    .eq("id", conversation.id);
 
-currentFilter = "em_atendimento";
+  if (error) {
+    console.error("Erro ao assumir conversa:", error);
+    alert("Erro ao assumir conversa. Verifique a policy UPDATE da tabela conversas.");
+    return;
+  }
 
-tabs.forEach(t => t.classList.remove("active"));
+  alert("Conversa assumida com sucesso!");
 
-document
-  .querySelector('[data-filter="em_atendimento"]')
-  .classList.add("active");
+  currentFilter = "em_atendimento";
 
-await carregarClientes();
-    }
+  tabs.forEach(t => t.classList.remove("active"));
+
+  document
+    .querySelector('[data-filter="em_atendimento"]')
+    .classList.add("active");
+
+  await carregarClientes();
+}
+
 async function finalizarAtendimento() {
   const conversation = getSelectedConversation();
 
