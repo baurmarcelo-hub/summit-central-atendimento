@@ -2596,6 +2596,12 @@ input.addEventListener("input", mostrarDigitando);
         c => c.id === novaMensagem.conversa_id
       );
 
+      const mensagemJaExiste = conversa.messages.find(
+      m => m.id === novaMensagem.id
+      );
+
+      if (mensagemJaExiste) return;
+
       if (!conversa) return;
 
       const novaMsgFormatada = {
