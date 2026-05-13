@@ -2447,6 +2447,7 @@ async function carregarUltimaMensagem(conversaId) {
     clienteId: conversa.cliente_id,
     status: conversa.status,
     atendente: conversa.atendente,
+    updated_at: conversa.updated_at,
     name: cliente?.nome || "Cliente sem nome",
     phone: cliente?.telefone || "",
     email: cliente?.email || "",
@@ -2468,15 +2469,15 @@ time: ultimaMensagem
 }));
 
 conversations.sort((a, b) => {
-  const ultimaA = a.messages.length
-    ? new Date(a.messages[a.messages.length - 1].created_at || 0)
-    : 0;
+  const atividadeA = new Date(
+    a.updated_at || a.messages?.[0]?.created_at || 0
+  );
 
-  const ultimaB = b.messages.length
-    ? new Date(b.messages[b.messages.length - 1].created_at || 0)
-    : 0;
+  const atividadeB = new Date(
+    b.updated_at || b.messages?.[0]?.created_at || 0
+  );
 
-  return ultimaB - ultimaA;
+  return atividadeB - atividadeA;
 });
 
       if (!selectedConversationId && conversations.length > 0) {
@@ -2529,9 +2530,10 @@ render();
   const { error } = await supabaseClient
     .from("conversas")
     .update({
-      status: "em_atendimento",
-      atendente: responsavel
-    })
+  status: "em_atendimento",
+  atendente: responsavel,
+  updated_at: new Date().toISOString()
+})
     .eq("id", conversation.id);
 
   if (error) {
@@ -2579,8 +2581,9 @@ async function finalizarAtendimento() {
   const { error } = await supabaseClient
     .from("conversas")
     .update({
-      status: novoStatus
-    })
+  status: novoStatus,
+  updated_at: new Date().toISOString()
+})
     .eq("id", conversation.id);
 
   if (error) {
