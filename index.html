@@ -1644,7 +1644,21 @@ line-height: 1.15;
   🎙️
 </button>
 
-<input id="messageInput" type="text" placeholder="Digite sua mensagem..." />
+<button
+  type="button"
+  class="attach-btn"
+  id="cancelAudioBtn"
+  title="Cancelar áudio"
+  style="display:none;"
+>
+  ✕
+</button>
+
+<input
+  id="messageInput"
+  type="text"
+  placeholder="Digite sua mensagem..."
+/>
 
 <button class="send-btn" id="sendBtn">➤</button>
 </footer>
@@ -1774,6 +1788,8 @@ let isRecordingAudio = false;
     const sendBtn = document.getElementById("sendBtn");
     const attachBtn = document.getElementById("attachBtn");
     const audioBtn = document.getElementById("audioBtn");
+    const cancelAudioBtn =
+      document.getElementById("cancelAudioBtn");
     const fileInput = document.getElementById("fileInput");
     const chatArea = document.querySelector(".chat-area");
     const dropHint = document.getElementById("dropHint");
@@ -2811,7 +2827,11 @@ async function uploadArquivo(file) {
         canal: conversation.channel || "WhatsApp",
         direcao: "out",
         status_entrega: "enviada",
-        tipo: file ? "arquivo" : "texto",
+        tipo: file
+  ? file.type.startsWith("audio/")
+    ? "audio"
+    : "arquivo"
+  : "texto",
         media_url: arquivo?.url || null,
         media_nome: arquivo?.nome || null,
         media_mime: arquivo?.mime || null,
@@ -2830,8 +2850,13 @@ async function uploadArquivo(file) {
   return;
 }
 
-  input.value = "";
+ input.value = "";
+cancelAudioBtn.style.display = "none";
+audioBtn.style.display = "block";
+input.disabled = false;
+
 fileInput.value = "";
+
 cancelarReply();
 
 selectedConversationId = conversation.id;
@@ -2984,12 +3009,9 @@ mediaRecorder.onstop = async () => {
 
   console.log("Tamanho do áudio:", audioBlob.size);
 
-  const audioTesteUrl = URL.createObjectURL(audioBlob);
-  const audioTeste = new Audio(audioTesteUrl);
+  const audioPreviewUrl = URL.createObjectURL(audioBlob);
 
-  audioTeste.play();
-
-  console.log("Preview local:", audioTesteUrl);
+console.log("Preview local:", audioPreviewUrl);
 
   if (audioBlob.size < 1000) {
     alert("O áudio ficou vazio. Verifique o microfone e tente novamente.");
@@ -3008,9 +3030,14 @@ mediaRecorder.onstop = async () => {
 
       fileInput.files = dataTransfer.files;
 
-      input.value = "Áudio gravado";
+	input.value = "🎙️ Áudio pronto para envio";
 
-      atualizarEstadoBotaoEnviar();
+	input.disabled = true;
+
+	cancelAudioBtn.style.display = "block";
+	audioBtn.style.display = "none";
+
+	atualizarEstadoBotaoEnviar();
 
       stream.getTracks().forEach(track => track.stop());
     };
@@ -3048,6 +3075,21 @@ function alternarGravacaoAudio() {
   }
 }
 
+function cancelarAudioSelecionado() {
+
+  fileInput.value = "";
+
+  input.value = "";
+
+  input.disabled = false;
+
+  cancelAudioBtn.style.display = "none";
+  audioBtn.style.display = "block";
+
+  atualizarEstadoBotaoEnviar();
+
+}
+
 function setDroppedFile(file) {
   if (!file) return;
 
@@ -3055,7 +3097,18 @@ function setDroppedFile(file) {
   dataTransfer.items.add(file);
 
   fileInput.files = dataTransfer.files;
-  input.value = file.name;
+
+  if (file.type.startsWith("audio/")) {
+  input.value = "🎙️ Áudio pronto para envio";
+  input.disabled = true;
+  cancelAudioBtn.style.display = "block";
+  audioBtn.style.display = "none";
+} else {
+    input.value = file.name;
+    input.disabled = false;
+    cancelAudioBtn.style.display = "none";
+    audioBtn.style.display = "block";
+  }
 }
 
     loginBtn.addEventListener("click", fazerLogin);
@@ -3078,12 +3131,19 @@ attachBtn.addEventListener("click", () => {
 
 audioBtn.addEventListener("click", alternarGravacaoAudio);
 
+cancelAudioBtn.addEventListener(
+  "click",
+  cancelarAudioSelecionado
+);
+
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
 
-  if (file) {
-    input.value = file.name;
-  }
+  if (!file) return;
+
+  setDroppedFile(file);
+
+  atualizarEstadoBotaoEnviar();
 });
 
 ["dragenter", "dragover"].forEach(eventName => {
