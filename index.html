@@ -1053,21 +1053,46 @@ line-height: 1.15;
 
 .reply-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+
+  top: 6px;
+  right: 6px;
+
+  width: 28px;
+  height: 28px;
+
   border: 0;
-  background: transparent;
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.92);
+
   cursor: pointer;
-  font-size: 14px;
+
+  font-size: 13px;
+
   opacity: 0;
-  transition: 0.15s;
+
+  transition: 0.15s ease;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 5;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.08);
+}
+
+.reply-btn:hover {
+  transform: scale(1.05);
 }
 
 .bubble {
   position: relative;
 }
 
-.bubble:hover .reply-btn {
+.bubble:hover .reply-btn,
+.bubble:focus-within .reply-btn {
   opacity: 1;
 }
 
