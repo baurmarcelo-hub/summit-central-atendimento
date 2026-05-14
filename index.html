@@ -1679,12 +1679,36 @@ line-height: 1.15;
   ✕
 </button>
 
+<div
+  id="audioPreviewBox"
+  style="display:none; flex:1; align-items:center; gap:10px;"
+>
+  <audio
+  id="audioPreviewPlayer"
+  controls
+  preload="metadata"
+  style="width:100%; height:40px;"
+></audio>
+
+<span
+  id="audioPreviewDuration"
+  style="
+    font-size:12px;
+    font-weight:800;
+    color:#667085;
+    min-width:42px;
+    text-align:right;
+  "
+>
+  0:00
+</span>
+</div>
+
 <input
   id="messageInput"
   type="text"
   placeholder="Digite sua mensagem..."
 />
-
 <button class="send-btn" id="sendBtn">➤</button>
 </footer>
     </main>
@@ -1815,6 +1839,12 @@ let isRecordingAudio = false;
     const audioBtn = document.getElementById("audioBtn");
     const cancelAudioBtn =
       document.getElementById("cancelAudioBtn");
+    const audioPreviewBox =
+      document.getElementById("audioPreviewBox");
+    const audioPreviewPlayer =
+      document.getElementById("audioPreviewPlayer");
+    const audioPreviewDuration =
+      document.getElementById("audioPreviewDuration");
     const fileInput = document.getElementById("fileInput");
     const chatArea = document.querySelector(".chat-area");
     const dropHint = document.getElementById("dropHint");
@@ -2880,6 +2910,12 @@ cancelAudioBtn.style.display = "none";
 audioBtn.style.display = "block";
 input.disabled = false;
 
+input.style.display = "block";
+
+audioPreviewPlayer.src = "";
+audioPreviewBox.style.display = "none";
+audioPreviewDuration.textContent = "0:00";
+
 fileInput.value = "";
 
 cancelarReply();
@@ -2997,6 +3033,26 @@ async function carregarPerfilUsuario(user) {
       }
     }
 
+function formatarDuracaoAudio(segundos) {
+
+  if (
+    !Number.isFinite(segundos) ||
+    segundos <= 0 ||
+    segundos === Infinity
+  ) {
+    return "0:00";
+  }
+
+  const minutos = Math.floor(segundos / 60);
+
+  const segundosRestantes =
+    Math.floor(segundos % 60);
+
+  return `${minutos}:${String(
+    segundosRestantes
+  ).padStart(2, "0")}`;
+}
+
 async function iniciarGravacaoAudio() {
   try {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -3034,17 +3090,35 @@ mediaRecorder.onstop = async () => {
 
   console.log("Tamanho do áudio:", audioBlob.size);
 
-  const audioPreviewUrl = URL.createObjectURL(audioBlob);
+  if (audioBlob.size < 1000) {
+  alert("O áudio ficou vazio. Verifique o microfone e tente novamente.");
+  stream.getTracks().forEach(track => track.stop());
+  return;
+}
+
+const audioPreviewUrl = URL.createObjectURL(audioBlob);
 
 console.log("Preview local:", audioPreviewUrl);
 
-  if (audioBlob.size < 1000) {
-    alert("O áudio ficou vazio. Verifique o microfone e tente novamente.");
-    stream.getTracks().forEach(track => track.stop());
-    return;
-  }
+audioPreviewPlayer.src = audioPreviewUrl;
+audioPreviewBox.style.display = "flex";
+input.style.display = "none";
+
+audioPreviewPlayer.onloadedmetadata = () => {
+
+  setTimeout(() => {
+
+    audioPreviewDuration.textContent =
+      formatarDuracaoAudio(
+        audioPreviewPlayer.duration
+      );
+
+  }, 120);
+
+};
 
       const audioFile = new File(
+
         [audioBlob],
         `audio-${Date.now()}.ogg`,
         { type: mimeType }
@@ -3107,6 +3181,11 @@ function cancelarAudioSelecionado() {
   input.value = "";
 
   input.disabled = false;
+  input.style.display = "block";
+
+  audioPreviewPlayer.src = "";
+  audioPreviewBox.style.display = "none";
+  audioPreviewDuration.textContent = "0:00";
 
   cancelAudioBtn.style.display = "none";
   audioBtn.style.display = "block";
@@ -3124,8 +3203,28 @@ function setDroppedFile(file) {
   fileInput.files = dataTransfer.files;
 
   if (file.type.startsWith("audio/")) {
+  const audioPreviewUrl = URL.createObjectURL(file);
+
+  audioPreviewPlayer.src = audioPreviewUrl;
+  audioPreviewBox.style.display = "flex";
+
+  audioPreviewPlayer.onloadedmetadata = () => {
+
+  setTimeout(() => {
+
+    audioPreviewDuration.textContent =
+      formatarDuracaoAudio(
+        audioPreviewPlayer.duration
+      );
+
+  }, 120);
+
+};
+
   input.value = "🎙️ Áudio pronto para envio";
   input.disabled = true;
+  input.style.display = "none";
+
   cancelAudioBtn.style.display = "block";
   audioBtn.style.display = "none";
 } else {
