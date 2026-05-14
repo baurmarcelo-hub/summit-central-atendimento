@@ -1448,6 +1448,47 @@ line-height: 1.15;
   border-radius: 12px;
 }
 
+.audio-preview-box {
+  width: 320px;
+  max-width: 40vw;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: #f8fafc;
+  border: 1px solid #e6ebf2;
+  border-radius: 16px;
+
+  padding: 0 12px;
+
+  box-shadow:
+    inset 0 1px 2px rgba(16, 24, 40, 0.03);
+}
+
+.audio-preview-icon {
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.audio-preview-player {
+  width: 240px;
+  height: 34px;
+}
+
   </style>
 </head>
 
@@ -1681,27 +1722,17 @@ line-height: 1.15;
 
 <div
   id="audioPreviewBox"
-  style="display:none; flex:1; align-items:center; gap:10px;"
+  class="audio-preview-box"
+  style="display:none;"
 >
-  <audio
-  id="audioPreviewPlayer"
-  controls
-  preload="metadata"
-  style="width:100%; height:40px;"
-></audio>
+  <span class="audio-preview-icon">🎙️</span>
 
-<span
-  id="audioPreviewDuration"
-  style="
-    font-size:12px;
-    font-weight:800;
-    color:#667085;
-    min-width:42px;
-    text-align:right;
-  "
->
-  0:00
-</span>
+  <audio
+    id="audioPreviewPlayer"
+    controls
+    preload="metadata"
+    class="audio-preview-player"
+  ></audio>
 </div>
 
 <input
@@ -1843,8 +1874,6 @@ let isRecordingAudio = false;
       document.getElementById("audioPreviewBox");
     const audioPreviewPlayer =
       document.getElementById("audioPreviewPlayer");
-    const audioPreviewDuration =
-      document.getElementById("audioPreviewDuration");
     const fileInput = document.getElementById("fileInput");
     const chatArea = document.querySelector(".chat-area");
     const dropHint = document.getElementById("dropHint");
@@ -2914,7 +2943,6 @@ input.style.display = "block";
 
 audioPreviewPlayer.src = "";
 audioPreviewBox.style.display = "none";
-audioPreviewDuration.textContent = "0:00";
 
 fileInput.value = "";
 
@@ -3033,26 +3061,6 @@ async function carregarPerfilUsuario(user) {
       }
     }
 
-function formatarDuracaoAudio(segundos) {
-
-  if (
-    !Number.isFinite(segundos) ||
-    segundos <= 0 ||
-    segundos === Infinity
-  ) {
-    return "0:00";
-  }
-
-  const minutos = Math.floor(segundos / 60);
-
-  const segundosRestantes =
-    Math.floor(segundos % 60);
-
-  return `${minutos}:${String(
-    segundosRestantes
-  ).padStart(2, "0")}`;
-}
-
 async function iniciarGravacaoAudio() {
   try {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -3103,19 +3111,6 @@ console.log("Preview local:", audioPreviewUrl);
 audioPreviewPlayer.src = audioPreviewUrl;
 audioPreviewBox.style.display = "flex";
 input.style.display = "none";
-
-audioPreviewPlayer.onloadedmetadata = () => {
-
-  setTimeout(() => {
-
-    audioPreviewDuration.textContent =
-      formatarDuracaoAudio(
-        audioPreviewPlayer.duration
-      );
-
-  }, 120);
-
-};
 
       const audioFile = new File(
 
@@ -3185,8 +3180,7 @@ function cancelarAudioSelecionado() {
 
   audioPreviewPlayer.src = "";
   audioPreviewBox.style.display = "none";
-  audioPreviewDuration.textContent = "0:00";
-
+  
   cancelAudioBtn.style.display = "none";
   audioBtn.style.display = "block";
 
@@ -3207,19 +3201,6 @@ function setDroppedFile(file) {
 
   audioPreviewPlayer.src = audioPreviewUrl;
   audioPreviewBox.style.display = "flex";
-
-  audioPreviewPlayer.onloadedmetadata = () => {
-
-  setTimeout(() => {
-
-    audioPreviewDuration.textContent =
-      formatarDuracaoAudio(
-        audioPreviewPlayer.duration
-      );
-
-  }, 120);
-
-};
 
   input.value = "🎙️ Áudio pronto para envio";
   input.disabled = true;
