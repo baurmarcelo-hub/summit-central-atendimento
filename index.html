@@ -1554,10 +1554,14 @@ line-height: 1.15;
         <div class="menu-item">🔔 <span>Notificações</span></div>
         <div class="menu-section-title">Geral</div>
         <div class="menu-item">▦ <span>Dashboard</span></div>
-        <div class="menu-item active">💬 <span>Bate Papo ao vivo</span></div>
+        <div class="menu-item active" id="chatMenuItem">
+  	  💬 <span>Bate Papo ao vivo</span>
+	</div>
         <div class="menu-item">📱 <span>WhatsApp</span></div>
         <div class="menu-item">📧 <span>Email</span></div>
-        <div class="menu-item">⚙️ <span>Configurações</span></div>
+        <div class="menu-item" id="settingsMenuItem">
+  	  ⚙️ <span>Configurações</span>
+	</div>
       </div>
 
       <div class="user-box">
@@ -1570,6 +1574,140 @@ line-height: 1.15;
         </div>
       </div>
     </aside>
+
+<section
+  class="conversation-panel hidden"
+  id="teamPanel"
+>
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    "
+  >
+    <div>
+      <h2
+        style="
+          font-size:22px;
+          font-weight:800;
+          margin-bottom:4px;
+        "
+      >
+        Equipe
+      </h2>
+
+      <div
+        style="
+          font-size:13px;
+          color:#667085;
+        "
+      >
+        Gerencie usuários e acessos
+      </div>
+    </div>
+
+    <button
+      class="accept-btn"
+      style="
+        height:44px;
+        padding:0 18px;
+      "
+    >
+      + Novo usuário
+    </button>
+  </div>
+
+  <div
+    style="
+      background:#ffffff;
+      border:1px solid #edf0f5;
+      border-radius:18px;
+      overflow:hidden;
+    "
+  >
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:
+          1.2fr
+          1.3fr
+          0.8fr
+          0.6fr;
+        gap:16px;
+
+        padding:14px 18px;
+
+        background:#f8fafc;
+
+        font-size:12px;
+        font-weight:800;
+        color:#667085;
+
+        border-bottom:1px solid #edf0f5;
+      "
+    >
+      <div>Nome</div>
+      <div>E-mail</div>
+      <div>Perfil</div>
+      <div>Status</div>
+    </div>
+
+    <div id="teamList">
+
+      <div
+        style="
+          display:grid;
+          grid-template-columns:
+            1.2fr
+            1.3fr
+            0.8fr
+            0.6fr;
+          gap:16px;
+
+          padding:16px 18px;
+
+          border-bottom:1px solid #f4f6f8;
+
+          align-items:center;
+        "
+      >
+        <div
+          style="
+            font-weight:700;
+          "
+        >
+          Marcelo Baur
+        </div>
+
+        <div
+          style="
+            color:#667085;
+            font-size:13px;
+          "
+        >
+          marcelo@email.com
+        </div>
+
+        <div>
+          <span class="status-badge status-em_atendimento">
+            admin
+          </span>
+        </div>
+
+        <div>
+          <span class="status-badge status-finalizado">
+            ativo
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
 
     <section class="conversation-panel">
       <div class="tabs">
@@ -1949,6 +2087,19 @@ let isRecordingAudio = false;
     const replyingText = document.getElementById("replyingText");
     const cancelReplyBtn = document.getElementById("cancelReplyBtn");
     const ownerFilterBox = document.querySelector(".owner-filter");
+const chatMenuItem =
+  document.getElementById("chatMenuItem");
+
+const settingsMenuItem =
+  document.getElementById("settingsMenuItem");
+
+const teamPanel =
+  document.getElementById("teamPanel");
+
+const mainConversationPanel =
+  document.querySelector(
+    "section.conversation-panel:not(#teamPanel)"
+  );
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -3467,6 +3618,31 @@ ownerFilterBtns.forEach(btn => {
 
     chatUser.addEventListener("click", () => app.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
+settingsMenuItem.addEventListener("click", () => {
+
+  settingsMenuItem.classList.add("active");
+  chatMenuItem.classList.remove("active");
+
+  teamPanel.classList.remove("hidden");
+
+  mainConversationPanel.classList.add("hidden");
+
+  document.querySelector(".chat-area").classList.add("hidden");
+
+});
+
+chatMenuItem.addEventListener("click", () => {
+
+  chatMenuItem.classList.add("active");
+  settingsMenuItem.classList.remove("active");
+
+  teamPanel.classList.add("hidden");
+
+  mainConversationPanel.classList.remove("hidden");
+
+  document.querySelector(".chat-area").classList.remove("hidden");
+
+});
 if (imageModalClose) {
 
   imageModalClose.onclick = closeImageModal;
