@@ -2097,9 +2097,9 @@ const teamPanel =
   document.getElementById("teamPanel");
 
 const mainConversationPanel =
-  document.querySelector(
-    "section.conversation-panel:not(#teamPanel)"
-  );
+  document.querySelectorAll(
+    ".conversation-panel"
+  )[1];
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
