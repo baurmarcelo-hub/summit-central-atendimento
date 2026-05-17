@@ -815,6 +815,42 @@ line-height: 1.15;
     all 0.18s ease;
 }
 
+.secondary-action-btn {
+
+  width: 100%;
+
+  height: 46px;
+
+  border: 1px solid #bfdbfe;
+
+  color: #2563eb;
+
+  background: #eff6ff;
+
+  border-radius: 14px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  margin-top: 10px;
+
+  transition:
+    all 0.18s ease;
+}
+
+.secondary-action-btn:hover {
+
+  background: #dbeafe;
+
+  border-color: #93c5fd;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 6px 18px rgba(37, 99, 235, 0.12);
+}
+
 .danger-btn:hover {
 
   background: #fef2f2;
@@ -1803,6 +1839,12 @@ line-height: 1.15;
       </div>
 
       <button class="danger-btn" id="finishBtn">Finalizar Atendimento</button>
+<button
+  class="secondary-action-btn"
+  id="backToQueueBtn"
+>
+  Voltar para fila
+</button>
     </aside>
   </div>
 
@@ -1888,6 +1930,8 @@ let isRecordingAudio = false;
     const logoutBtn = document.getElementById("logoutBtn");
     const acceptBtn = document.getElementById("acceptBtn");
     const finishBtn = document.getElementById("finishBtn");
+    const backToQueueBtn =
+      document.getElementById("backToQueueBtn");
     const tabs = document.querySelectorAll(".tab");
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
@@ -2245,6 +2289,7 @@ if (!conversation) {
 
 acceptBtn.classList.add("hidden");
 finishBtn.classList.add("hidden");
+backToQueueBtn.classList.add("hidden");
 composer.classList.add("hidden");
 
 if (conversation.status === "aguardando") {
@@ -2253,8 +2298,13 @@ if (conversation.status === "aguardando") {
 }
 
 if (conversation.status === "em_atendimento") {
+
   finishBtn.classList.remove("hidden");
+
+  backToQueueBtn.classList.remove("hidden");
+
   composer.classList.remove("hidden");
+
 }
 
 if (conversation.status === "finalizado") {
@@ -2834,6 +2884,45 @@ async function finalizarAtendimento() {
   await carregarClientes();
 }
 
+async function voltarParaFila() {
+
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("conversas")
+    .update({
+      status: "aguardando",
+      atendente: null,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", conversation.id);
+
+  if (error) {
+    console.error("Erro ao voltar conversa para fila:", error);
+
+    alert("Erro ao voltar conversa para fila.");
+
+    return;
+  }
+
+  alert("Conversa devolvida para fila!");
+
+  currentFilter = "aguardando";
+
+  tabs.forEach(t => t.classList.remove("active"));
+
+  document
+    .querySelector('[data-filter="aguardando"]')
+    .classList.add("active");
+
+  await carregarClientes();
+}
+
 async function uploadArquivo(file) {
   const fileExt = file.name.split(".").pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -3289,7 +3378,12 @@ chatArea.addEventListener("drop", event => {
 
 });
     acceptBtn.addEventListener("click", assumirConversa);
-    finishBtn.addEventListener("click", finalizarAtendimento);
+finishBtn.addEventListener("click", finalizarAtendimento);
+
+backToQueueBtn.addEventListener(
+  "click",
+  voltarParaFila
+);
 searchInput.addEventListener("input", () => {
   renderConversations();
 });
