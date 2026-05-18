@@ -4077,33 +4077,105 @@ function configurarMenusEquipe() {
   });
 
   document
-    .querySelectorAll(".team-toggle-btn")
-    .forEach(btn => {
-      btn.addEventListener("click", event => {
-        event.stopPropagation();
+  .querySelectorAll(".team-toggle-btn")
+  .forEach(btn => {
+    btn.addEventListener("click", async event => {
+      event.stopPropagation();
 
-        const ativo =
-          btn.dataset.userActive === "true";
+      const userId = btn.dataset.userId;
+
+      const ativoAtual =
+        btn.dataset.userActive === "true";
+
+      const novoStatus =
+        !ativoAtual;
+
+      const confirmar = confirm(
+        ativoAtual
+          ? "Deseja inativar este usuário?"
+          : "Deseja ativar este usuário?"
+      );
+
+      if (!confirmar) {
+        fecharMenusEquipe();
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("usuarios_perfis")
+        .update({
+          ativo: novoStatus
+        })
+        .eq("id", userId);
+
+      if (error) {
+        console.error("Erro ao alterar status do usuário:", error);
+        alert("Erro ao alterar status do usuário.");
+        fecharMenusEquipe();
+        return;
+      }
+
+      fecharMenusEquipe();
+
+      await carregarEquipe();
+
+      alert(
+        novoStatus
+          ? "Usuário ativado com sucesso."
+          : "Usuário inativado com sucesso."
+      );
+    });
+  });
+
+  document
+  .querySelectorAll(".team-reset-btn")
+  .forEach(btn => {
+    btn.addEventListener("click", async event => {
+      event.stopPropagation();
+
+      const userId = btn.dataset.userId;
+
+      const confirmar = confirm(
+        "Deseja gerar uma nova senha temporária para este usuário?"
+      );
+
+      if (!confirmar) {
+        fecharMenusEquipe();
+        return;
+      }
+
+      const { data, error } = await supabaseClient.functions.invoke(
+        "reset-user-password",
+        {
+          body: {
+            userId: userId
+          }
+        }
+      );
+
+      if (error || data?.error) {
+        console.error("Erro ao resetar senha:", error || data?.error);
 
         alert(
-          ativo
-            ? `Inativar usuário ID: ${btn.dataset.userId}`
-            : `Ativar usuário ID: ${btn.dataset.userId}`
+          "Erro ao resetar senha.\n\n" +
+          (error?.message || data?.error || "")
         );
 
         fecharMenusEquipe();
-      });
-    });
+        return;
+      }
 
-  document
-    .querySelectorAll(".team-reset-btn")
-    .forEach(btn => {
-      btn.addEventListener("click", event => {
-        event.stopPropagation();
-        alert(`Reset de senha usuário ID: ${btn.dataset.userId}`);
-        fecharMenusEquipe();
-      });
+      fecharMenusEquipe();
+
+      alert(
+        "Senha resetada com sucesso.\n\n" +
+        "Nova senha temporária:\n" +
+        data.senha_temporaria +
+        "\n\n" +
+        "Anote esta senha e envie ao usuário."
+      );
     });
+  });
 }
 
 async function abrirModalEditarUsuario(userId) {
