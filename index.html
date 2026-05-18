@@ -975,17 +975,16 @@ line-height: 1.15;
 }
 
 .file-card {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 42px 1fr;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.62);
   border: 1px solid #d9dee8;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 10px;
   margin-bottom: 8px;
-  text-decoration: none;
   color: #182033;
-  max-width: 260px;
+  max-width: 300px;
 }
 
 .file-icon {
@@ -1954,6 +1953,69 @@ line-height: 1.15;
   font-weight: 900;
 }
 
+.file-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid rgba(16, 24, 40, 0.08);
+  margin: 4px -10px -10px;
+}
+
+.file-actions a {
+  text-align: center;
+  padding: 10px 8px;
+  text-decoration: none;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.file-actions a:first-child {
+  border-right: 1px solid rgba(16, 24, 40, 0.08);
+}
+
+.file-actions a:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.media-image-box {
+  display: inline-block;
+}
+
+.media-download-link {
+  display: inline-flex;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.media-download-link:hover {
+  text-decoration: underline;
+}
+
+.image-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.image-modal-download {
+  background: #ffffff;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-weight: 900;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+}
+
+.image-modal-download:hover {
+  background: #eff6ff;
+}
+
   </style>
 </head>
 
@@ -2335,7 +2397,19 @@ line-height: 1.15;
 
 <div class="image-modal" id="imageModal">
   <button class="image-modal-close" id="imageModalClose">×</button>
-  <img id="imageModalImg" src="" alt="Preview da imagem" />
+
+  <div class="image-modal-content">
+    <img id="imageModalImg" src="" alt="Preview da imagem" />
+
+    <a
+      id="imageModalDownload"
+      href="#"
+      download="imagem"
+      class="image-modal-download"
+    >
+      ⬇ Baixar imagem
+    </a>
+  </div>
 </div>
 
 <div class="drop-hint" id="dropHint">
@@ -2448,8 +2522,8 @@ line-height: 1.15;
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_URL = "SUA CHAVE AQUI";
+    const SUPABASE_ANON_KEY = "SUA CHAVE AQUI";
 
 
     const supabaseClient = supabase.createClient(
@@ -2526,6 +2600,8 @@ let isRecordingAudio = false;
     const imageModal = document.getElementById("imageModal");
     const imageModalImg = document.getElementById("imageModalImg");
     const imageModalClose = document.getElementById("imageModalClose");
+    const imageModalDownload =
+      document.getElementById("imageModalDownload");
     const searchInput = document.getElementById("searchInput");
     const globalMessageSearchInput = document.getElementById("globalMessageSearchInput");
     const globalSearchResults = document.getElementById("globalSearchResults");
@@ -2813,14 +2889,30 @@ conversationList.appendChild(card);
   });
 }
 
-function openImageModal(url) {
+function openImageModal(url, nomeArquivo = "imagem") {
   imageModalImg.src = url;
+  imageModalImg.dataset.fileName = nomeArquivo;
+
+  atualizarDownloadImagem(url, nomeArquivo);
+
   imageModal.classList.add("open");
+}
+
+function atualizarDownloadImagem(url, nomeArquivo = "imagem") {
+  if (!imageModalDownload) return;
+
+  imageModalDownload.href = url;
+  imageModalDownload.download = nomeArquivo;
 }
 
 function closeImageModal() {
   imageModal.classList.remove("open");
   imageModalImg.src = "";
+
+  if (imageModalDownload) {
+    imageModalDownload.href = "#";
+    imageModalDownload.download = "imagem";
+  }
 }
 
 function mostrarReplyPreview(message) {
@@ -3015,6 +3107,20 @@ alert("Mensagem encaminhada com sucesso.");
 
 }
 
+function formatarTipoArquivo(mime, tamanho) {
+  const extensao = mime
+    ? mime.split("/").pop().toUpperCase()
+    : "ARQUIVO";
+
+  const tamanhoKb = tamanho
+    ? Math.round(tamanho / 1024)
+    : null;
+
+  return tamanhoKb
+    ? `${extensao} • ${tamanhoKb} KB`
+    : extensao;
+}
+
 function renderChat() {
 
   const conversation = getSelectedConversation();
@@ -3188,12 +3294,23 @@ mensagensDaConversa
   const mediaHtml = message.media_url
   ? message.media_mime?.startsWith("image/")
     ? `
-      <img
-        src="${message.media_url}"
-        class="chat-image"
-        alt="${message.media_nome || "Imagem"}"
-        onclick="openImageModal('${message.media_url}')"
-      />
+      <div class="media-image-box">
+        <img
+          src="${message.media_url}"
+          class="chat-image"
+          alt="${message.media_nome || "Imagem"}"
+          onclick="openImageModal('${message.media_url}', '${message.media_nome || "imagem"}')"
+        />
+
+        <a
+          href="${message.media_url}"
+          download="${message.media_nome || "imagem"}"
+          class="media-download-link"
+          title="Baixar imagem"
+        >
+          ⬇ Baixar
+        </a>
+      </div>
     `
     : message.media_mime?.startsWith("audio/")
     ? `
@@ -3209,11 +3326,7 @@ mensagensDaConversa
       </audio>
     `
     : `
-      <a
-        href="${message.media_url}"
-        target="_blank"
-        class="file-card"
-      >
+      <div class="file-card">
         <div class="file-icon">
           📄
         </div>
@@ -3224,10 +3337,27 @@ mensagensDaConversa
           </div>
 
           <div class="file-label">
-            Abrir arquivo
+            ${formatarTipoArquivo(message.media_mime, message.media_tamanho)}
           </div>
         </div>
-      </a>
+
+        <div class="file-actions">
+          <a
+            href="${message.media_url}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Abrir
+          </a>
+
+          <a
+            href="${message.media_url}"
+            download="${message.media_nome || "arquivo"}"
+          >
+            Salvar
+          </a>
+        </div>
+      </div>
     `
   : "";
 
@@ -3238,9 +3368,15 @@ row.innerHTML = `
     ${replyHtml}
     ${mediaHtml}
 
-<div class="message-text">
-  ${message.text || ""}
-</div>
+${
+  message.media_url
+    ? ""
+    : `
+      <div class="message-text">
+        ${message.text || ""}
+      </div>
+    `
+}
    <div class="msg-time">
   ${message.time}
   ${
