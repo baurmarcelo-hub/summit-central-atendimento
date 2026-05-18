@@ -1108,7 +1108,9 @@ line-height: 1.15;
   color: #53bdeb;
 }
 
-.reply-btn {
+.reply-btn,
+.forward-btn {
+
   position: absolute;
 
   top: 6px;
@@ -1149,8 +1151,30 @@ line-height: 1.15;
 }
 
 .bubble:hover .reply-btn,
-.bubble:focus-within .reply-btn {
+.bubble:hover .forward-btn,
+.bubble:focus-within .reply-btn,
+.bubble:focus-within .forward-btn {
   opacity: 1;
+}
+
+.forward-btn {
+  position: absolute;
+  top: 6px;
+  right: 40px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  cursor: pointer;
+  font-size: 13px;
+  opacity: 0;
+  transition: 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .reply-preview {
@@ -2693,6 +2717,72 @@ function mostrarDigitando() {
   }, 1500);
 }
 
+async function encaminharMensagem(message) {
+  if (!message) return;
+
+  const conversasDestino = conversations
+    .filter(c => c.id !== selectedConversationId)
+    .map(c => `${c.id} - ${c.name} (${c.status})`)
+    .join("\n");
+
+  if (!conversasDestino) {
+    alert("Não há outra conversa disponível para encaminhar.");
+    return;
+  }
+
+  const destinoDigitado = prompt(
+    "Digite o ID da conversa destino:\n\n" + conversasDestino
+  );
+
+  if (!destinoDigitado) return;
+
+  const conversaDestinoId = Number(destinoDigitado.trim());
+
+  const conversaDestino = conversations.find(
+    c => c.id === conversaDestinoId
+  );
+
+  if (!conversaDestino) {
+    alert("Conversa destino não encontrada.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("mensagens")
+    .insert([
+      {
+        conversa_id: conversaDestino.id,
+        conteudo: message.text || "",
+        canal: conversaDestino.channel || "WhatsApp",
+        direcao: "out",
+        status_entrega: "enviada",
+        tipo: message.tipo || "texto",
+        media_url: message.media_url || null,
+        media_nome: message.media_nome || null,
+        media_mime: message.media_mime || null,
+        media_tamanho: message.media_tamanho || null,
+        reply_to_message_id: null
+      }
+    ]);
+
+  if (error) {
+    console.error("Erro ao encaminhar mensagem:", error);
+    alert("Erro ao encaminhar mensagem.");
+    return;
+  }
+
+  await supabaseClient
+    .from("conversas")
+    .update({
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", conversaDestino.id);
+
+  alert("Mensagem encaminhada com sucesso.");
+
+  await carregarClientes();
+}
+
 function renderChat() {
 
   const conversation = getSelectedConversation();
@@ -2912,6 +3002,7 @@ mensagensDaConversa
 row.innerHTML = `
   <div class="bubble ${message.direction}">
     <button class="reply-btn" title="Responder">↩</button>
+    <button class="forward-btn" title="Encaminhar">➡</button>
     ${replyHtml}
     ${mediaHtml}
 
@@ -2939,6 +3030,12 @@ replyBtn.addEventListener("click", () => {
   replyingToMessage = message;
   mostrarReplyPreview(message);
   input.focus();
+});
+
+const forwardBtn = row.querySelector(".forward-btn");
+
+forwardBtn.addEventListener("click", () => {
+  encaminharMensagem(message);
 });
 
   });
@@ -3020,6 +3117,7 @@ function adicionarMensagemNaConversa(conversaId, mensagem) {
   media_url: msg.media_url,
   media_nome: msg.media_nome,
   media_mime: msg.media_mime,
+  media_tamanho: msg.media_tamanho,
 
   status_entrega: msg.status_entrega || "enviada",
   reply_to_message_id: msg.reply_to_message_id,
@@ -3100,6 +3198,7 @@ if (loadingOldMessages) {
       media_url: msg.media_url,
       media_nome: msg.media_nome,
       media_mime: msg.media_mime,
+      media_tamanho: msg.media_tamanho,
 
       status_entrega: msg.status_entrega || "enviada",
       reply_to_message_id: msg.reply_to_message_id,
@@ -4485,6 +4584,7 @@ const novaMsgFormatada = {
   media_url: novaMensagem.media_url,
   media_nome: novaMensagem.media_nome,
   media_mime: novaMensagem.media_mime,
+  media_tamanho: novaMensagem.media_tamanho,
 
   status_entrega:
     novaMensagem.status_entrega || "enviada",
