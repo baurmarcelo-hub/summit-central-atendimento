@@ -3867,11 +3867,16 @@ async function salvarUsuarioModal() {
       .eq("id", id)
       .select("id, nome, sobrenome, email, cargo, ativo");
   } else {
-    result = await supabaseClient
-      .from("usuarios_perfis")
-      .insert([payload])
-      .select("id, nome, sobrenome, email, cargo, ativo");
-  }
+  result = await supabaseClient
+    .from("usuarios_perfis")
+    .insert([
+      {
+        ...payload,
+        id: crypto.randomUUID()
+      }
+    ])
+    .select("id, nome, sobrenome, email, cargo, ativo");
+}
 
   saveUserModalBtn.disabled = false;
   saveUserModalBtn.innerText = id ? "Salvar alterações" : "Criar usuário";
