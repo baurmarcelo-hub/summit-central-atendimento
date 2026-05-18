@@ -1911,7 +1911,7 @@ line-height: 1.15;
 
     <select id="teamProfileFilter">
       <option value="todos">Perfil</option>
-      <option value="admin">Admin</option>
+      <option value="administrador">Administrador</option>
       <option value="supervisor">Supervisor</option>
       <option value="atendente">Atendente</option>
     </select>
@@ -2253,7 +2253,7 @@ line-height: 1.15;
       <div class="user-field">
         <label>Perfil</label>
         <select id="userModalCargo">
-          <option value="admin">Admin</option>
+          <option value="administrador">Administrador</option>
           <option value="supervisor">Supervisor</option>
           <option value="atendente">Atendente</option>
         </select>
@@ -3824,19 +3824,31 @@ async function salvarUsuarioModal() {
     ativo: userModalAtivo.value === "true"
   };
 
-  const { error } = await supabaseClient
-  .from("usuarios_perfis")
-  .update(payload)
-  .eq("email", userModalEmail.value);
+  console.log("Payload usuário:", payload);
+  console.log("ID usuário:", id);
+  console.log("Email usuário:", userModalEmail.value);
 
-if (error) {
-  console.error("Erro ao salvar usuário:", error);
-  alert("Erro ao salvar usuário.");
-  return;
-}
+  const { data, error } = await supabaseClient
+    .from("usuarios_perfis")
+    .update(payload)
+    .eq("id", id)
+    .select("id, nome, sobrenome, email, cargo, ativo");
 
   saveUserModalBtn.disabled = false;
   saveUserModalBtn.innerText = "Salvar alterações";
+
+  console.log("Retorno update usuário:", data);
+
+  if (error) {
+    console.error("Erro ao salvar usuário:", error);
+    alert("Erro ao salvar usuário.");
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert("Nenhum usuário foi atualizado. Verifique permissão/RLS no Supabase.");
+    return;
+  }
 
   fecharModalUsuario();
 
