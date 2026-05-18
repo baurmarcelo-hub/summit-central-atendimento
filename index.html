@@ -3806,6 +3806,45 @@ function fecharModalUsuario() {
   userModalAtivo.value = "true";
 }
 
+async function salvarUsuarioModal() {
+  const id = userModalId.value;
+
+  if (!id) {
+    alert("Usuário inválido.");
+    return;
+  }
+
+  saveUserModalBtn.disabled = true;
+  saveUserModalBtn.innerText = "Salvando...";
+
+  const payload = {
+    nome: userModalNome.value.trim(),
+    sobrenome: userModalSobrenome.value.trim(),
+    cargo: userModalCargo.value,
+    ativo: userModalAtivo.value === "true"
+  };
+
+  const { error } = await supabaseClient
+    .from("usuarios_perfis")
+    .update(payload)
+    .eq("id", id);
+
+  saveUserModalBtn.disabled = false;
+  saveUserModalBtn.innerText = "Salvar alterações";
+
+  if (error) {
+    console.error("Erro ao salvar usuário:", error);
+    alert("Erro ao salvar usuário.");
+    return;
+  }
+
+  fecharModalUsuario();
+
+  await carregarEquipe();
+
+  alert("Usuário atualizado com sucesso.");
+}
+
 async function carregarPerfilUsuario(user) {
   if (!user) return;
 
@@ -4251,6 +4290,11 @@ userModal.addEventListener("click", event => {
     fecharModalUsuario();
   }
 });
+
+saveUserModalBtn.addEventListener(
+  "click",
+  salvarUsuarioModal
+);
 
 chatMenuItem.addEventListener("click", () => {
 
