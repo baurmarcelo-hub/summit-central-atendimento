@@ -2387,6 +2387,8 @@ let isRecordingAudio = false;
 
     const teamProfileFilter =
       document.getElementById("teamProfileFilter");
+    const newUserBtn =
+      document.getElementById("newUserBtn");
     const chatMenuItem =
       document.getElementById("chatMenuItem");
 
@@ -3792,6 +3794,12 @@ async function abrirModalEditarUsuario(userId) {
   userModalCargo.value = data.cargo || "atendente";
   userModalAtivo.value = data.ativo === false ? "false" : "true";
 
+document.getElementById("userModalTitle").textContent =
+  "Editar usuário";
+
+userModalEmail.disabled = true;
+saveUserModalBtn.innerText = "Salvar alterações";
+
   userModal.classList.add("open");
 }
 
@@ -3804,49 +3812,77 @@ function fecharModalUsuario() {
   userModalEmail.value = "";
   userModalCargo.value = "atendente";
   userModalAtivo.value = "true";
+ userModalEmail.disabled = true;
+ saveUserModalBtn.innerText = "Salvar alterações";
+}
+
+function abrirModalNovoUsuario() {
+  userModalId.value = "";
+  userModalNome.value = "";
+  userModalSobrenome.value = "";
+  userModalEmail.value = "";
+  userModalCargo.value = "atendente";
+  userModalAtivo.value = "true";
+
+  userModalEmail.disabled = false;
+  saveUserModalBtn.innerText = "Criar usuário";
+
+  document.getElementById("userModalTitle").textContent =
+    "Adicionar usuário";
+
+  userModal.classList.add("open");
 }
 
 async function salvarUsuarioModal() {
   const id = userModalId.value;
 
-  if (!id) {
-    alert("Usuário inválido.");
-    return;
-  }
-
-  saveUserModalBtn.disabled = true;
-  saveUserModalBtn.innerText = "Salvando...";
-
   const payload = {
     nome: userModalNome.value.trim(),
     sobrenome: userModalSobrenome.value.trim(),
+    email: userModalEmail.value.trim().toLowerCase(),
     cargo: userModalCargo.value,
     ativo: userModalAtivo.value === "true"
   };
 
-  console.log("Payload usuário:", payload);
-  console.log("ID usuário:", id);
-  console.log("Email usuário:", userModalEmail.value);
-
-  const { data, error } = await supabaseClient
-    .from("usuarios_perfis")
-    .update(payload)
-    .eq("id", id)
-    .select("id, nome, sobrenome, email, cargo, ativo");
-
-  saveUserModalBtn.disabled = false;
-  saveUserModalBtn.innerText = "Salvar alterações";
-
-  console.log("Retorno update usuário:", data);
-
-  if (error) {
-    console.error("Erro ao salvar usuário:", error);
-    alert("Erro ao salvar usuário.");
+  if (!payload.nome || !payload.email) {
+    alert("Informe nome e e-mail.");
     return;
   }
 
-  if (!data || data.length === 0) {
-    alert("Nenhum usuário foi atualizado. Verifique permissão/RLS no Supabase.");
+  saveUserModalBtn.disabled = true;
+  saveUserModalBtn.innerText = id ? "Salvando..." : "Criando...";
+
+  let result;
+
+  if (id) {
+    result = await supabaseClient
+      .from("usuarios_perfis")
+      .update({
+        nome: payload.nome,
+        sobrenome: payload.sobrenome,
+        cargo: payload.cargo,
+        ativo: payload.ativo
+      })
+      .eq("id", id)
+      .select("id, nome, sobrenome, email, cargo, ativo");
+  } else {
+    result = await supabaseClient
+      .from("usuarios_perfis")
+      .insert([payload])
+      .select("id, nome, sobrenome, email, cargo, ativo");
+  }
+
+  saveUserModalBtn.disabled = false;
+  saveUserModalBtn.innerText = id ? "Salvar alterações" : "Criar usuário";
+
+  if (result.error) {
+    console.error("Erro ao salvar usuário:", result.error);
+    alert("Erro ao salvar usuário. Verifique se o e-mail já existe ou se há permissão de insert no Supabase.");
+    return;
+  }
+
+  if (!result.data || result.data.length === 0) {
+    alert("Nenhum usuário foi salvo. Verifique permissões/RLS no Supabase.");
     return;
   }
 
@@ -3854,7 +3890,7 @@ async function salvarUsuarioModal() {
 
   await carregarEquipe();
 
-  alert("Usuário atualizado com sucesso.");
+  alert(id ? "Usuário atualizado com sucesso." : "Usuário criado com sucesso.");
 }
 
 async function carregarPerfilUsuario(user) {
@@ -4306,6 +4342,11 @@ userModal.addEventListener("click", event => {
 saveUserModalBtn.addEventListener(
   "click",
   salvarUsuarioModal
+);
+
+newUserBtn.addEventListener(
+  "click",
+  abrirModalNovoUsuario
 );
 
 chatMenuItem.addEventListener("click", () => {
