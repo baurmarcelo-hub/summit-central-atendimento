@@ -3875,10 +3875,13 @@ async function salvarUsuarioModal() {
   saveUserModalBtn.disabled = false;
   saveUserModalBtn.innerText = id ? "Salvar alterações" : "Criar usuário";
 
-  if (result.error) {
-    console.error("Erro ao salvar usuário:", result.error);
-    alert("Erro ao salvar usuário. Verifique se o e-mail já existe ou se há permissão de insert no Supabase.");
-    return;
+  console.error("Erro ao salvar usuário:", result.error);
+
+alert(
+  JSON.stringify(result.error, null, 2)
+);
+
+return;
   }
 
   if (!result.data || result.data.length === 0) {
