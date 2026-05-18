@@ -4198,15 +4198,29 @@ async function salvarUsuarioModal() {
       .eq("id", id)
       .select("id, nome, sobrenome, email, cargo, ativo");
   } else {
-  result = await supabaseClient
-    .from("usuarios_perfis")
-    .insert([
-      {
-        ...payload,
-        id: crypto.randomUUID()
-      }
-    ])
-    .select("id, nome, sobrenome, email, cargo, ativo");
+  const { data, error } = await supabaseClient.functions.invoke(
+    "create-user",
+    {
+      body: payload
+    }
+  );
+
+  result = {
+    data: data?.success ? [data.user] : [],
+    error: error || data?.error
+      ? { message: error?.message || data?.error }
+      : null
+  };
+
+  if (data?.senha_temporaria) {
+    alert(
+      "Usuário criado com sucesso.\n\n" +
+      "Senha temporária:\n" +
+      data.senha_temporaria +
+      "\n\n" +
+      "Anote esta senha e envie ao usuário."
+    );
+  }
 }
 
   saveUserModalBtn.disabled = false;
@@ -4229,9 +4243,12 @@ async function salvarUsuarioModal() {
 
   fecharModalUsuario();
 
-  await carregarEquipe();
+await carregarEquipe();
 
-  alert(id ? "Usuário atualizado com sucesso." : "Usuário criado com sucesso.");
+if (id) {
+  alert("Usuário atualizado com sucesso.");
+}
+
 }
 
 async function carregarPerfilUsuario(user) {
