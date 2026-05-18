@@ -2294,6 +2294,7 @@ line-height: 1.15;
     const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
 
+
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
       SUPABASE_ANON_KEY
@@ -3875,13 +3876,14 @@ async function salvarUsuarioModal() {
   saveUserModalBtn.disabled = false;
   saveUserModalBtn.innerText = id ? "Salvar alterações" : "Criar usuário";
 
-  console.error("Erro ao salvar usuário:", result.error);
+  if (result.error) {
+    console.error("Erro ao salvar usuário:", result.error);
 
-alert(
-  JSON.stringify(result.error, null, 2)
-);
+    alert(
+      JSON.stringify(result.error, null, 2)
+    );
 
-return;
+    return;
   }
 
   if (!result.data || result.data.length === 0) {
