@@ -1851,6 +1851,109 @@ line-height: 1.15;
   cursor: pointer;
 }
 
+.forward-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  padding: 24px;
+}
+
+.forward-modal.open {
+  display: flex;
+}
+
+.forward-modal-card {
+  width: 460px;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgba(16, 24, 40, 0.28);
+  overflow: hidden;
+}
+
+.forward-modal-header {
+  padding: 20px 22px;
+  border-bottom: 1px solid #edf0f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forward-modal-header h3 {
+  font-size: 18px;
+  font-weight: 900;
+  color: #101828;
+}
+
+.forward-modal-close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: #f2f4f7;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  color: #667085;
+}
+
+.forward-modal-body {
+  padding: 18px;
+}
+
+#forwardSearchInput {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 14px;
+}
+
+.forward-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.forward-item {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.forward-item:hover {
+  background: #f8fafc;
+  border-color: #dbeafe;
+}
+
+.forward-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #101828;
+}
+
+.forward-subtitle {
+  font-size: 12px;
+  color: #667085;
+  margin-top: 3px;
+}
+
+.forward-send {
+  color: #2563eb;
+  font-weight: 900;
+}
+
   </style>
 </head>
 
@@ -2312,6 +2415,36 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="forward-modal" id="forwardModal">
+  <div class="forward-modal-card">
+    <div class="forward-modal-header">
+      <h3>Encaminhar mensagem</h3>
+
+      <button
+        type="button"
+        class="forward-modal-close"
+        id="closeForwardModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="forward-modal-body">
+      <input
+        id="forwardSearchInput"
+        type="text"
+        placeholder="Buscar conversa..."
+        autocomplete="off"
+      />
+
+      <div
+        class="forward-list"
+        id="forwardConversationList"
+      ></div>
+    </div>
+  </div>
+</div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
@@ -2455,6 +2588,20 @@ const userModalCargo =
 
 const userModalAtivo =
   document.getElementById("userModalAtivo");
+
+const forwardModal =
+  document.getElementById("forwardModal");
+
+const closeForwardModalBtn =
+  document.getElementById("closeForwardModalBtn");
+
+const forwardSearchInput =
+  document.getElementById("forwardSearchInput");
+
+const forwardConversationList =
+  document.getElementById("forwardConversationList");
+
+let messageToForward = null;
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -2717,26 +2864,96 @@ function mostrarDigitando() {
   }, 1500);
 }
 
-async function encaminharMensagem(message) {
-  if (!message) return;
+function abrirModalEncaminhar(message) {
+  messageToForward = message;
 
-  const conversasDestino = conversations
-    .filter(c => c.id !== selectedConversationId)
-    .map(c => `${c.id} - ${c.name} (${c.status})`)
-    .join("\n");
+  forwardSearchInput.value = "";
 
-  if (!conversasDestino) {
-    alert("Não há outra conversa disponível para encaminhar.");
+  renderForwardConversations();
+
+  forwardModal.classList.add("open");
+
+  setTimeout(() => {
+    forwardSearchInput.focus();
+  }, 100);
+}
+
+function fecharModalEncaminhar() {
+  forwardModal.classList.remove("open");
+
+  messageToForward = null;
+
+  forwardSearchInput.value = "";
+  forwardConversationList.innerHTML = "";
+}
+
+function renderForwardConversations() {
+  const termo =
+    forwardSearchInput.value.trim().toLowerCase();
+
+  const lista = conversations.filter(c => {
+    if (c.id === selectedConversationId) return false;
+
+    return (
+      !termo ||
+      c.name?.toLowerCase().includes(termo) ||
+      c.phone?.toLowerCase().includes(termo) ||
+      c.email?.toLowerCase().includes(termo) ||
+      c.status?.toLowerCase().includes(termo)
+    );
+  });
+
+  if (lista.length === 0) {
+    forwardConversationList.innerHTML = `
+      <div style="padding:16px;color:#667085;font-size:14px;">
+        Nenhuma conversa encontrada.
+      </div>
+    `;
     return;
   }
 
-  const destinoDigitado = prompt(
-    "Digite o ID da conversa destino:\n\n" + conversasDestino
-  );
+  forwardConversationList.innerHTML = lista.map(c => `
+    <div
+      class="forward-item"
+      data-forward-conversation-id="${c.id}"
+    >
+      <div class="client-avatar">
+        ${c.initials}
+      </div>
 
-  if (!destinoDigitado) return;
+      <div style="min-width:0;">
+        <div class="forward-name">
+          ${c.name}
+        </div>
 
-  const conversaDestinoId = Number(destinoDigitado.trim());
+        <div class="forward-subtitle">
+          ${c.status.replace("_", " ")} • ${c.lastMessage || "Conversa"}
+        </div>
+      </div>
+
+      <div class="forward-send">
+        ➤
+      </div>
+    </div>
+  `).join("");
+
+  document
+    .querySelectorAll(".forward-item")
+    .forEach(item => {
+      item.addEventListener("click", async () => {
+        const destinoId = Number(
+          item.dataset.forwardConversationId
+        );
+
+        await confirmarEncaminhamento(destinoId);
+      });
+    });
+}
+
+async function confirmarEncaminhamento(conversaDestinoId) {
+  if (!messageToForward) return;
+const mensagemOriginal = messageToForward;
+messageToForward = null;
 
   const conversaDestino = conversations.find(
     c => c.id === conversaDestinoId
@@ -2752,15 +2969,15 @@ async function encaminharMensagem(message) {
     .insert([
       {
         conversa_id: conversaDestino.id,
-        conteudo: message.text || "",
+        conteudo: mensagemOriginal.text || "",
         canal: conversaDestino.channel || "WhatsApp",
         direcao: "out",
         status_entrega: "enviada",
-        tipo: message.tipo || "texto",
-        media_url: message.media_url || null,
-        media_nome: message.media_nome || null,
-        media_mime: message.media_mime || null,
-        media_tamanho: message.media_tamanho || null,
+        tipo: mensagemOriginal.tipo || "texto",
+        media_url: mensagemOriginal.media_url || null,
+        media_nome: mensagemOriginal.media_nome || null,
+        media_mime: mensagemOriginal.media_mime || null,
+        media_tamanho: mensagemOriginal.media_tamanho || null,
         reply_to_message_id: null
       }
     ]);
@@ -2778,9 +2995,11 @@ async function encaminharMensagem(message) {
     })
     .eq("id", conversaDestino.id);
 
-  alert("Mensagem encaminhada com sucesso.");
+  fecharModalEncaminhar();
 
   await carregarClientes();
+
+  alert("Mensagem encaminhada com sucesso.");
 }
 
 function renderChat() {
@@ -3035,7 +3254,7 @@ replyBtn.addEventListener("click", () => {
 const forwardBtn = row.querySelector(".forward-btn");
 
 forwardBtn.addEventListener("click", () => {
-  encaminharMensagem(message);
+  abrirModalEncaminhar(message);
 });
 
   });
@@ -4457,6 +4676,22 @@ newUserBtn.addEventListener(
   "click",
   abrirModalNovoUsuario
 );
+
+closeForwardModalBtn.addEventListener(
+  "click",
+  fecharModalEncaminhar
+);
+
+forwardSearchInput.addEventListener(
+  "input",
+  renderForwardConversations
+);
+
+forwardModal.addEventListener("click", event => {
+  if (event.target === forwardModal) {
+    fecharModalEncaminhar();
+  }
+});
 
 chatMenuItem.addEventListener("click", () => {
 
