@@ -2997,9 +2997,22 @@ messageToForward = null;
 
   fecharModalEncaminhar();
 
-  await carregarClientes();
+currentFilter = conversaDestino.status;
 
-  alert("Mensagem encaminhada com sucesso.");
+tabs.forEach(t => t.classList.remove("active"));
+
+document
+  .querySelector(`[data-filter="${conversaDestino.status}"]`)
+  ?.classList.add("active");
+
+selectedConversationId = conversaDestino.id;
+
+forceScrollToBottom = true;
+
+await carregarClientes();
+
+alert("Mensagem encaminhada com sucesso.");
+
 }
 
 function renderChat() {
