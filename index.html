@@ -3824,10 +3824,14 @@ async function salvarUsuarioModal() {
     ativo: userModalAtivo.value === "true"
   };
 
-  const { error } = await supabaseClient
-    .from("usuarios_perfis")
-    .update(payload)
-    .eq("id", id);
+  const { data, error } = await supabaseClient
+  .from("usuarios_perfis")
+  .update(payload)
+  .eq("id", id)
+  .select("id, nome, sobrenome, email, cargo, ativo")
+  .single();
+
+console.log("Usuário salvo:", data);
 
   saveUserModalBtn.disabled = false;
   saveUserModalBtn.innerText = "Salvar alterações";
