@@ -593,13 +593,16 @@ line-height: 1.15;
     }
 
     .bubble {
+  display: inline-flex;
+  flex-direction: column;
+
   max-width: 55%;
   width: fit-content;
   min-width: 0;
 
-  padding: 7px 9px 5px;
+  padding: 6px 9px 4px;
 
-  border-radius: 7.5px;
+  border-radius: 10px;
 
   font-size: 14px;
   line-height: 1.35;
@@ -1207,21 +1210,30 @@ line-height: 1.15;
 }
 
 .message-content-line {
-  display: flex;
+  display: inline-flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
   max-width: 100%;
 }
 
 .message-content-line .message-text {
-  flex: 0 1 auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: inline;
+
+  flex: unset;
 }
 
 .message-content-line .msg-time {
   flex-shrink: 0;
-  margin-top: 0;
-  margin-left: 8px;
+
+  margin: 0;
+
   align-self: flex-end;
+
+  white-space: nowrap;
+
+  font-size: 11px;
 }
 
 .message-text {
