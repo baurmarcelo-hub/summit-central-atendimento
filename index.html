@@ -3734,8 +3734,28 @@ conversations.sort((a, b) => {
   return atividadeB - atividadeA;
 });
 
-      if (!selectedConversationId && conversations.length > 0) {
-  selectedConversationId = conversations[0].id;
+      const conversaSelecionadaAindaExiste =
+  conversations.find(c =>
+    c.id === selectedConversationId &&
+    c.status === currentFilter &&
+    (
+      ownerFilter === "todas" ||
+      c.atendente === usuarioLogadoNome
+    )
+  );
+
+if (!conversaSelecionadaAindaExiste) {
+  const primeiraConversaDoFiltro =
+    conversations.find(c =>
+      c.status === currentFilter &&
+      (
+        ownerFilter === "todas" ||
+        c.atendente === usuarioLogadoNome
+      )
+    );
+
+  selectedConversationId =
+    primeiraConversaDoFiltro?.id || null;
 }
 
 if (selectedConversationId) {
