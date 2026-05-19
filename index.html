@@ -3861,7 +3861,7 @@ copyOption.addEventListener("click", async event => {
   );
 });
 
-  deleteOption.addEventListener("click", event => {
+  deleteOption.addEventListener("click", async event => {
   event.stopPropagation();
 
   actionMenu.classList.remove("open");
@@ -3870,6 +3870,17 @@ copyOption.addEventListener("click", async event => {
     confirm("Deseja deletar esta mensagem?");
 
   if (!confirmar) return;
+
+  const { error } = await supabaseClient
+    .from("mensagens")
+    .delete()
+    .eq("id", message.id);
+
+  if (error) {
+    console.error("Erro ao deletar mensagem:", error);
+    alert("Erro ao deletar mensagem.");
+    return;
+  }
 
   row.remove();
 });
