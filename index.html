@@ -593,11 +593,12 @@ line-height: 1.15;
     }
 
     .bubble {
+  display: inline-block;
   max-width: 62%;
-  width: fit-content;
-  min-width: 60px;
+  width: auto;
+  min-width: 0;
 
-  padding: 5px 8px 4px;
+  padding: 8px 10px 5px;
 
   border-radius: 7.5px;
 
@@ -1209,6 +1210,7 @@ line-height: 1.15;
 .message-text {
   white-space: pre-wrap;
   word-break: break-word;
+  display: inline;
 
   font-size: 15px;
 
