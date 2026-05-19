@@ -1961,23 +1961,24 @@ line-height: 1.15;
   margin: 4px -10px -10px;
 }
 
-.file-actions a {
+.file-actions button {
+  border: 0;
+  background: transparent;
   text-align: center;
   padding: 10px 8px;
-  text-decoration: none;
   color: #2563eb;
   font-size: 13px;
   font-weight: 800;
+  cursor: pointer;
 }
 
-.file-actions a:first-child {
+.file-actions button:first-child {
   border-right: 1px solid rgba(16, 24, 40, 0.08);
 }
 
-.file-actions a:hover {
+.file-actions button:hover {
   background: rgba(37, 99, 235, 0.08);
 }
-
 .media-image-box {
   display: inline-block;
 }
@@ -1985,10 +1986,13 @@ line-height: 1.15;
 .media-download-link {
   display: inline-flex;
   margin-top: 4px;
+  border: 0;
+  background: transparent;
   font-size: 12px;
   font-weight: 800;
   color: #2563eb;
-  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .media-download-link:hover {
@@ -2399,17 +2403,16 @@ line-height: 1.15;
   <button class="image-modal-close" id="imageModalClose">×</button>
 
   <div class="image-modal-content">
-    <img id="imageModalImg" src="" alt="Preview da imagem" />
+  <img id="imageModalImg" src="" alt="Preview da imagem" />
 
-    <a
-      id="imageModalDownload"
-      href="#"
-      download="imagem"
-      class="image-modal-download"
-    >
-      ⬇ Baixar imagem
-    </a>
-  </div>
+  <button
+    id="imageModalDownload"
+    type="button"
+    class="image-modal-download"
+  >
+    ⬇ Baixar imagem
+  </button>
+</div>
 </div>
 
 <div class="drop-hint" id="dropHint">
@@ -2901,8 +2904,9 @@ function openImageModal(url, nomeArquivo = "imagem") {
 function atualizarDownloadImagem(url, nomeArquivo = "imagem") {
   if (!imageModalDownload) return;
 
-  imageModalDownload.href = url;
-  imageModalDownload.download = nomeArquivo;
+  imageModalDownload.onclick = () => {
+    baixarArquivo(url, nomeArquivo);
+  };
 }
 
 function closeImageModal() {
@@ -2910,9 +2914,8 @@ function closeImageModal() {
   imageModalImg.src = "";
 
   if (imageModalDownload) {
-    imageModalDownload.href = "#";
-    imageModalDownload.download = "imagem";
-  }
+  imageModalDownload.onclick = null;
+}
 }
 
 function mostrarReplyPreview(message) {
@@ -3107,10 +3110,50 @@ alert("Mensagem encaminhada com sucesso.");
 
 }
 
-function formatarTipoArquivo(mime, tamanho) {
-  const extensao = mime
-    ? mime.split("/").pop().toUpperCase()
-    : "ARQUIVO";
+function getExtensaoArquivo(nomeArquivo, mime) {
+  if (nomeArquivo && nomeArquivo.includes(".")) {
+    return nomeArquivo.split(".").pop().toUpperCase();
+  }
+
+  if (!mime) return "ARQUIVO";
+
+  if (mime.includes("spreadsheet")) return "XLSX";
+  if (mime.includes("excel")) return "XLSX";
+  if (mime.includes("pdf")) return "PDF";
+  if (mime.includes("word")) return "DOCX";
+  if (mime.includes("image")) return "IMAGEM";
+  if (mime.includes("audio")) return "ÁUDIO";
+
+  return mime.split("/").pop().toUpperCase();
+}
+
+function baixarArquivo(url, nomeArquivo = "arquivo") {
+  fetch(url)
+    .then(response => response.blob())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    })
+    .catch(error => {
+      console.error("Erro ao baixar arquivo:", error);
+      window.open(url, "_blank");
+    });
+}
+
+function abrirArquivo(url) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function formatarTipoArquivo(mime, tamanho, nomeArquivo = "") {
+  const extensao = getExtensaoArquivo(nomeArquivo, mime);
 
   const tamanhoKb = tamanho
     ? Math.round(tamanho / 1024)
@@ -3302,14 +3345,14 @@ mensagensDaConversa
           onclick="openImageModal('${message.media_url}', '${message.media_nome || "imagem"}')"
         />
 
-        <a
-          href="${message.media_url}"
-          download="${message.media_nome || "imagem"}"
-          class="media-download-link"
-          title="Baixar imagem"
-        >
-          ⬇ Baixar
-        </a>
+        <button
+  type="button"
+  class="media-download-link"
+  title="Baixar imagem"
+  onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "imagem"}')"
+>
+  ⬇ Baixar
+</button>
       </div>
     `
     : message.media_mime?.startsWith("audio/")
@@ -3337,26 +3380,25 @@ mensagensDaConversa
           </div>
 
           <div class="file-label">
-            ${formatarTipoArquivo(message.media_mime, message.media_tamanho)}
+            ${formatarTipoArquivo(message.media_mime, message.media_tamanho, message.media_nome)}
           </div>
         </div>
 
         <div class="file-actions">
-          <a
-            href="${message.media_url}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Abrir
-          </a>
+  <button
+    type="button"
+    onclick="abrirArquivo('${message.media_url}')"
+  >
+    Abrir
+  </button>
 
-          <a
-            href="${message.media_url}"
-            download="${message.media_nome || "arquivo"}"
-          >
-            Salvar
-          </a>
-        </div>
+  <button
+    type="button"
+    onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "arquivo"}')"
+  >
+    Salvar
+  </button>
+</div>
       </div>
     `
   : "";
