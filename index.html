@@ -2016,6 +2016,20 @@ line-height: 1.15;
   background: #eff6ff;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-action-btn {
+  width: auto !important;
+  height: 42px;
+  margin: 0 !important;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
   </style>
 </head>
 
@@ -2191,7 +2205,19 @@ line-height: 1.15;
           </div>
         </div>
 
-        <button class="accept-btn" id="acceptBtn">Aceitar Conversa</button>
+        <div class="header-actions">
+  <button class="secondary-action-btn header-action-btn" id="topBackToQueueBtn">
+    Voltar
+  </button>
+
+  <button class="danger-btn header-action-btn" id="topFinishBtn">
+    Finalizar
+  </button>
+
+  <button class="accept-btn header-action-btn" id="acceptBtn">
+    Aceitar Conversa
+  </button>
+</div>
       </header>
 
       <nav class="chat-tabs">
@@ -2591,6 +2617,10 @@ let isRecordingAudio = false;
     const finishBtn = document.getElementById("finishBtn");
     const backToQueueBtn =
       document.getElementById("backToQueueBtn");
+    const topFinishBtn =
+      document.getElementById("topFinishBtn");
+    const topBackToQueueBtn =
+      document.getElementById("topBackToQueueBtn");
     const tabs = document.querySelectorAll(".tab");
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
@@ -3243,26 +3273,37 @@ if (!conversation) {
 acceptBtn.classList.add("hidden");
 finishBtn.classList.add("hidden");
 backToQueueBtn.classList.add("hidden");
+topFinishBtn.classList.add("hidden");
+topBackToQueueBtn.classList.add("hidden");
 composer.classList.add("hidden");
 
 if (conversation.status === "aguardando") {
   acceptBtn.classList.remove("hidden");
+  topFinishBtn.classList.remove("hidden");
+
+  topFinishBtn.textContent = "Finalizar";
+
   composer.classList.remove("hidden");
 }
 
 if (conversation.status === "em_atendimento") {
-
   finishBtn.classList.remove("hidden");
-
   backToQueueBtn.classList.remove("hidden");
 
-  composer.classList.remove("hidden");
+  topFinishBtn.classList.remove("hidden");
+  topBackToQueueBtn.classList.remove("hidden");
 
+  topFinishBtn.textContent = "Finalizar";
+
+  composer.classList.remove("hidden");
 }
 
 if (conversation.status === "finalizado") {
   finishBtn.classList.remove("hidden");
   finishBtn.textContent = "Reabrir Conversa";
+
+  topFinishBtn.classList.remove("hidden");
+  topFinishBtn.textContent = "Reabrir";
 } else {
   finishBtn.textContent = "Finalizar Atendimento";
 }
@@ -4841,6 +4882,17 @@ backToQueueBtn.addEventListener(
   "click",
   voltarParaFila
 );
+
+topFinishBtn.addEventListener(
+  "click",
+  finalizarAtendimento
+);
+
+topBackToQueueBtn.addEventListener(
+  "click",
+  voltarParaFila
+);
+
 searchInput.addEventListener("input", () => {
   renderConversations();
 });
