@@ -2938,7 +2938,7 @@ let currentFilter = "aguardando";
 let selectedConversationId = null;
 let replyingToMessage = null;
 let selectionMode = false;
-let selectedMessages = [];
+let selectedMessages = new Set();
 let typingTimeout = null;
 let isSendingMessage = false;
 let forceScrollToBottom = false;
@@ -3114,7 +3114,7 @@ let messageToForward = null;
 
 function limparSelecaoMensagens() {
   selectionMode = false;
-  selectedMessages = [];
+  selectedMessages.clear();
 
   selectionBar.classList.add("hidden");
   selectionCountText.textContent = "0 itens selecionados";
@@ -3123,7 +3123,7 @@ function limparSelecaoMensagens() {
 }
 
 function atualizarBarraSelecao() {
-  if (!selectionMode || selectedMessages.length === 0) {
+  if (!selectionMode || selectedMessages.size === 0) {
     selectionBar.classList.add("hidden");
     return;
   }
@@ -3131,9 +3131,9 @@ function atualizarBarraSelecao() {
   selectionBar.classList.remove("hidden");
 
   selectionCountText.textContent =
-    selectedMessages.length === 1
-      ? "1 item selecionado"
-      : `${selectedMessages.length} itens selecionados`;
+    selectedMessages.size === 1
+  ? "1 item selecionado"
+  : `${selectedMessages.size} itens selecionados`;
 }
 
 async function buscarMensagensGlobais() {
@@ -3239,7 +3239,7 @@ function criarCardConversa(conversation) {
 
   if (selectionMode) {
   selectionMode = false;
-  selectedMessages = [];
+  selectedMessages.clear();
   selectionBar.classList.add("hidden");
   selectionCountText.textContent = "0 itens selecionados";
 }
@@ -3798,7 +3798,7 @@ if (selectionMode) {
   row.classList.add("selectable");
 }
 
-if (selectedMessages.includes(message.id)) {
+if (selectedMessages.has(message.id)) {
   row.classList.add("selected");
 }
 
@@ -3817,15 +3817,13 @@ row.addEventListener("click", event => {
 
   row.classList.toggle("selected");
 
-  if (selectedMessages.includes(message.id)) {
-  selectedMessages = selectedMessages.filter(
-    id => id !== message.id
-  );
+ if (selectedMessages.has(message.id)) {
+  selectedMessages.delete(message.id);
 } else {
-  selectedMessages.push(message.id);
+  selectedMessages.add(message.id);
 }
 
-if (selectedMessages.length === 0) {
+if (selectedMessages.size === 0) {
   limparSelecaoMensagens();
   return;
 }
@@ -4043,7 +4041,8 @@ selectOption.addEventListener("click", event => {
   actionMenu.classList.remove("open");
 
   selectionMode = true;
-selectedMessages = [message.id];
+selectedMessages.clear();
+selectedMessages.add(message.id);
 
 renderChat();
 
@@ -5678,7 +5677,7 @@ tabs.forEach(tab => {
 
     if (selectionMode) {
   selectionMode = false;
-  selectedMessages = [];
+  selectedMessages.clear();
   selectionBar.classList.add("hidden");
   selectionCountText.textContent = "0 itens selecionados";
 }
