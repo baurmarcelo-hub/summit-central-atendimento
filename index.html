@@ -3429,11 +3429,15 @@ ${
 
 const replyBtn = row.querySelector(".reply-btn");
 
-replyBtn.addEventListener("click", () => {
-  replyingToMessage = message;
-  mostrarReplyPreview(message);
-  input.focus();
-});
+if (conversation.status === "finalizado") {
+  replyBtn.style.display = "none";
+} else {
+  replyBtn.addEventListener("click", () => {
+    replyingToMessage = message;
+    mostrarReplyPreview(message);
+    input.focus();
+  });
+}
 
 const forwardBtn = row.querySelector(".forward-btn");
 
