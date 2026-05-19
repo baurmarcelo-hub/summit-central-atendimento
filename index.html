@@ -1180,6 +1180,51 @@ line-height: 1.15;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+.message-action-menu {
+  position: absolute;
+  top: 38px;
+  right: 6px;
+  width: 150px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(16, 24, 40, 0.18);
+  padding: 8px;
+  display: none;
+  z-index: 20;
+}
+
+.message-action-menu.open {
+  display: block;
+}
+
+.message-action-menu button {
+  width: 100%;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  text-align: left;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #344054;
+  cursor: pointer;
+}
+
+.message-action-menu button:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.message-action-menu button.danger {
+  color: #dc2626;
+}
+
+.message-action-menu button.danger:hover {
+  background: #fef2f2;
+}
+
 .reply-preview {
   background: rgba(255,255,255,0.55);
   border-left: 4px solid #16c784;
@@ -3695,8 +3740,25 @@ mensagensDaConversa
 
 row.innerHTML = `
   <div class="bubble ${message.direction}">
-    <button class="reply-btn" title="Responder">↩</button>
-    <button class="forward-btn" title="Encaminhar">➡</button>
+    <button class="reply-btn message-menu-btn" title="Ações">⋮</button>
+
+<div class="message-action-menu">
+  <button type="button" class="msg-reply-option">
+    ↩ Responder
+  </button>
+
+  <button type="button" class="msg-forward-option">
+    ➡ Encaminhar
+  </button>
+
+  <button type="button" class="msg-copy-option">
+    📋 Copiar
+  </button>
+
+  <button type="button" class="msg-delete-option danger">
+    🗑 Deletar
+  </button>
+</div>
     ${replyHtml}
     ${mediaHtml}
 
@@ -3735,22 +3797,68 @@ ${
 
     messagesEl.appendChild(row);
 
-const replyBtn = row.querySelector(".reply-btn");
+const menuBtn =
+  row.querySelector(".message-menu-btn");
+
+const actionMenu =
+  row.querySelector(".message-action-menu");
+
+menuBtn?.addEventListener("click", event => {
+  event.stopPropagation();
+
+  document
+    .querySelectorAll(".message-action-menu.open")
+    .forEach(menu => {
+      if (menu !== actionMenu) {
+        menu.classList.remove("open");
+      }
+    });
+
+  actionMenu?.classList.toggle("open");
+});
+
+const replyOption =
+  row.querySelector(".msg-reply-option");
+
+const forwardOption =
+  row.querySelector(".msg-forward-option");
+
+const copyOption =
+  row.querySelector(".msg-copy-option");
+
+const deleteOption =
+  row.querySelector(".msg-delete-option");
 
 if (conversation.status === "finalizado") {
-  replyBtn.style.display = "none";
+  replyOption.style.display = "none";
 } else {
-  replyBtn.addEventListener("click", () => {
+  replyOption.addEventListener("click", event => {
+    event.stopPropagation();
+
+    actionMenu.classList.remove("open");
+
     replyingToMessage = message;
     mostrarReplyPreview(message);
     input.focus();
   });
 }
 
-const forwardBtn = row.querySelector(".forward-btn");
+forwardOption.addEventListener("click", event => {
+  event.stopPropagation();
 
-forwardBtn.addEventListener("click", () => {
+  actionMenu.classList.remove("open");
+
   abrirModalEncaminhar(message);
+});
+
+copyOption.addEventListener("click", async event => {
+  event.stopPropagation();
+
+  actionMenu.classList.remove("open");
+
+  await navigator.clipboard.writeText(
+    message.text || message.media_nome || ""
+  );
 });
 
   });
@@ -5393,6 +5501,12 @@ if (teamProfileFilter) {
 
 document.addEventListener("click", () => {
   fecharMenusEquipe();
+
+  document
+    .querySelectorAll(".message-action-menu.open")
+    .forEach(menu => {
+      menu.classList.remove("open");
+    });
 });
 
 closeUserModalBtn.addEventListener("click", fecharModalUsuario);
