@@ -3871,18 +3871,31 @@ copyOption.addEventListener("click", async event => {
 
   if (!confirmar) return;
 
-  const { error } = await supabaseClient
-    .from("mensagens")
-    .delete()
-    .eq("id", message.id);
+  const { data, error } = await supabaseClient
+  .from("mensagens")
+  .delete()
+  .eq("id", message.id)
+  .select("id");
 
-  if (error) {
-    console.error("Erro ao deletar mensagem:", error);
-    alert("Erro ao deletar mensagem.");
-    return;
-  }
+if (error) {
+  console.error("Erro ao deletar mensagem:", error);
+  alert("Erro ao deletar mensagem.");
+  return;
+}
 
-  row.remove();
+if (!data || data.length === 0) {
+  alert(
+    "A mensagem não foi deletada no Supabase. Verifique a política RLS da tabela mensagens."
+  );
+  return;
+}
+
+messagesByConversation[conversation.id] =
+  messagesByConversation[conversation.id].filter(
+    m => m.id !== message.id
+  );
+
+row.remove();
 });
 
   });
