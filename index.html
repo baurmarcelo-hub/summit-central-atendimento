@@ -546,10 +546,9 @@ line-height: 1.15;
     }
 
     .chat-tab.active {
-      color: #0e9f6e;
-      border-bottom: 3px solid #0e9f6e;
-      padding-bottom: 15px;
-    }
+  color: #2563eb;
+  border-bottom: 3px solid #2563eb;
+}
 
     .messages {
   flex: 1;
@@ -1101,11 +1100,11 @@ line-height: 1.15;
   color: #8696a0;
 }
 
-.message-status.status-lida {
-  color: #53bdeb;
+.message-status.status-entregue {
+  color: #8696a0;
 }
 
-.message-status.status-entregue {
+.message-status.status-lida {
   color: #53bdeb;
 }
 
@@ -1278,17 +1277,6 @@ line-height: 1.15;
 .global-search-box {
   position: relative;
   margin-bottom: 14px;
-}
-
-.global-search-box input {
-  width: 100%;
-  border: 1px solid #d9dee8;
-  background: #ffffff;
-  height: 42px;
-  border-radius: 12px;
-  padding: 0 14px;
-  font-size: 13px;
-  outline: none;
 }
 
 .global-search-results {
@@ -1605,6 +1593,12 @@ line-height: 1.15;
   background: #f6f8fb;
   padding: 24px;
   overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  height: 100vh;
+  min-height: 0;
 }
 
 .client-searchbar {
@@ -1655,6 +1649,20 @@ line-height: 1.15;
 }
 
 .client-row:hover {
+  background: #f8fafc;
+}
+
+.client-table-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.client-table-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+
   background: #f8fafc;
 }
 
@@ -2242,6 +2250,8 @@ line-height: 1.15;
   />
 </div>
 
+<div class="client-table-wrapper">
+
 <div class="team-table">
   <div class="client-table-header">
     <div>Nome</div>
@@ -2266,7 +2276,9 @@ line-height: 1.15;
         <button class="team-more-btn">⋮</button>
       </div>
     </div>
-  </div>
+    </div>
+</div>
+
 </div>
 </section>
 
