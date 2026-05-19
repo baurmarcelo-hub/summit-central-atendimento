@@ -4954,12 +4954,6 @@ closeUserModalBtn.addEventListener("click", fecharModalUsuario);
 
 cancelUserModalBtn.addEventListener("click", fecharModalUsuario);
 
-userModal.addEventListener("click", event => {
-  if (event.target === userModal) {
-    fecharModalUsuario();
-  }
-});
-
 saveUserModalBtn.addEventListener(
   "click",
   salvarUsuarioModal
