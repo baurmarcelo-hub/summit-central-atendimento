@@ -3861,6 +3861,19 @@ copyOption.addEventListener("click", async event => {
   );
 });
 
+  deleteOption.addEventListener("click", event => {
+  event.stopPropagation();
+
+  actionMenu.classList.remove("open");
+
+  const confirmar =
+    confirm("Deseja deletar esta mensagem?");
+
+  if (!confirmar) return;
+
+  row.remove();
+});
+
   });
 
   const distanceFromBottom =
