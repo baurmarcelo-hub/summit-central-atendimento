@@ -2312,6 +2312,23 @@ line-height: 1.15;
   font-weight: 800;
 }
 
+.selection-action-btn {
+  height: 38px;
+  border: 0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #2563eb;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.selection-action-btn:hover {
+  background: #eff6ff;
+}
+
   </style>
 </head>
 
@@ -2725,6 +2742,14 @@ line-height: 1.15;
   <strong id="selectionCountText">
     0 itens selecionados
   </strong>
+<button
+  type="button"
+  class="selection-action-btn"
+  id="forwardSelectedBtn"
+>
+  ➡ Encaminhar
+</button>
+
 </div>
 
     </main>
@@ -3106,7 +3131,10 @@ const cancelSelectionBtn =
 const selectionCountText =
   document.getElementById("selectionCountText");
 
-let messageToForward = null;
+const forwardSelectedBtn =
+  document.getElementById("forwardSelectedBtn");
+
+let messagesToForward = [];
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -3416,8 +3444,10 @@ function mostrarDigitando() {
   }, 1500);
 }
 
-function abrirModalEncaminhar(message) {
-  messageToForward = message;
+function abrirModalEncaminhar(messages) {
+  messagesToForward = Array.isArray(messages)
+    ? messages
+    : [messages];
 
   forwardSearchInput.value = "";
 
@@ -3433,7 +3463,7 @@ function abrirModalEncaminhar(message) {
 function fecharModalEncaminhar() {
   forwardModal.classList.remove("open");
 
-  messageToForward = null;
+  messagesToForward = [];
 
   forwardSearchInput.value = "";
   forwardConversationList.innerHTML = "";
@@ -3503,9 +3533,9 @@ function renderForwardConversations() {
 }
 
 async function confirmarEncaminhamento(conversaDestinoId) {
-  if (!messageToForward) return;
-const mensagemOriginal = messageToForward;
-messageToForward = null;
+  if (!messagesToForward.length) return;
+
+  const mensagensOriginais = [...messagesToForward];
 
   const conversaDestino = conversations.find(
     c => c.id === conversaDestinoId
@@ -3516,27 +3546,27 @@ messageToForward = null;
     return;
   }
 
+  const mensagensParaInserir = mensagensOriginais.map(mensagemOriginal => ({
+    conversa_id: conversaDestino.id,
+    conteudo: mensagemOriginal.text || "",
+    canal: conversaDestino.channel || "WhatsApp",
+    direcao: "out",
+    status_entrega: "enviada",
+    tipo: mensagemOriginal.tipo || "texto",
+    media_url: mensagemOriginal.media_url || null,
+    media_nome: mensagemOriginal.media_nome || null,
+    media_mime: mensagemOriginal.media_mime || null,
+    media_tamanho: mensagemOriginal.media_tamanho || null,
+    reply_to_message_id: null
+  }));
+
   const { error } = await supabaseClient
     .from("mensagens")
-    .insert([
-      {
-        conversa_id: conversaDestino.id,
-        conteudo: mensagemOriginal.text || "",
-        canal: conversaDestino.channel || "WhatsApp",
-        direcao: "out",
-        status_entrega: "enviada",
-        tipo: mensagemOriginal.tipo || "texto",
-        media_url: mensagemOriginal.media_url || null,
-        media_nome: mensagemOriginal.media_nome || null,
-        media_mime: mensagemOriginal.media_mime || null,
-        media_tamanho: mensagemOriginal.media_tamanho || null,
-        reply_to_message_id: null
-      }
-    ]);
+    .insert(mensagensParaInserir);
 
   if (error) {
-    console.error("Erro ao encaminhar mensagem:", error);
-    alert("Erro ao encaminhar mensagem.");
+    console.error("Erro ao encaminhar mensagens:", error);
+    alert("Erro ao encaminhar mensagens.");
     return;
   }
 
@@ -3549,22 +3579,29 @@ messageToForward = null;
 
   fecharModalEncaminhar();
 
-currentFilter = conversaDestino.status;
+  if (selectionMode) {
+    limparSelecaoMensagens();
+  }
 
-tabs.forEach(t => t.classList.remove("active"));
+  currentFilter = conversaDestino.status;
 
-document
-  .querySelector(`[data-filter="${conversaDestino.status}"]`)
-  ?.classList.add("active");
+  tabs.forEach(t => t.classList.remove("active"));
 
-selectedConversationId = conversaDestino.id;
+  document
+    .querySelector(`[data-filter="${conversaDestino.status}"]`)
+    ?.classList.add("active");
 
-forceScrollToBottom = true;
+  selectedConversationId = conversaDestino.id;
 
-await carregarClientes();
+  forceScrollToBottom = true;
 
-alert("Mensagem encaminhada com sucesso.");
+  await carregarClientes();
 
+  alert(
+    mensagensOriginais.length === 1
+      ? "Mensagem encaminhada com sucesso."
+      : `${mensagensOriginais.length} mensagens encaminhadas com sucesso.`
+  );
 }
 
 function getExtensaoArquivo(nomeArquivo, mime) {
@@ -5596,6 +5633,27 @@ cancelSelectionBtn.addEventListener(
   "click",
   limparSelecaoMensagens
 );
+
+forwardSelectedBtn.addEventListener("click", () => {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) return;
+
+  const mensagensDaConversa =
+    messagesByConversation[conversation.id] || [];
+
+  const mensagensSelecionadas =
+    mensagensDaConversa.filter(message =>
+      selectedMessages.has(message.id)
+    );
+
+  if (mensagensSelecionadas.length === 0) {
+    alert("Nenhuma mensagem selecionada.");
+    return;
+  }
+
+  abrirModalEncaminhar(mensagensSelecionadas);
+});
 
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
