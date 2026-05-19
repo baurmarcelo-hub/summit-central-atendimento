@@ -1607,6 +1607,95 @@ line-height: 1.15;
   overflow-y: auto;
 }
 
+.client-searchbar {
+  margin-bottom: 18px;
+}
+
+.client-searchbar input {
+  width: 280px;
+  height: 44px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 13px;
+  outline: none;
+}
+
+.client-searchbar input:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.client-table-header,
+.client-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.3fr 0.9fr 50px;
+  gap: 16px;
+  align-items: center;
+}
+
+.client-table-header {
+  background: #f8fafc;
+  padding: 15px 18px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #667085;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.client-row {
+  padding: 16px 18px;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 14px;
+}
+
+.client-row:last-child {
+  border-bottom: 0;
+}
+
+.client-row:hover {
+  background: #f8fafc;
+}
+
+.client-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.client-avatar-table {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.client-name-text {
+  font-weight: 800;
+  color: #101828;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.client-muted {
+  color: #667085;
+  font-size: 13px;
+}
+
+.client-actions {
+  position: relative;
+  text-align: right;
+}
+
 .team-topbar {
   display: flex;
   align-items: center;
@@ -2144,11 +2233,41 @@ line-height: 1.15;
     </div>
   </div>
 
-  <div class="team-table">
-    <div style="padding:22px;color:#667085;">
-      Área de clientes criada. A tabela será implementada na próxima etapa.
+  <div class="client-searchbar">
+  <input
+    id="clientSearchInput"
+    type="text"
+    placeholder="Pesquisar cliente, WhatsApp ou e-mail..."
+    autocomplete="off"
+  />
+</div>
+
+<div class="team-table">
+  <div class="client-table-header">
+    <div>Nome</div>
+    <div>WhatsApp</div>
+    <div>E-mail</div>
+    <div>Cadastro</div>
+    <div>Ações</div>
+  </div>
+
+  <div id="clientList">
+    <div class="client-row">
+      <div class="client-name-cell">
+        <div class="client-avatar-table">M</div>
+        <div class="client-name-text">Maria Souza</div>
+      </div>
+
+      <div class="client-muted">(51) 99999-0001</div>
+      <div class="client-muted">maria@email.com</div>
+      <div class="client-muted">18/05/2026</div>
+
+      <div class="client-actions">
+        <button class="team-more-btn">⋮</button>
+      </div>
     </div>
   </div>
+</div>
 </section>
 
 <section class="team-page hidden" id="teamPanel">
@@ -4210,6 +4329,117 @@ function atualizarEstadoBotaoEnviar() {
 
 }
 
+async function carregarClientesPainel() {
+
+  const { data, error } = await supabaseClient
+    .from("clientes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erro ao carregar clientes:", error);
+
+    document.getElementById("clientList").innerHTML = `
+      <div style="padding:18px;color:#dc2626;font-weight:700;">
+        Erro ao carregar clientes.
+      </div>
+    `;
+
+    return;
+  }
+
+  let clientes = data || [];
+
+  const termo =
+    document
+      .getElementById("clientSearchInput")
+      ?.value
+      .trim()
+      .toLowerCase() || "";
+
+  clientes = clientes.filter(cliente => {
+
+    const nome =
+      (cliente.nome || "").toLowerCase();
+
+    const telefone =
+      (cliente.telefone || "").toLowerCase();
+
+    const email =
+      (cliente.email || "").toLowerCase();
+
+    return (
+      !termo ||
+      nome.includes(termo) ||
+      telefone.includes(termo) ||
+      email.includes(termo)
+    );
+
+  });
+
+  if (clientes.length === 0) {
+
+    document.getElementById("clientList").innerHTML = `
+      <div style="padding:18px;color:#667085;">
+        Nenhum cliente encontrado.
+      </div>
+    `;
+
+    return;
+  }
+
+  document.getElementById("clientList").innerHTML =
+    clientes.map(cliente => {
+
+      const inicial =
+        (cliente.nome || "C")
+          .charAt(0)
+          .toUpperCase();
+
+      const dataCadastro =
+        cliente.created_at
+          ? new Date(cliente.created_at)
+              .toLocaleDateString("pt-BR")
+          : "-";
+
+      return `
+        <div class="client-row">
+
+          <div class="client-name-cell">
+            <div class="client-avatar-table">
+              ${inicial}
+            </div>
+
+            <div class="client-name-text">
+              ${cliente.nome || "Sem nome"}
+            </div>
+          </div>
+
+          <div class="client-muted">
+            ${cliente.telefone || "-"}
+          </div>
+
+          <div class="client-muted">
+            ${cliente.email || "-"}
+          </div>
+
+          <div class="client-muted">
+            ${dataCadastro}
+          </div>
+
+          <div class="client-actions">
+            <button class="team-more-btn">
+              ⋮
+            </button>
+          </div>
+
+        </div>
+      `;
+
+    }).join("");
+
+}
+
 async function carregarEquipe() {
   const { data, error } = await supabaseClient
     .from("usuarios_perfis")
@@ -5083,9 +5313,18 @@ settingsMenuItem.addEventListener("click", () => {
 
   mainConversationPanel.classList.add("hidden");
 
-  document.querySelector(".chat-area").classList.add("hidden");
+document.querySelector(".chat-area").classList.add("hidden");
+
+carregarClientesPainel();
 
 });
+
+const clientSearchInput =
+  document.getElementById("clientSearchInput");
+
+if (clientSearchInput) {
+  clientSearchInput.addEventListener("input", carregarClientesPainel);
+}
 
 if (teamSearchInput) {
   teamSearchInput.addEventListener("input", carregarEquipe);
@@ -5152,6 +5391,7 @@ chatMenuItem.addEventListener("click", () => {
 function abrirPainelClientes() {
   clientPanel.classList.remove("hidden");
   teamPanel.classList.add("hidden");
+ carregarClientesPainel();
 
   clientsTabBtn.classList.add("active");
   teamTabBtn.classList.remove("active");
