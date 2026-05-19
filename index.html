@@ -2276,6 +2276,42 @@ line-height: 1.15;
   white-space: nowrap;
 }
 
+.selection-bar {
+  height: 64px;
+  flex-shrink: 0;
+  background: #111827;
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  padding: 0 22px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.selection-cancel-btn {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #ffffff;
+
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.selection-cancel-btn:hover {
+  background: rgba(255,255,255,0.10);
+}
+
+#selectionCountText {
+  font-size: 15px;
+  font-weight: 800;
+}
+
   </style>
 </head>
 
@@ -2680,6 +2716,17 @@ line-height: 1.15;
 />
 <button class="send-btn" id="sendBtn">➤</button>
 </footer>
+
+<div class="selection-bar hidden" id="selectionBar">
+  <button type="button" class="selection-cancel-btn" id="cancelSelectionBtn">
+    ×
+  </button>
+
+  <strong id="selectionCountText">
+    0 itens selecionados
+  </strong>
+</div>
+
     </main>
 
     <aside class="details-panel">
@@ -3050,11 +3097,44 @@ const forwardSearchInput =
 const forwardConversationList =
   document.getElementById("forwardConversationList");
 
+const selectionBar =
+  document.getElementById("selectionBar");
+
+const cancelSelectionBtn =
+  document.getElementById("cancelSelectionBtn");
+
+const selectionCountText =
+  document.getElementById("selectionCountText");
+
 let messageToForward = null;
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
     }
+
+function limparSelecaoMensagens() {
+  selectionMode = false;
+  selectedMessages = [];
+
+  selectionBar.classList.add("hidden");
+  selectionCountText.textContent = "0 itens selecionados";
+
+  renderChat();
+}
+
+function atualizarBarraSelecao() {
+  if (!selectionMode || selectedMessages.length === 0) {
+    selectionBar.classList.add("hidden");
+    return;
+  }
+
+  selectionBar.classList.remove("hidden");
+
+  selectionCountText.textContent =
+    selectedMessages.length === 1
+      ? "1 item selecionado"
+      : `${selectedMessages.length} itens selecionados`;
+}
 
 async function buscarMensagensGlobais() {
   const termo = globalMessageSearchInput.value.trim();
@@ -3156,6 +3236,13 @@ function criarCardConversa(conversation) {
   card.dataset.conversationId = conversation.id;
 
   card.onclick = async () => {
+
+  if (selectionMode) {
+  selectionMode = false;
+  selectedMessages = [];
+  selectionBar.classList.add("hidden");
+  selectionCountText.textContent = "0 itens selecionados";
+}
 
   unreadMap[conversation.id] = 0;
   conversation.unread = 0;
@@ -3731,12 +3818,19 @@ row.addEventListener("click", event => {
   row.classList.toggle("selected");
 
   if (selectedMessages.includes(message.id)) {
-    selectedMessages = selectedMessages.filter(
-      id => id !== message.id
-    );
-  } else {
-    selectedMessages.push(message.id);
-  }
+  selectedMessages = selectedMessages.filter(
+    id => id !== message.id
+  );
+} else {
+  selectedMessages.push(message.id);
+}
+
+if (selectedMessages.length === 0) {
+  limparSelecaoMensagens();
+  return;
+}
+
+atualizarBarraSelecao();
 });
 
   const replyMessage = mensagensDaConversa.find(
@@ -3949,9 +4043,13 @@ selectOption.addEventListener("click", event => {
   actionMenu.classList.remove("open");
 
   selectionMode = true;
-  selectedMessages = [message.id];
+selectedMessages = [message.id];
 
-  renderChat();
+renderChat();
+
+setTimeout(() => {
+  atualizarBarraSelecao();
+}, 0);
 });
 
 copyOption.addEventListener("click", async event => {
@@ -5495,6 +5593,11 @@ cancelAudioBtn.addEventListener(
   cancelarAudioSelecionado
 );
 
+cancelSelectionBtn.addEventListener(
+  "click",
+  limparSelecaoMensagens
+);
+
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
 
@@ -5572,6 +5675,14 @@ messageSearchInput.addEventListener("input", () => {
 
 tabs.forEach(tab => {
   tab.addEventListener("click", () => {
+
+    if (selectionMode) {
+  selectionMode = false;
+  selectedMessages = [];
+  selectionBar.classList.add("hidden");
+  selectionCountText.textContent = "0 itens selecionados";
+}
+
     tabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
 
@@ -5644,6 +5755,10 @@ ownerFilterBtns.forEach(btn => {
     chatUser.addEventListener("click", () => app.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
 settingsMenuItem.addEventListener("click", () => {
+ 
+ if (selectionMode) {
+    limparSelecaoMensagens();
+  }
 
   settingsMenuItem.classList.add("active");
   chatMenuItem.classList.remove("active");
@@ -5789,13 +5904,15 @@ if (imageModal) {
 
 document.addEventListener("keydown", (event) => {
 
-  if (
-    event.key === "Escape" &&
-    imageModal.classList.contains("open")
-  ) {
+  if (event.key !== "Escape") return;
 
+  if (imageModal.classList.contains("open")) {
     closeImageModal();
+    return;
+  }
 
+  if (selectionMode) {
+    limparSelecaoMensagens();
   }
 
 });
