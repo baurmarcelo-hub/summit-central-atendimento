@@ -1217,7 +1217,7 @@ line-height: 1.15;
 }
 
 .message-content-line .message-text {
-  white-space: pre-wrap;
+  white-space: normal;
   word-break: break-word;
   display: inline;
 
@@ -3716,10 +3716,7 @@ ${
     `
     : `
       <div class="message-content-line">
-        <div class="message-text">
-          ${message.text || ""}
-        </div>
-
+        <div class="message-text">${message.text || ""}</div>
         <div class="msg-time">
           ${message.time}
           ${
