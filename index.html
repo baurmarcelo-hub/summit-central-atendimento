@@ -584,6 +584,47 @@ line-height: 1.15;
   margin-bottom: 4px;
 }
 
+.message-row.selectable {
+  cursor: pointer;
+}
+
+.message-row.selected {
+  background: rgba(37, 99, 235, 0.10);
+  border-radius: 12px;
+}
+
+.message-select-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #94a3b8;
+  background: #ffffff;
+  color: #ffffff;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 13px;
+  font-weight: 900;
+
+  margin: 8px;
+  flex-shrink: 0;
+}
+
+.message-row.selection-mode .message-select-check {
+  display: flex;
+}
+
+.message-row.selected .message-select-check {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.message-row.selected .message-select-check::before {
+  content: "✓";
+}
+
     .message-row.out {
       justify-content: flex-end;
     }
@@ -2849,6 +2890,8 @@ let unreadMap = {};
 let currentFilter = "aguardando";
 let selectedConversationId = null;
 let replyingToMessage = null;
+let selectionMode = false;
+let selectedMessages = [];
 let typingTimeout = null;
 let isSendingMessage = false;
 let forceScrollToBottom = false;
@@ -3663,6 +3706,39 @@ mensagensDaConversa
 
   row.dataset.messageId = message.id;
 
+if (selectionMode) {
+  row.classList.add("selection-mode");
+  row.classList.add("selectable");
+}
+
+if (selectedMessages.includes(message.id)) {
+  row.classList.add("selected");
+}
+
+row.addEventListener("click", event => {
+  if (!selectionMode) return;
+
+  if (
+    event.target.closest(".message-menu-btn") ||
+    event.target.closest(".message-action-menu") ||
+    event.target.closest(".media-download-link") ||
+    event.target.closest(".chat-image") ||
+    event.target.closest("audio")
+  ) {
+    return;
+  }
+
+  row.classList.toggle("selected");
+
+  if (selectedMessages.includes(message.id)) {
+    selectedMessages = selectedMessages.filter(
+      id => id !== message.id
+    );
+  } else {
+    selectedMessages.push(message.id);
+  }
+});
+
   const replyMessage = mensagensDaConversa.find(
   m => m.id === message.reply_to_message_id
 );
@@ -3739,6 +3815,8 @@ mensagensDaConversa
   : "";
 
 row.innerHTML = `
+  <div class="message-select-check"></div>
+
   <div class="bubble ${message.direction}">
     <button class="reply-btn message-menu-btn" title="Ações">⋮</button>
 
@@ -3748,10 +3826,14 @@ row.innerHTML = `
   </button>
 
   <button type="button" class="msg-forward-option">
-    ➡ Encaminhar
-  </button>
+  ➡ Encaminhar
+</button>
 
-  <button type="button" class="msg-copy-option">
+<button type="button" class="msg-select-option">
+  ✅ Selecionar
+</button>
+
+<button type="button" class="msg-copy-option">
   📋 Copiar
 </button>
 
@@ -3833,6 +3915,9 @@ const copyOption =
 const editOption =
   row.querySelector(".msg-edit-option");
 
+const selectOption =
+  row.querySelector(".msg-select-option");
+
 const deleteOption =
   row.querySelector(".msg-delete-option");
 
@@ -3856,6 +3941,17 @@ forwardOption.addEventListener("click", event => {
   actionMenu.classList.remove("open");
 
   abrirModalEncaminhar(message);
+});
+
+selectOption.addEventListener("click", event => {
+  event.stopPropagation();
+
+  actionMenu.classList.remove("open");
+
+  selectionMode = true;
+  selectedMessages = [message.id];
+
+  renderChat();
 });
 
 copyOption.addEventListener("click", async event => {
