@@ -1956,7 +1956,7 @@ line-height: 1.15;
 .file-actions {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   border-top: 1px solid rgba(16, 24, 40, 0.08);
   margin: 4px -10px -10px;
 }
@@ -1970,10 +1970,6 @@ line-height: 1.15;
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
-}
-
-.file-actions button:first-child {
-  border-right: 1px solid rgba(16, 24, 40, 0.08);
 }
 
 .file-actions button:hover {
@@ -3148,22 +3144,6 @@ function baixarArquivo(url, nomeArquivo = "arquivo") {
     });
 }
 
-function abrirArquivo(url) {
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
-function formatarTipoArquivo(mime, tamanho, nomeArquivo = "") {
-  const extensao = getExtensaoArquivo(nomeArquivo, mime);
-
-  const tamanhoKb = tamanho
-    ? Math.round(tamanho / 1024)
-    : null;
-
-  return tamanhoKb
-    ? `${extensao} • ${tamanhoKb} KB`
-    : extensao;
-}
-
 function renderChat() {
 
   const conversation = getSelectedConversation();
@@ -3384,19 +3364,12 @@ mensagensDaConversa
           </div>
         </div>
 
-        <div class="file-actions">
-  <button
-    type="button"
-    onclick="abrirArquivo('${message.media_url}')"
-  >
-    Abrir
-  </button>
-
+        <div class="file-actions single-action">
   <button
     type="button"
     onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "arquivo"}')"
   >
-    Salvar
+    ⬇ Baixar
   </button>
 </div>
       </div>
