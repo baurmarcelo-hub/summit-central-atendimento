@@ -3752,12 +3752,16 @@ row.innerHTML = `
   </button>
 
   <button type="button" class="msg-copy-option">
-    📋 Copiar
-  </button>
+  📋 Copiar
+</button>
 
-  <button type="button" class="msg-delete-option danger">
-    🗑 Deletar
-  </button>
+<button type="button" class="msg-edit-option">
+  ✏️ Editar
+</button>
+
+<button type="button" class="msg-delete-option danger">
+  🗑 Deletar
+</button>
 </div>
     ${replyHtml}
     ${mediaHtml}
@@ -3826,6 +3830,9 @@ const forwardOption =
 const copyOption =
   row.querySelector(".msg-copy-option");
 
+const editOption =
+  row.querySelector(".msg-edit-option");
+
 const deleteOption =
   row.querySelector(".msg-delete-option");
 
@@ -3859,6 +3866,47 @@ copyOption.addEventListener("click", async event => {
   await navigator.clipboard.writeText(
     message.text || message.media_nome || ""
   );
+});
+
+editOption.addEventListener("click", async event => {
+  event.stopPropagation();
+
+  actionMenu.classList.remove("open");
+
+  if (message.direction !== "out") {
+    alert("Só é possível editar mensagens enviadas.");
+    return;
+  }
+
+  if (message.media_url) {
+    alert("Por enquanto só é possível editar mensagens de texto.");
+    return;
+  }
+
+  const novoTexto = prompt(
+    "Editar mensagem:",
+    message.text || ""
+  );
+
+  if (novoTexto === null || !novoTexto.trim()) return;
+
+  const { data, error } = await supabaseClient
+    .from("mensagens")
+    .update({
+      conteudo: novoTexto.trim()
+    })
+    .eq("id", message.id)
+    .select("id, conteudo");
+
+  if (error || !data || data.length === 0) {
+    console.error("Erro ao editar mensagem:", error);
+    alert("Erro ao editar mensagem. Verifique RLS de UPDATE.");
+    return;
+  }
+
+  message.text = novoTexto.trim();
+
+  renderChat();
 });
 
   deleteOption.addEventListener("click", async event => {
