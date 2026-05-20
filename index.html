@@ -3129,10 +3129,11 @@ line-height: 1.15;
       />
 
       <input
-        type="text"
-        id="editClientPhone"
-        placeholder="WhatsApp"
-      />
+  type="text"
+  id="editClientPhone"
+  placeholder="+55 (51) 99999-9999"
+  maxlength="19"
+/>
 
       <input
         type="email"
@@ -3408,24 +3409,57 @@ function normalizarTelefoneBrasil(valor) {
 
   if (!telefone) return "";
 
+  if (telefone === "55") return "+55";
+
   if (telefone.startsWith("55") && telefone.length > 11) {
     telefone = telefone.slice(2);
+  }
+
+  if (!telefone || telefone.length < 10) {
+    return "+55";
   }
 
   return `+55${telefone}`;
 }
 
-function formatarTelefoneParaInput(valor) {
-  const telefone = normalizarTelefoneBrasil(valor);
-
-  if (!telefone) return "+55";
-
-  return telefone;
-}
-
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
     }
+
+function aplicarMascaraTelefoneInput(valor) {
+  const textoOriginal = String(valor || "").trim();
+
+  let numeros = textoOriginal.replace(/\D/g, "");
+
+  if (
+    textoOriginal.startsWith("+55") ||
+    (numeros.startsWith("55") && numeros.length > 11)
+  ) {
+    numeros = numeros.slice(2);
+  }
+
+  numeros = numeros.slice(0, 11);
+
+  let formatado = "+55";
+
+  if (numeros.length > 0) {
+    formatado += ` (${numeros.slice(0, 2)}`;
+  }
+
+  if (numeros.length >= 2) {
+    formatado += ")";
+  }
+
+  if (numeros.length > 2) {
+    formatado += ` ${numeros.slice(2, 7)}`;
+  }
+
+  if (numeros.length > 7) {
+    formatado += `-${numeros.slice(7, 11)}`;
+  }
+
+  return formatado;
+}
 
 function limparSelecaoMensagens() {
   selectionMode = false;
@@ -5581,7 +5615,7 @@ function abrirModalAdicionarCliente() {
   editingClientId = null;
 
   editClientName.value = "";
-  editClientPhone.value = "+55";
+  editClientPhone.value = "+55 ";
   editClientEmail.value = "";
   editClientCompany.value = "";
 
@@ -5605,8 +5639,8 @@ function abrirModalEditarCliente(cliente) {
   editClientName.value =
     cliente.nome || "";
 
-  editClientPhone.value =
-  formatarTelefoneParaInput(cliente.telefone);
+ editClientPhone.value =
+  aplicarMascaraTelefoneInput(cliente.telefone);
 
   editClientEmail.value =
     cliente.email || "";
@@ -6853,6 +6887,11 @@ cancelClientEditBtn.addEventListener(
   "click",
   fecharModalEditarCliente
 );
+
+editClientPhone.addEventListener("input", () => {
+  editClientPhone.value =
+    aplicarMascaraTelefoneInput(editClientPhone.value);
+});
 
 saveClientEditBtn.addEventListener("click", async () => {
   const nome = editClientName.value.trim();
