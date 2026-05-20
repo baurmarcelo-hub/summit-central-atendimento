@@ -3401,6 +3401,28 @@ let messagesToForward = [];
 let editingClientId = null;
 let clientModalMode = "edit";
 
+function normalizarTelefoneBrasil(valor) {
+  let telefone = String(valor || "").trim();
+
+  telefone = telefone.replace(/\D/g, "");
+
+  if (!telefone) return "";
+
+  if (telefone.startsWith("55") && telefone.length > 11) {
+    telefone = telefone.slice(2);
+  }
+
+  return `+55${telefone}`;
+}
+
+function formatarTelefoneParaInput(valor) {
+  const telefone = normalizarTelefoneBrasil(valor);
+
+  if (!telefone) return "+55";
+
+  return telefone;
+}
+
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
     }
@@ -5453,7 +5475,13 @@ async function importarClientesExcel(file) {
   const clientesParaInserir = linhas
     .map(linha => ({
       nome: String(linha.nome || linha.Nome || "").trim(),
-      telefone: String(linha.telefone || linha.Telefone || linha.whatsapp || linha.WhatsApp || "").trim(),
+      telefone: normalizarTelefoneBrasil(
+  linha.telefone ||
+  linha.Telefone ||
+  linha.whatsapp ||
+  linha.WhatsApp ||
+  ""
+),
       email: String(linha.email || linha.Email || linha["E-mail"] || "").trim(),
       empresa: String(linha.empresa || linha.Empresa || "").trim(),
       ativo: true
@@ -5476,10 +5504,48 @@ async function importarClientesExcel(file) {
   importClientsBtn.disabled = true;
   importClientsBtn.textContent = "Importando...";
 
-  const { data, error } = await supabaseClient
+let importados = 0;
+
+for (const cliente of clientesParaInserir) {
+  if (!cliente.telefone || cliente.telefone === "+55") {
+    continue;
+  }
+
+  const { data: existente, error: buscaError } = await supabaseClient
     .from("clientes")
-    .insert(clientesParaInserir)
-    .select("id");
+    .select("id")
+    .eq("telefone", cliente.telefone)
+    .maybeSingle();
+
+  if (buscaError) {
+    console.error("Erro ao buscar telefone na importação:", buscaError);
+    continue;
+  }
+
+  if (existente) {
+    const { error: updateError } = await supabaseClient
+      .from("clientes")
+      .update({
+        nome: cliente.nome,
+        telefone: cliente.telefone,
+        email: cliente.email,
+        empresa: cliente.empresa,
+        ativo: true
+      })
+      .eq("id", existente.id);
+
+    if (!updateError) importados++;
+  } else {
+    const { error: insertError } = await supabaseClient
+      .from("clientes")
+      .insert([cliente]);
+
+    if (!insertError) importados++;
+  }
+}
+
+const data = Array.from({ length: importados }, (_, i) => ({ id: i + 1 }));
+const error = null;
 
   importClientsBtn.disabled = false;
   importClientsBtn.textContent = "Importar";
@@ -5515,7 +5581,7 @@ function abrirModalAdicionarCliente() {
   editingClientId = null;
 
   editClientName.value = "";
-  editClientPhone.value = "";
+  editClientPhone.value = "+55";
   editClientEmail.value = "";
   editClientCompany.value = "";
 
@@ -5540,7 +5606,7 @@ function abrirModalEditarCliente(cliente) {
     cliente.nome || "";
 
   editClientPhone.value =
-    cliente.telefone || "";
+  formatarTelefoneParaInput(cliente.telefone);
 
   editClientEmail.value =
     cliente.email || "";
@@ -6790,12 +6856,17 @@ cancelClientEditBtn.addEventListener(
 
 saveClientEditBtn.addEventListener("click", async () => {
   const nome = editClientName.value.trim();
-  const telefone = editClientPhone.value.trim();
+  const telefone = normalizarTelefoneBrasil(editClientPhone.value);
   const email = editClientEmail.value.trim();
   const empresa = editClientCompany.value.trim();
 
   if (!nome) {
     alert("Informe o nome.");
+    return;
+  }
+
+  if (!telefone || telefone === "+55") {
+    alert("Informe o WhatsApp do cliente.");
     return;
   }
 
@@ -6808,18 +6879,48 @@ saveClientEditBtn.addEventListener("click", async () => {
   let result;
 
   if (clientModalMode === "add") {
-    result = await supabaseClient
-      .from("clientes")
-      .insert([
-        {
+    const { data: clienteExistente, error: buscaError } =
+      await supabaseClient
+        .from("clientes")
+        .select("id, ativo")
+        .eq("telefone", telefone)
+        .maybeSingle();
+
+    if (buscaError) {
+      saveClientEditBtn.disabled = false;
+      saveClientEditBtn.textContent = "Adicionar cliente";
+
+      console.error("Erro ao buscar cliente existente:", buscaError);
+      alert("Erro ao verificar telefone existente.");
+      return;
+    }
+
+    if (clienteExistente) {
+      result = await supabaseClient
+        .from("clientes")
+        .update({
           nome,
           telefone,
           email,
           empresa,
           ativo: true
-        }
-      ])
-      .select("id, nome, telefone, email, empresa, ativo");
+        })
+        .eq("id", clienteExistente.id)
+        .select("id, nome, telefone, email, empresa, ativo");
+    } else {
+      result = await supabaseClient
+        .from("clientes")
+        .insert([
+          {
+            nome,
+            telefone,
+            email,
+            empresa,
+            ativo: true
+          }
+        ])
+        .select("id, nome, telefone, email, empresa, ativo");
+    }
   } else {
     if (!editingClientId) {
       saveClientEditBtn.disabled = false;
@@ -6866,7 +6967,7 @@ saveClientEditBtn.addEventListener("click", async () => {
 
   const mensagemSucesso =
     clientModalMode === "add"
-      ? "Cliente adicionado com sucesso."
+      ? "Cliente salvo com sucesso."
       : "Cliente atualizado com sucesso.";
 
   fecharModalEditarCliente();
@@ -6876,7 +6977,6 @@ saveClientEditBtn.addEventListener("click", async () => {
 
   alert(mensagemSucesso);
 });
-
 verificarSessao();
 
 atualizarEstadoBotaoEnviar();
