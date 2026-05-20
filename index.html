@@ -4854,8 +4854,9 @@ async function carregarClientesPainel() {
 
   const { data, error } = await supabaseClient
     .from("clientes")
-    .select("*")
-    .order("created_at", { ascending: false });
+          .select("*")
+          .eq("ativo", true)
+          .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Erro ao carregar clientes:", error);
@@ -4978,12 +4979,12 @@ async function carregarClientesPainel() {
     </button>
 
     <button
-      type="button"
-      class="client-delete-btn danger"
-      data-client-id="${cliente.id}"
-    >
-      🗑 Excluir
-    </button>
+  type="button"
+  class="client-delete-btn danger"
+  data-client-id="${cliente.id}"
+>
+  🚫 Inativar
+</button>
   </div>
 </div>
 
@@ -5205,17 +5206,41 @@ function configurarMenusClientes() {
       });
     });
 
-  document
-    .querySelectorAll(".client-delete-btn")
-    .forEach(btn => {
-      btn.addEventListener("click", event => {
-        event.stopPropagation();
+ document
+  .querySelectorAll(".client-delete-btn")
+  .forEach(btn => {
+    btn.addEventListener("click", async event => {
+      event.stopPropagation();
 
-        fecharMenusClientes();
+      const clientId = btn.dataset.clientId;
 
-        alert("Próximo passo: excluir ou inativar cliente.");
-      });
+      fecharMenusClientes();
+
+      const confirmar = confirm(
+        "Deseja inativar este cliente?\n\nEle não será excluído do histórico."
+      );
+
+      if (!confirmar) return;
+
+      const { error } = await supabaseClient
+        .from("clientes")
+        .update({
+          ativo: false
+        })
+        .eq("id", clientId);
+
+      if (error) {
+        console.error("Erro ao inativar cliente:", error);
+        alert("Erro ao inativar cliente.");
+        return;
+      }
+
+      await carregarClientesPainel();
+      await carregarClientes();
+
+      alert("Cliente inativado com sucesso.");
     });
+  });
 }
 
 function fecharMenusEquipe() {
