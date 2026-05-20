@@ -2542,9 +2542,20 @@ line-height: 1.15;
     </div>
 
     <div class="team-actions-top">
-      <button class="secondary-action-btn" style="width:auto;padding:0 18px;margin:0;">
-        Importar
-      </button>
+      <button
+  class="secondary-action-btn"
+  id="importClientsBtn"
+  style="width:auto;padding:0 18px;margin:0;"
+>
+  Importar
+</button>
+
+<input
+  type="file"
+  id="importClientsInput"
+  accept=".xlsx,.xls"
+  style="display:none;"
+/>
 
       <button class="secondary-action-btn" style="width:auto;padding:0 18px;margin:0;">
         Exportar
@@ -3154,6 +3165,7 @@ line-height: 1.15;
   </div>
 </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
@@ -3370,6 +3382,12 @@ const editClientCompany =
 
 const addClientBtn =
   document.getElementById("addClientBtn");
+
+const importClientsBtn =
+  document.getElementById("importClientsBtn");
+
+const importClientsInput =
+  document.getElementById("importClientsInput");
 
 let messagesToForward = [];
 let editingClientId = null;
@@ -5345,6 +5363,90 @@ async function carregarEquipe() {
   configurarMenusEquipe();
 }
 
+async function importarClientesExcel(file) {
+  if (!file) return;
+
+  const buffer = await file.arrayBuffer();
+
+  const workbook = XLSX.read(buffer, {
+    type: "array"
+  });
+
+  const primeiraAba =
+    workbook.SheetNames[0];
+
+  const sheet =
+    workbook.Sheets[primeiraAba];
+
+  const linhas = XLSX.utils.sheet_to_json(sheet, {
+    defval: ""
+  });
+
+  if (!linhas.length) {
+    alert("A planilha está vazia.");
+    return;
+  }
+
+  const clientesParaInserir = linhas
+    .map(linha => ({
+      nome: String(linha.nome || linha.Nome || "").trim(),
+      telefone: String(linha.telefone || linha.Telefone || linha.whatsapp || linha.WhatsApp || "").trim(),
+      email: String(linha.email || linha.Email || linha["E-mail"] || "").trim(),
+      empresa: String(linha.empresa || linha.Empresa || "").trim(),
+      ativo: true
+    }))
+    .filter(cliente => cliente.nome);
+
+  if (!clientesParaInserir.length) {
+    alert(
+      "Nenhum cliente válido encontrado.\n\nA planilha precisa ter pelo menos a coluna nome."
+    );
+    return;
+  }
+
+  const confirmar = confirm(
+    `Foram encontrados ${clientesParaInserir.length} clientes válidos.\n\nDeseja importar agora?`
+  );
+
+  if (!confirmar) return;
+
+  importClientsBtn.disabled = true;
+  importClientsBtn.textContent = "Importando...";
+
+  const { data, error } = await supabaseClient
+    .from("clientes")
+    .insert(clientesParaInserir)
+    .select("id");
+
+  importClientsBtn.disabled = false;
+  importClientsBtn.textContent = "Importar";
+
+  if (error) {
+    console.error("Erro ao importar clientes:", error);
+
+    alert(
+      "Erro ao importar clientes:\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert(
+      "Nenhum cliente foi importado.\n\nVerifique se a policy RLS permite INSERT na tabela clientes."
+    );
+    return;
+  }
+
+  await carregarClientesPainel();
+  await carregarClientes();
+
+  alert(`${data.length} clientes importados com sucesso.`);
+
+  importClientsInput.value = "";
+}
+
 function abrirModalAdicionarCliente() {
   clientModalMode = "add";
   editingClientId = null;
@@ -6337,6 +6439,16 @@ addClientBtn.addEventListener(
   "click",
   abrirModalAdicionarCliente
 );
+
+importClientsBtn.addEventListener("click", () => {
+  importClientsInput.click();
+});
+
+importClientsInput.addEventListener("change", async () => {
+  const file = importClientsInput.files[0];
+
+  await importarClientesExcel(file);
+});
 
 closeForwardModalBtn.addEventListener(
   "click",
