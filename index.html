@@ -2550,7 +2550,7 @@ line-height: 1.15;
         Exportar
       </button>
 
-      <button class="accept-btn">
+      <button class="accept-btn" id="addClientBtn">
         + Adicionar cliente
       </button>
     </div>
@@ -3368,8 +3368,12 @@ const editClientEmail =
 const editClientCompany =
   document.getElementById("editClientCompany");
 
+const addClientBtn =
+  document.getElementById("addClientBtn");
+
 let messagesToForward = [];
 let editingClientId = null;
+let clientModalMode = "edit";
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -5341,7 +5345,30 @@ async function carregarEquipe() {
   configurarMenusEquipe();
 }
 
+function abrirModalAdicionarCliente() {
+  clientModalMode = "add";
+  editingClientId = null;
+
+  editClientName.value = "";
+  editClientPhone.value = "";
+  editClientEmail.value = "";
+  editClientCompany.value = "";
+
+  document
+    .querySelector(".client-edit-header h3")
+    .textContent = "Adicionar cliente";
+
+  saveClientEditBtn.textContent = "Adicionar cliente";
+
+  clientEditModal.classList.add("open");
+
+  setTimeout(() => {
+    editClientName.focus();
+  }, 100);
+}
+
 function abrirModalEditarCliente(cliente) {
+  clientModalMode = "edit";
   editingClientId = cliente.id;
 
   editClientName.value =
@@ -5356,6 +5383,12 @@ function abrirModalEditarCliente(cliente) {
   editClientCompany.value =
     cliente.empresa || "";
 
+  document
+    .querySelector(".client-edit-header h3")
+    .textContent = "Editar cliente";
+
+  saveClientEditBtn.textContent = "Salvar alterações";
+
   clientEditModal.classList.add("open");
 }
 
@@ -5363,6 +5396,7 @@ function fecharModalEditarCliente() {
   clientEditModal.classList.remove("open");
 
   editingClientId = null;
+ clientModalMode = "edit";
 
   editClientName.value = "";
   editClientPhone.value = "";
@@ -6299,6 +6333,11 @@ newUserBtn.addEventListener(
   abrirModalNovoUsuario
 );
 
+addClientBtn.addEventListener(
+  "click",
+  abrirModalAdicionarCliente
+);
+
 closeForwardModalBtn.addEventListener(
   "click",
   fecharModalEncaminhar
@@ -6570,8 +6609,6 @@ cancelClientEditBtn.addEventListener(
 );
 
 saveClientEditBtn.addEventListener("click", async () => {
-  if (!editingClientId) return;
-
   const nome = editClientName.value.trim();
   const telefone = editClientPhone.value.trim();
   const email = editClientEmail.value.trim();
@@ -6582,36 +6619,82 @@ saveClientEditBtn.addEventListener("click", async () => {
     return;
   }
 
- const { data, error } = await supabaseClient
-  .from("clientes")
-  .update({
-    nome,
-    telefone,
-    email,
-    empresa
-  })
-  .eq("id", editingClientId)
-  .select("id, nome, telefone, email, empresa");
+  saveClientEditBtn.disabled = true;
+  saveClientEditBtn.textContent =
+    clientModalMode === "add"
+      ? "Adicionando..."
+      : "Salvando...";
+
+  let result;
+
+  if (clientModalMode === "add") {
+    result = await supabaseClient
+      .from("clientes")
+      .insert([
+        {
+          nome,
+          telefone,
+          email,
+          empresa,
+          ativo: true
+        }
+      ])
+      .select("id, nome, telefone, email, empresa, ativo");
+  } else {
+    if (!editingClientId) {
+      saveClientEditBtn.disabled = false;
+      return;
+    }
+
+    result = await supabaseClient
+      .from("clientes")
+      .update({
+        nome,
+        telefone,
+        email,
+        empresa
+      })
+      .eq("id", editingClientId)
+      .select("id, nome, telefone, email, empresa");
+  }
+
+  saveClientEditBtn.disabled = false;
+  saveClientEditBtn.textContent =
+    clientModalMode === "add"
+      ? "Adicionar cliente"
+      : "Salvar alterações";
+
+  const { data, error } = result;
 
   if (error) {
-    console.error("Erro ao editar cliente:", error);
-    alert("Erro ao salvar cliente.");
+    console.error("Erro ao salvar cliente:", error);
+
+    alert(
+      "Erro ao salvar cliente:\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+
     return;
   }
 
-if (!data || data.length === 0) {
-  alert(
-    "Nenhum cliente foi atualizado no Supabase.\n\nVerifique se a policy RLS permite UPDATE na tabela clientes."
-  );
-  return;
-}
+  if (!data || data.length === 0) {
+    alert(
+      "Nenhum cliente foi salvo no Supabase.\n\nVerifique se a policy RLS permite INSERT/UPDATE na tabela clientes."
+    );
+    return;
+  }
+
+  const mensagemSucesso =
+    clientModalMode === "add"
+      ? "Cliente adicionado com sucesso."
+      : "Cliente atualizado com sucesso.";
 
   fecharModalEditarCliente();
 
   await carregarClientesPainel();
   await carregarClientes();
 
-  alert("Cliente atualizado com sucesso.");
+  alert(mensagemSucesso);
 });
 
 verificarSessao();
