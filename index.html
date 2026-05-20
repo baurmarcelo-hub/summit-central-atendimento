@@ -2557,9 +2557,13 @@ line-height: 1.15;
   style="display:none;"
 />
 
-      <button class="secondary-action-btn" style="width:auto;padding:0 18px;margin:0;">
-        Exportar
-      </button>
+      <button
+  class="secondary-action-btn"
+  id="exportClientsBtn"
+  style="width:auto;padding:0 18px;margin:0;"
+>
+  Exportar
+</button>
 
       <button class="accept-btn" id="addClientBtn">
         + Adicionar cliente
@@ -3388,6 +3392,10 @@ const importClientsBtn =
 
 const importClientsInput =
   document.getElementById("importClientsInput");
+
+const exportClientsBtn =
+  document.getElementById("exportClientsBtn");
+
 
 let messagesToForward = [];
 let editingClientId = null;
@@ -5363,6 +5371,61 @@ async function carregarEquipe() {
   configurarMenusEquipe();
 }
 
+async function exportarClientesExcel() {
+  exportClientsBtn.disabled = true;
+  exportClientsBtn.textContent = "Exportando...";
+
+  const { data, error } = await supabaseClient
+    .from("clientes")
+    .select("nome, telefone, email, empresa, ativo, created_at")
+    .eq("ativo", true)
+    .order("nome", { ascending: true });
+
+  exportClientsBtn.disabled = false;
+  exportClientsBtn.textContent = "Exportar";
+
+  if (error) {
+    console.error("Erro ao exportar clientes:", error);
+    alert("Erro ao exportar clientes.");
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert("Nenhum cliente ativo encontrado para exportar.");
+    return;
+  }
+
+  const linhas = data.map(cliente => ({
+    nome: cliente.nome || "",
+    telefone: cliente.telefone || "",
+    email: cliente.email || "",
+    empresa: cliente.empresa || "",
+    ativo: cliente.ativo === false ? "não" : "sim",
+    cadastro: cliente.created_at
+      ? new Date(cliente.created_at).toLocaleDateString("pt-BR")
+      : ""
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(linhas);
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Clientes"
+  );
+
+  const hoje = new Date()
+    .toISOString()
+    .slice(0, 10);
+
+  XLSX.writeFile(
+    workbook,
+    `clientes-summit-${hoje}.xlsx`
+  );
+}
+
 async function importarClientesExcel(file) {
   if (!file) return;
 
@@ -6449,6 +6512,11 @@ importClientsInput.addEventListener("change", async () => {
 
   await importarClientesExcel(file);
 });
+
+exportClientsBtn.addEventListener(
+  "click",
+  exportarClientesExcel
+);
 
 closeForwardModalBtn.addEventListener(
   "click",
