@@ -5230,10 +5230,15 @@ function configurarMenusClientes() {
         .eq("id", clientId);
 
       if (error) {
-        console.error("Erro ao inativar cliente:", error);
-        alert("Erro ao inativar cliente.");
-        return;
-      }
+  console.error("Erro ao inativar cliente:", error);
+
+  alert(
+    "Erro ao inativar cliente:\n\n" +
+    (error.message || JSON.stringify(error, null, 2))
+  );
+
+  return;
+}
 
       await carregarClientesPainel();
       await carregarClientes();
