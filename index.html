@@ -1821,6 +1821,51 @@ line-height: 1.15;
   text-align: right;
 }
 
+.client-action-menu {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  width: 170px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(16, 24, 40, 0.18);
+  padding: 8px;
+  display: none;
+  z-index: 999;
+}
+
+.client-action-menu.open {
+  display: block;
+}
+
+.client-action-menu button {
+  width: 100%;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  text-align: left;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #344054;
+  cursor: pointer;
+}
+
+.client-action-menu button:hover {
+  background: #eef4ff;
+  color: #2563eb;
+}
+
+.client-action-menu button.danger {
+  color: #dc2626;
+}
+
+.client-action-menu button.danger:hover {
+  background: #fef2f2;
+}
+
 .team-topbar {
   display: flex;
   align-items: center;
@@ -2949,7 +2994,7 @@ line-height: 1.15;
 
   <script>
     const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+          const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -4904,15 +4949,50 @@ async function carregarClientesPainel() {
           </div>
 
           <div class="client-actions">
-            <button class="team-more-btn">
-              ⋮
-            </button>
-          </div>
+  <button
+    class="team-more-btn client-more-btn"
+    title="Ações"
+    data-client-id="${cliente.id}"
+  >
+    ⋮
+  </button>
+
+  <div
+    class="client-action-menu"
+    data-menu-client-id="${cliente.id}"
+  >
+    <button
+      type="button"
+      class="client-open-chat-btn"
+      data-client-id="${cliente.id}"
+    >
+      💬 Abrir conversa
+    </button>
+
+    <button
+      type="button"
+      class="client-edit-btn"
+      data-client-id="${cliente.id}"
+    >
+      ✏️ Editar
+    </button>
+
+    <button
+      type="button"
+      class="client-delete-btn danger"
+      data-client-id="${cliente.id}"
+    >
+      🗑 Excluir
+    </button>
+  </div>
+</div>
 
         </div>
       `;
 
     }).join("");
+
+configurarMenusClientes();
 
 }
 
@@ -5066,6 +5146,76 @@ async function carregarEquipe() {
     }).join("");
 
   configurarMenusEquipe();
+}
+
+function fecharMenusClientes() {
+  document
+    .querySelectorAll(".client-action-menu")
+    .forEach(menu => {
+      menu.classList.remove("open");
+    });
+}
+
+function configurarMenusClientes() {
+  document
+    .querySelectorAll(".client-more-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        const clientId = btn.dataset.clientId;
+
+        const menu = document.querySelector(
+          `.client-action-menu[data-menu-client-id="${clientId}"]`
+        );
+
+        if (!menu) return;
+
+        const jaAberto = menu.classList.contains("open");
+
+        fecharMenusClientes();
+
+        if (!jaAberto) {
+          menu.classList.add("open");
+        }
+      });
+    });
+
+  document
+    .querySelectorAll(".client-open-chat-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        fecharMenusClientes();
+
+        alert("Próximo passo: abrir ou criar conversa deste cliente.");
+      });
+    });
+
+  document
+    .querySelectorAll(".client-edit-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        fecharMenusClientes();
+
+        alert("Próximo passo: editar cliente.");
+      });
+    });
+
+  document
+    .querySelectorAll(".client-delete-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        fecharMenusClientes();
+
+        alert("Próximo passo: excluir ou inativar cliente.");
+      });
+    });
 }
 
 function fecharMenusEquipe() {
@@ -5854,6 +6004,7 @@ if (teamProfileFilter) {
 
 document.addEventListener("click", () => {
   fecharMenusEquipe();
+  fecharMenusClientes();
 
   document
     .querySelectorAll(".message-action-menu.open")
