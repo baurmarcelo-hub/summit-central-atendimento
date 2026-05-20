@@ -920,6 +920,106 @@ line-height: 1.15;
     0 6px 18px rgba(239, 68, 68, 0.12);
 }
 
+.client-edit-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.client-edit-modal.open {
+  display: flex;
+}
+
+.client-edit-card {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.client-edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.client-edit-header h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #101828;
+}
+
+.client-edit-close {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: #f2f4f7;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.client-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.client-edit-form input {
+  width: 100%;
+  height: 52px;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+
+.client-edit-form input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.client-edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.client-cancel-btn {
+  height: 46px;
+  border: 1px solid #d0d5dd;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.client-save-btn {
+  height: 46px;
+  border: 0;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
     @media (max-width: 1200px) {
       .app,
       .app.details-open {
@@ -2990,6 +3090,70 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="client-edit-modal" id="clientEditModal">
+  <div class="client-edit-card">
+
+    <div class="client-edit-header">
+      <h3>Editar cliente</h3>
+
+      <button
+        type="button"
+        class="client-edit-close"
+        id="closeClientEditModal"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="client-edit-form">
+
+      <input
+        type="text"
+        id="editClientName"
+        placeholder="Nome"
+      />
+
+      <input
+        type="text"
+        id="editClientPhone"
+        placeholder="WhatsApp"
+      />
+
+      <input
+        type="email"
+        id="editClientEmail"
+        placeholder="E-mail"
+      />
+
+      <input
+        type="text"
+        id="editClientCompany"
+        placeholder="Empresa"
+      />
+
+    </div>
+
+    <div class="client-edit-footer">
+      <button
+        type="button"
+        class="client-cancel-btn"
+        id="cancelClientEditBtn"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="client-save-btn"
+        id="saveClientEditBtn"
+      >
+        Salvar alterações
+      </button>
+    </div>
+
+  </div>
+</div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
@@ -3002,7 +3166,8 @@ line-height: 1.15;
     );
 
     let conversations = [];
-let unreadMap = {};
+    let allClientes = [];
+    let unreadMap = {};
 
 let currentFilter = "aguardando";
 let selectedConversationId = null;
@@ -3179,7 +3344,32 @@ const selectionCountText =
 const forwardSelectedBtn =
   document.getElementById("forwardSelectedBtn");
 
+const clientEditModal =
+  document.getElementById("clientEditModal");
+
+const closeClientEditModal =
+  document.getElementById("closeClientEditModal");
+
+const cancelClientEditBtn =
+  document.getElementById("cancelClientEditBtn");
+
+const saveClientEditBtn =
+  document.getElementById("saveClientEditBtn");
+
+const editClientName =
+  document.getElementById("editClientName");
+
+const editClientPhone =
+  document.getElementById("editClientPhone");
+
+const editClientEmail =
+  document.getElementById("editClientEmail");
+
+const editClientCompany =
+  document.getElementById("editClientCompany");
+
 let messagesToForward = [];
+let editingClientId = null;
 
     function getSelectedConversation() {
       return conversations.find(c => c.id === selectedConversationId);
@@ -4871,6 +5061,8 @@ async function carregarClientesPainel() {
   }
 
   let clientes = data || [];
+  
+  allClientes = clientes;
 
   const termo =
     document
@@ -5149,6 +5341,35 @@ async function carregarEquipe() {
   configurarMenusEquipe();
 }
 
+function abrirModalEditarCliente(cliente) {
+  editingClientId = cliente.id;
+
+  editClientName.value =
+    cliente.nome || "";
+
+  editClientPhone.value =
+    cliente.telefone || "";
+
+  editClientEmail.value =
+    cliente.email || "";
+
+  editClientCompany.value =
+    cliente.empresa || "";
+
+  clientEditModal.classList.add("open");
+}
+
+function fecharModalEditarCliente() {
+  clientEditModal.classList.remove("open");
+
+  editingClientId = null;
+
+  editClientName.value = "";
+  editClientPhone.value = "";
+  editClientEmail.value = "";
+  editClientCompany.value = "";
+}
+
 function fecharMenusClientes() {
   document
     .querySelectorAll(".client-action-menu")
@@ -5202,7 +5423,20 @@ function configurarMenusClientes() {
 
         fecharMenusClientes();
 
-        alert("Próximo passo: editar cliente.");
+        const clientId = Number(
+  btn.dataset.clientId
+);
+
+const cliente = allClientes.find(
+  c => c.id === clientId
+);
+
+if (!cliente) {
+  alert("Cliente não encontrado.");
+  return;
+}
+
+abrirModalEditarCliente(cliente);
       });
     });
 
@@ -6325,10 +6559,66 @@ if (novaMensagem.conversa_id === selectedConversationId) {
       }
     });
 
-    verificarSessao();
+    closeClientEditModal.addEventListener(
+  "click",
+  fecharModalEditarCliente
+);
 
-    atualizarEstadoBotaoEnviar();
+cancelClientEditBtn.addEventListener(
+  "click",
+  fecharModalEditarCliente
+);
 
-  </script>
+saveClientEditBtn.addEventListener("click", async () => {
+  if (!editingClientId) return;
+
+  const nome = editClientName.value.trim();
+  const telefone = editClientPhone.value.trim();
+  const email = editClientEmail.value.trim();
+  const empresa = editClientCompany.value.trim();
+
+  if (!nome) {
+    alert("Informe o nome.");
+    return;
+  }
+
+ const { data, error } = await supabaseClient
+  .from("clientes")
+  .update({
+    nome,
+    telefone,
+    email,
+    empresa
+  })
+  .eq("id", editingClientId)
+  .select("id, nome, telefone, email, empresa");
+
+  if (error) {
+    console.error("Erro ao editar cliente:", error);
+    alert("Erro ao salvar cliente.");
+    return;
+  }
+
+if (!data || data.length === 0) {
+  alert(
+    "Nenhum cliente foi atualizado no Supabase.\n\nVerifique se a policy RLS permite UPDATE na tabela clientes."
+  );
+  return;
+}
+
+  fecharModalEditarCliente();
+
+  await carregarClientesPainel();
+  await carregarClientes();
+
+  alert("Cliente atualizado com sucesso.");
+});
+
+verificarSessao();
+
+atualizarEstadoBotaoEnviar();
+
+</script>
+
 </body>
 </html>
