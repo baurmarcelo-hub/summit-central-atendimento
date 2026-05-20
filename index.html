@@ -5222,12 +5222,13 @@ function configurarMenusClientes() {
 
       if (!confirmar) return;
 
-      const { error } = await supabaseClient
-        .from("clientes")
-        .update({
-          ativo: false
-        })
-        .eq("id", clientId);
+      const { data, error } = await supabaseClient
+  .from("clientes")
+  .update({
+    ativo: false
+  })
+  .eq("id", Number(clientId))
+  .select("id, nome, ativo");
 
       if (error) {
   console.error("Erro ao inativar cliente:", error);
@@ -5237,6 +5238,13 @@ function configurarMenusClientes() {
     (error.message || JSON.stringify(error, null, 2))
   );
 
+  return;
+}
+
+if (!data || data.length === 0) {
+  alert(
+    "Nenhum cliente foi atualizado no Supabase.\n\nVerifique se a policy RLS permite UPDATE na tabela clientes."
+  );
   return;
 }
 
