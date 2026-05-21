@@ -5773,7 +5773,8 @@ function renderClientesCriarConversa() {
   const termo =
     createConversationSearchInput.value.trim().toLowerCase();
 
-  const clientes = (allClientes || []).filter(cliente => {
+const clientes = (allClientes || [])
+  .filter(cliente => {
     const nome = (cliente.nome || "").toLowerCase();
     const telefone = (cliente.telefone || "").toLowerCase();
     const email = (cliente.email || "").toLowerCase();
@@ -5784,7 +5785,13 @@ function renderClientesCriarConversa() {
       telefone.includes(termo) ||
       email.includes(termo)
     );
-  });
+  })
+  .sort((a, b) =>
+    (a.nome || "").localeCompare(
+      b.nome || "",
+      "pt-BR"
+    )
+  );
 
   if (clientes.length === 0) {
     createConversationClientList.innerHTML = `
