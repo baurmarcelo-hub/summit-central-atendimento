@@ -158,6 +158,32 @@
       color: var(--summit-primary);
     }
 
+.settings-submenu {
+  margin: 4px 0 10px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.submenu-item {
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submenu-item:hover {
+  background: #ffffff;
+  color: #2563eb;
+}
+
+.submenu-item.active {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
     .user-box {
       border-top: 1px solid #edf0f5;
       padding-top: 16px;
@@ -1795,7 +1821,7 @@ line-height: 1.15;
 }
 
 .settings-tabs {
-  display: flex;
+  display: none;
   gap: 10px;
   margin-bottom: 22px;
 }
@@ -2556,9 +2582,21 @@ line-height: 1.15;
 	</div>
         <div class="menu-item">📱 <span>WhatsApp</span></div>
         <div class="menu-item">📧 <span>Email</span></div>
-        <div class="menu-item" id="settingsMenuItem">
-  	  ⚙️ <span>Configurações</span>
-	</div>
+        <div class="menu-group">
+  <div class="menu-item" id="settingsMenuItem">
+    ⚙️ <span>Configurações</span>
+  </div>
+
+  <div class="settings-submenu hidden" id="settingsSubmenu">
+    <div class="submenu-item active" id="sidebarClientsBtn">
+      Clientes
+    </div>
+
+    <div class="submenu-item" id="sidebarTeamBtn">
+      Equipe
+    </div>
+  </div>
+</div>
       </div>
 
       <div class="user-box">
@@ -3391,6 +3429,15 @@ let isRecordingAudio = false;
 
 const settingsMenuItem =
   document.getElementById("settingsMenuItem");
+
+const settingsSubmenu =
+  document.getElementById("settingsSubmenu");
+
+const sidebarClientsBtn =
+  document.getElementById("sidebarClientsBtn");
+
+const sidebarTeamBtn =
+  document.getElementById("sidebarTeamBtn");
 
 const teamPanel =
   document.getElementById("teamPanel");
@@ -5997,6 +6044,10 @@ async function abrirOuCriarConversaCliente(clienteId) {
   settingsMenuItem.classList.remove("active");
   chatMenuItem.classList.add("active");
 
+ settingsSubmenu.classList.add("hidden");
+ sidebarClientsBtn.classList.remove("active");
+ sidebarTeamBtn.classList.remove("active");
+
   clientPanel.classList.add("hidden");
   teamPanel.classList.add("hidden");
   mainConversationPanel.classList.remove("hidden");
@@ -6894,6 +6945,7 @@ settingsMenuItem.addEventListener("click", () => {
 
   settingsMenuItem.classList.add("active");
   chatMenuItem.classList.remove("active");
+  settingsSubmenu.classList.remove("hidden");
 
   app.classList.add("settings-open");
 
@@ -7011,6 +7063,10 @@ forwardModal.addEventListener("click", event => {
 
 chatMenuItem.addEventListener("click", () => {
 
+  settingsSubmenu.classList.add("hidden");
+  sidebarClientsBtn.classList.remove("active");
+  sidebarTeamBtn.classList.remove("active");
+
   chatMenuItem.classList.add("active");
   app.classList.remove("settings-open");
   settingsMenuItem.classList.remove("active");
@@ -7035,6 +7091,9 @@ function abrirPainelClientes() {
 
   clientsTabBtnTeam.classList.add("active");
   teamTabBtnTeam.classList.remove("active");
+
+  sidebarClientsBtn.classList.add("active");
+  sidebarTeamBtn.classList.remove("active");
 }
 
 function abrirPainelEquipe() {
@@ -7047,6 +7106,9 @@ function abrirPainelEquipe() {
   clientsTabBtnTeam.classList.remove("active");
   teamTabBtnTeam.classList.add("active");
 
+  sidebarTeamBtn.classList.add("active");
+  sidebarClientsBtn.classList.remove("active");
+
   carregarEquipe();
 }
 
@@ -7055,6 +7117,9 @@ clientsTabBtnTeam.addEventListener("click", abrirPainelClientes);
 
 teamTabBtn.addEventListener("click", abrirPainelEquipe);
 teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
+
+sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
+sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 
 if (imageModalClose) {
 
