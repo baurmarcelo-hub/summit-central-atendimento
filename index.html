@@ -1853,7 +1853,7 @@ line-height: 1.15;
 .client-table-header,
 .client-row {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1.3fr 0.9fr 50px;
+  grid-template-columns: 1.25fr 0.9fr 1.2fr 1fr 0.75fr 50px;
   gap: 16px;
   align-items: center;
 }
@@ -2635,6 +2635,7 @@ line-height: 1.15;
     <div>Nome</div>
     <div>WhatsApp</div>
     <div>E-mail</div>
+    <div>Empresa</div>
     <div>Cadastro</div>
     <div>Ações</div>
   </div>
@@ -5343,12 +5344,16 @@ async function carregarClientesPainel() {
           </div>
 
           <div class="client-muted">
-            ${cliente.email || "-"}
-          </div>
+  				${cliente.email || "-"}
+	  </div>
 
-          <div class="client-muted">
-            ${dataCadastro}
-          </div>
+	  <div class="client-muted">
+ 				 ${cliente.empresa || "-"}
+	  </div>
+
+	  <div class="client-muted">
+ 				 ${dataCadastro}
+	  </div>
 
           <div class="client-actions">
   <button
