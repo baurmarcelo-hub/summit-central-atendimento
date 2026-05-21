@@ -5237,7 +5237,8 @@ async function carregarClientesPainel() {
       .trim()
       .toLowerCase() || "";
 
-  clientes = clientes.filter(cliente => {
+  clientes = clientes
+  .filter(cliente => {
 
     const nome =
       (cliente.nome || "").toLowerCase();
@@ -5255,7 +5256,13 @@ async function carregarClientesPainel() {
       email.includes(termo)
     );
 
-  });
+  })
+  .sort((a, b) =>
+    (a.nome || "").localeCompare(
+      b.nome || "",
+      "pt-BR"
+    )
+  );
 
   if (clientes.length === 0) {
 
