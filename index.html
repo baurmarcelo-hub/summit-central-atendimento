@@ -2681,7 +2681,7 @@ line-height: 1.15;
   </button>
 
   <button class="tab" data-filter="em_atendimento">
-    Conversas em atendimento <span id="countAtendimento">0</span>
+    Em atendimento <span id="countAtendimento">0</span>
   </button>
 
   <button class="tab create-conversation-tab" id="createConversationBtn" type="button">
@@ -3620,9 +3620,13 @@ const unread = unreadMap[conversation.id] || conversation.unread || 0;
           ${conversation.name}
         </div>
 
-        <div class="status-badge status-${conversation.status}">
-          ${conversation.status.replace("_", " ")}
-        </div>
+        ${
+  conversation.status === "em_atendimento"
+    ? `<div class="status-badge status-${conversation.status}">
+        ${conversation.status.replace("_", " ")}
+      </div>`
+    : ""
+}
 
       </div>
 
@@ -4081,11 +4085,9 @@ if (conversation.status !== "em_atendimento") {
 
 if (conversation.status === "em_atendimento") {
   finishBtn.classList.remove("hidden");
-  backToQueueBtn.classList.remove("hidden");
-
+  
   topFinishBtn.classList.remove("hidden");
-  topBackToQueueBtn.classList.remove("hidden");
-
+  
   topFinishBtn.textContent = "Finalizar";
 
   composer.classList.remove("hidden");
