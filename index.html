@@ -3075,6 +3075,36 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="forward-modal" id="createConversationModal">
+  <div class="forward-modal-card">
+    <div class="forward-modal-header">
+      <h3>Criar conversa</h3>
+
+      <button
+        type="button"
+        class="forward-modal-close"
+        id="closeCreateConversationModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="forward-modal-body">
+      <input
+        id="createConversationSearchInput"
+        type="text"
+        placeholder="Buscar cliente por nome, WhatsApp ou e-mail..."
+        autocomplete="off"
+      />
+
+      <div
+        class="forward-list"
+        id="createConversationClientList"
+      ></div>
+    </div>
+  </div>
+</div>
+
 <div class="forward-modal" id="forwardModal">
   <div class="forward-modal-card">
     <div class="forward-modal-header">
@@ -3397,6 +3427,18 @@ const importClientsInput =
 
 const exportClientsBtn =
   document.getElementById("exportClientsBtn");
+
+const createConversationModal =
+  document.getElementById("createConversationModal");
+
+const closeCreateConversationModalBtn =
+  document.getElementById("closeCreateConversationModalBtn");
+
+const createConversationSearchInput =
+  document.getElementById("createConversationSearchInput");
+
+const createConversationClientList =
+  document.getElementById("createConversationClientList");
 
 
 let messagesToForward = [];
@@ -5670,6 +5712,213 @@ function fecharModalEditarCliente() {
   editClientCompany.value = "";
 }
 
+function abrirModalCriarConversa() {
+  createConversationSearchInput.value = "";
+  createConversationClientList.innerHTML = "";
+
+  renderClientesCriarConversa();
+
+  createConversationModal.classList.add("open");
+
+  setTimeout(() => {
+    createConversationSearchInput.focus();
+  }, 100);
+}
+
+function fecharModalCriarConversa() {
+  createConversationModal.classList.remove("open");
+
+  createConversationSearchInput.value = "";
+  createConversationClientList.innerHTML = "";
+}
+
+function renderClientesCriarConversa() {
+  const termo =
+    createConversationSearchInput.value.trim().toLowerCase();
+
+  const clientes = (allClientes || []).filter(cliente => {
+    const nome = (cliente.nome || "").toLowerCase();
+    const telefone = (cliente.telefone || "").toLowerCase();
+    const email = (cliente.email || "").toLowerCase();
+
+    return (
+      !termo ||
+      nome.includes(termo) ||
+      telefone.includes(termo) ||
+      email.includes(termo)
+    );
+  });
+
+  if (clientes.length === 0) {
+    createConversationClientList.innerHTML = `
+      <div style="padding:16px;color:#667085;font-size:14px;">
+        Nenhum cliente encontrado.
+      </div>
+    `;
+    return;
+  }
+
+  createConversationClientList.innerHTML = clientes.map(cliente => {
+    const inicial =
+      (cliente.nome || "C").charAt(0).toUpperCase();
+
+    return `
+      <div
+        class="forward-item create-conversation-client-item"
+        data-client-id="${cliente.id}"
+      >
+        <div class="client-avatar">
+          ${inicial}
+        </div>
+
+        <div style="min-width:0;">
+          <div class="forward-name">
+            ${cliente.nome || "Cliente sem nome"}
+          </div>
+
+          <div class="forward-subtitle">
+            ${cliente.telefone || "-"} • ${cliente.email || "-"}
+          </div>
+        </div>
+
+        <div class="forward-send">
+          ➤
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document
+    .querySelectorAll(".create-conversation-client-item")
+    .forEach(item => {
+      item.addEventListener("click", async () => {
+        const clienteId = Number(item.dataset.clientId);
+
+        await abrirOuCriarConversaCliente(clienteId);
+      });
+    });
+}
+
+async function abrirOuCriarConversaCliente(clienteId) {
+  const cliente = allClientes.find(c => c.id === clienteId);
+
+  if (!cliente) {
+    alert("Cliente não encontrado.");
+    return;
+  }
+
+  const { data: conversasCliente, error: buscaError } =
+    await supabaseClient
+      .from("conversas")
+      .select("*")
+      .eq("cliente_id", cliente.id)
+      .order("updated_at", { ascending: false });
+
+  if (buscaError) {
+    console.error("Erro ao buscar conversas do cliente:", buscaError);
+    alert("Erro ao buscar conversa do cliente.");
+    return;
+  }
+
+  const conversaEmAtendimentoOutroUsuario =
+    (conversasCliente || []).find(conversa =>
+      conversa.status === "em_atendimento" &&
+      conversa.atendente &&
+      conversa.atendente !== usuarioLogadoNome
+    );
+
+  if (conversaEmAtendimentoOutroUsuario) {
+    alert(
+      "Não é possível criar conversa.\n\nEste cliente já está em atendimento com outro usuário."
+    );
+    return;
+  }
+
+  let conversaDestino =
+    (conversasCliente || []).find(conversa =>
+      conversa.status === "em_atendimento" &&
+      conversa.atendente === usuarioLogadoNome
+    );
+
+  if (!conversaDestino) {
+    conversaDestino =
+      (conversasCliente || []).find(conversa =>
+        conversa.status !== "em_atendimento"
+      );
+  }
+
+ if (
+  conversaDestino &&
+  conversaDestino.status === "em_atendimento" &&
+  conversaDestino.atendente === usuarioLogadoNome
+) {
+  // A conversa já é minha e já está em atendimento.
+  // Então apenas abre, sem atualizar updated_at.
+} else if (conversaDestino) {
+  const { error: updateError } = await supabaseClient
+    .from("conversas")
+    .update({
+      status: "em_atendimento",
+      atendente: usuarioLogadoNome,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", conversaDestino.id);
+
+  if (updateError) {
+    console.error("Erro ao assumir conversa existente:", updateError);
+    alert("Erro ao abrir conversa existente.");
+    return;
+  }
+} else {
+    const { data: novaConversa, error: insertError } =
+      await supabaseClient
+        .from("conversas")
+        .insert([
+          {
+            cliente_id: cliente.id,
+            canal: "WhatsApp",
+            status: "em_atendimento",
+            atendente: usuarioLogadoNome,
+            updated_at: new Date().toISOString()
+          }
+        ])
+        .select()
+        .single();
+
+    if (insertError || !novaConversa) {
+      console.error("Erro ao criar conversa:", insertError);
+      alert("Erro ao criar conversa.");
+      return;
+    }
+
+    conversaDestino = novaConversa;
+  }
+
+  fecharModalCriarConversa();
+
+  app.classList.remove("settings-open");
+  settingsMenuItem.classList.remove("active");
+  chatMenuItem.classList.add("active");
+
+  clientPanel.classList.add("hidden");
+  teamPanel.classList.add("hidden");
+  mainConversationPanel.classList.remove("hidden");
+  document.querySelector(".chat-area").classList.remove("hidden");
+
+  currentFilter = "em_atendimento";
+
+  tabs.forEach(t => t.classList.remove("active"));
+
+  document
+    .querySelector('[data-filter="em_atendimento"]')
+    ?.classList.add("active");
+
+  selectedConversationId = conversaDestino.id;
+  forceScrollToBottom = true;
+
+  await carregarClientes();
+}
+
 function fecharMenusClientes() {
   document
     .querySelectorAll(".client-action-menu")
@@ -5706,19 +5955,21 @@ function configurarMenusClientes() {
   document
     .querySelectorAll(".client-open-chat-btn")
     .forEach(btn => {
-      btn.addEventListener("click", event => {
-        event.stopPropagation();
+      btn.addEventListener("click", async event => {
+  event.stopPropagation();
 
-        fecharMenusClientes();
+  fecharMenusClientes();
 
-        alert("Próximo passo: abrir ou criar conversa deste cliente.");
-      });
+  const clienteId = Number(btn.dataset.clientId);
+
+  await abrirOuCriarConversaCliente(clienteId);
+});
     });
 
   document
     .querySelectorAll(".client-edit-btn")
     .forEach(btn => {
-      btn.addEventListener("click", event => {
+      btn.addEventListener("click", async event => {
         event.stopPropagation();
 
         fecharMenusClientes();
@@ -6624,8 +6875,25 @@ exportClientsBtn.addEventListener(
   exportarClientesExcel
 );
 
-createConversationBtn.addEventListener("click", () => {
-  alert("Próximo passo: abrir modal de pesquisa para criar conversa.");
+createConversationBtn.addEventListener("click", async () => {
+  await carregarClientesPainel();
+  abrirModalCriarConversa();
+});
+
+closeCreateConversationModalBtn.addEventListener(
+  "click",
+  fecharModalCriarConversa
+);
+
+createConversationSearchInput.addEventListener(
+  "input",
+  renderClientesCriarConversa
+);
+
+createConversationModal.addEventListener("click", event => {
+  if (event.target === createConversationModal) {
+    fecharModalCriarConversa();
+  }
 });
 
 closeForwardModalBtn.addEventListener(
