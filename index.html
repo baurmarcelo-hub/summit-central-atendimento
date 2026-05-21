@@ -5168,6 +5168,26 @@ async function uploadArquivo(file) {
     tamanho: file.size
   };
 }
+
+async function enviarMensagemWhatsApp(conversation, mensagem) {
+  // Preparação futura para Evolution API.
+  // Neste momento não envia nada para fora, apenas mantém o MVP funcionando.
+
+  console.log("Preparar envio WhatsApp:", {
+    conversa_id: conversation.id,
+    cliente: conversation.name,
+    telefone: conversation.phone,
+    mensagem_id: mensagem?.id,
+    tipo: mensagem?.tipo,
+    texto: mensagem?.conteudo
+  });
+
+  return {
+    success: true,
+    modo: "simulado"
+  };
+}
+
     async function sendMessage() {
 
   if (isSendingMessage) return;
@@ -5208,9 +5228,9 @@ async function uploadArquivo(file) {
    }
 }
   
-  const { error } = await supabaseClient
-    .from("mensagens")
-    .insert([
+  const { data: mensagemInserida, error } = await supabaseClient
+  .from("mensagens")
+  .insert([
       {
         conversa_id: conversation.id,
         conteudo: text,
@@ -5229,7 +5249,9 @@ async function uploadArquivo(file) {
         media_mime: arquivo?.mime || null,
         media_tamanho: arquivo?.tamanho || null
       }
-    ]);
+        ])
+    .select()
+    .single();
 
   if (error) {
   console.error("Erro ao enviar mensagem:", error);
@@ -5240,6 +5262,10 @@ async function uploadArquivo(file) {
   sendBtn.style.opacity = "1";
 
   return;
+}
+
+if (conversation.channel === "WhatsApp") {
+  await enviarMensagemWhatsApp(conversation, mensagemInserida);
 }
 
  input.value = "";
