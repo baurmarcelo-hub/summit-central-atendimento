@@ -91,8 +91,8 @@
     }
 
     .app.details-open {
-      grid-template-columns: 240px 390px 1fr 300px;
-    }
+  grid-template-columns: 240px 390px minmax(420px, 1fr) 520px;
+}
 
 .app.settings-open {
   grid-template-columns: 240px 1fr;
@@ -109,25 +109,26 @@
 }
 
     .sidebar {
-      background: #f8fafc;
-      border-right: 1px solid #e7eaf0;
-      padding: 24px 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+}
 
     .logo {
       font-size: 28px;
       font-weight: 900;
-      color: #2563eb;
+      color: #ffffff;
       margin-bottom: 4px;
       letter-spacing: 0.5px;
     }
 
     .logo-subtitle {
       font-size: 12px;
-      color: #667085;
+      color: #94a3b8;
       font-weight: 700;
       margin-bottom: 36px;
     }
@@ -146,7 +147,7 @@
       gap: 12px;
       padding: 12px 14px;
       border-radius: 12px;
-      color: #596579;
+      color: #cbd5e1;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -154,9 +155,9 @@
     }
 
     .menu-item.active {
-      background: var(--summit-soft);
-      color: var(--summit-primary);
-    }
+  background: rgba(37, 99, 235, 0.22);
+  color: #ffffff;
+}
 
 .settings-submenu {
   margin: 4px 0 10px 34px;
@@ -168,24 +169,24 @@
 .submenu-item {
   padding: 9px 12px;
   border-radius: 10px;
-  color: #667085;
+  color: #cbd5e1;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .submenu-item:hover {
-  background: #ffffff;
-  color: #2563eb;
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
 }
 
 .submenu-item.active {
-  background: #eff6ff;
-  color: #2563eb;
+  background: rgba(37, 99, 235, 0.22);
+  color: #ffffff;
 }
 
     .user-box {
-      border-top: 1px solid #edf0f5;
+      border-top: 1px solid rgba(255,255,255,0.10);
       padding-top: 16px;
       display: flex;
       align-items: center;
@@ -1094,8 +1095,8 @@ line-height: 1.15;
       }
 
       .details-panel,
-      .app.details-open .details-panel {
-        display: none;
+.app.details-open .details-panel {
+  display: none;
       }
     }
 
@@ -2540,6 +2541,332 @@ line-height: 1.15;
   background: #eff6ff;
 }
 
+.details-panel {
+  display: none;
+  background: #f8fafc;
+  border-left: 1px solid #e2e8f0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.app.details-open .details-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.details-header {
+  height: 64px;
+  padding: 0 20px;
+  border-bottom: 1px solid #e5eaf1;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.details-header strong {
+  font-size: 18px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.details-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #ffffff;
+  border-bottom: 1px solid #e5eaf1;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.details-tab {
+  height: 48px;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  position: relative;
+}
+
+.details-tab.active {
+  color: #2563eb;
+}
+
+.details-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: #2563eb;
+}
+
+.details-search {
+  padding: 14px 16px 6px;
+  background: #f8fafc;
+}
+
+.details-search input {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 13px;
+  outline: none;
+}
+
+.details-search input:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.details-section {
+  background: #ffffff;
+  border: 1px solid #e5eaf1;
+  border-radius: 18px;
+  margin: 10px 16px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.details-section h3 {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.quick-action-btn {
+  min-height: 78px;
+  border: 1px solid #dbe3ef;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  transition: all 0.18s ease;
+}
+
+.quick-action-btn:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+.quick-action-btn strong {
+  display: block;
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.quick-action-btn small {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.section-title-row h3 {
+  margin: 0;
+}
+
+.section-title-row button {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.internal-note {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.internal-note:last-child {
+  border-bottom: 0;
+}
+
+.note-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.note-avatar.green {
+  background: #10b981;
+}
+
+.internal-note strong {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.internal-note p {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #334155;
+  margin: 4px 0;
+}
+
+.internal-note small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.task-mini-card {
+  border: 1px solid #e5eaf1;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.task-mini-card strong {
+  font-size: 12px;
+  color: #2563eb;
+}
+
+.task-mini-card h4 {
+  font-size: 13px;
+  color: #0f172a;
+  margin: 4px 0;
+}
+
+.task-mini-card p {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.task-mini-card span {
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #ea580c;
+  font-size: 11px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.task-mini-card span.pending {
+  background: #fef9c3;
+  color: #ca8a04;
+}
+
+.tag.tag-blue {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.tag.tag-orange {
+  background: #fff7ed;
+  color: #ea580c;
+  border-color: #fed7aa;
+}
+
+.tag.tag-red {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.client-compact-card {
+  margin-bottom: 16px;
+}
+
+.client-compact-header {
+  display: grid;
+  grid-template-columns: 46px 1fr 34px;
+  gap: 12px;
+  align-items: center;
+}
+
+.client-compact-header strong {
+  display: block;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.client-compact-header small {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.expand-client-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.client-compact-lines {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.client-compact-lines span {
+  display: block;
+  font-size: 10px;
+  color: #64748b;
+  margin-bottom: 3px;
+}
+
+.client-compact-lines strong {
+  font-size: 12px;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+
   </style>
 </head>
 
@@ -2570,9 +2897,14 @@ line-height: 1.15;
         <div class="menu-section-title">Geral</div>
         <div class="menu-item">▦ <span>Dashboard</span></div>
         <div class="menu-item active" id="chatMenuItem">
-  	  💬 <span>Bate Papo ao vivo</span>
-	</div>
-        <div class="menu-item">📱 <span>WhatsApp</span></div>
+  💬 <span>Bate Papo ao vivo</span>
+</div>
+
+<div class="menu-item" id="tasksMenuItem">
+  📋 <span>Kanban / Tarefas</span>
+</div>
+
+<div class="menu-item">📱 <span>WhatsApp</span></div>
         <div class="menu-item">📧 <span>Email</span></div>
         <div class="menu-group">
   <div class="menu-item" id="settingsMenuItem">
@@ -2827,10 +3159,7 @@ line-height: 1.15;
         </div>
 
         <div class="header-actions">
-  <button class="secondary-action-btn header-action-btn" id="topBackToQueueBtn">
-    Voltar
-  </button>
-
+  
   <button class="danger-btn header-action-btn" id="topFinishBtn">
     Finalizar
   </button>
@@ -2994,71 +3323,167 @@ line-height: 1.15;
     </main>
 
     <aside class="details-panel">
-      <div class="details-header">
-        <strong>Detalhes do atendimento</strong>
-        <button class="close-details" id="closeDetailsBtn">×</button>
+  <div class="details-header">
+    <strong>Detalhes do atendimento</strong>
+    <button class="close-details" id="closeDetailsBtn">×</button>
+  </div>
+
+  <div class="details-tabs">
+    <button class="details-tab active" data-details-tab="resumo">Resumo</button>
+    <button class="details-tab" data-details-tab="observacoes">Observações</button>
+    <button class="details-tab" data-details-tab="tarefas">Tarefas (2)</button>
+    <button class="details-tab" data-details-tab="tags">Tags</button>
+  </div>
+
+  <div class="details-search">
+    <input
+      id="detailsSearchInput"
+      type="text"
+      placeholder="Buscar neste atendimento..."
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="details-section quick-actions-card">
+    <h3>Ações rápidas</h3>
+
+    <div class="quick-actions-grid">
+      <button type="button" class="quick-action-btn">
+        🏷️
+        <span>
+          <strong>Aplicar TAG</strong>
+          <small>Marcar atendimento</small>
+        </span>
+      </button>
+
+      <button type="button" class="quick-action-btn">
+        📋
+        <span>
+          <strong>Criar tarefa</strong>
+          <small>Gerar nova tarefa</small>
+        </span>
+      </button>
+
+      <button type="button" class="quick-action-btn">
+        📝
+        <span>
+          <strong>Nova observação</strong>
+          <small>Adicionar registro</small>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="details-section">
+    <div class="section-title-row">
+      <h3>Últimas observações</h3>
+      <button type="button">Ver todas</button>
+    </div>
+
+    <div class="internal-note">
+      <div class="note-avatar">MB</div>
+      <div>
+        <strong>Marcelo Baur</strong>
+        <p>Cliente solicitou proposta do plano empresarial. Interessado em iniciar ainda esse mês.</p>
+        <small>21/05/2025 10:32</small>
+      </div>
+    </div>
+
+    <div class="internal-note">
+      <div class="note-avatar green">AS</div>
+      <div>
+        <strong>Ana Silva</strong>
+        <p>Já é cliente ativo do plano básico desde 2023. Boa comunicação e retorno rápido.</p>
+        <small>15/05/2025 09:15</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="details-section">
+    <div class="section-title-row">
+      <h3>Tarefas em aberto</h3>
+      <button type="button">Ver todas</button>
+    </div>
+
+    <div class="task-mini-card">
+      <div>
+        <strong>#T-000123</strong>
+        <h4>Enviar proposta comercial final</h4>
+        <p>Prazo: 23/05/2025 • Responsável: Marcelo Baur</p>
+      </div>
+      <span>Em andamento</span>
+    </div>
+
+    <div class="task-mini-card">
+      <div>
+        <strong>#T-000124</strong>
+        <h4>Acompanhar retorno do cliente</h4>
+        <p>Prazo: 26/05/2025 • Responsável: Ana Silva</p>
+      </div>
+      <span class="pending">Pendente</span>
+    </div>
+  </div>
+
+  <div class="details-section">
+    <div class="section-title-row">
+      <h3>Tags aplicadas</h3>
+      <button type="button">Gerenciar</button>
+    </div>
+
+    <div class="tag-list">
+      <span class="tag">INTERESSADO</span>
+      <span class="tag tag-blue">PLANO EMPRESARIAL</span>
+      <span class="tag tag-orange">PROPOSTA ENVIADA</span>
+      <span class="tag tag-red">PRIORITÁRIO</span>
+    </div>
+  </div>
+
+  <div class="details-section client-compact-card">
+    <div class="client-compact-header">
+      <div class="client-avatar" id="detailAvatar">C</div>
+
+      <div>
+        <strong id="detailName">Cliente</strong>
+        <small id="detailChannel">WhatsApp</small>
       </div>
 
-      <div class="detail-card">
-        <h3>Dados do Cliente</h3>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-          <div class="client-avatar" id="detailAvatar">C</div>
-          <div>
-            <strong id="detailName">Cliente</strong><br />
-            <small style="color:#8b94a5">Cliente desde 12/04/2023</small>
-          </div>
-        </div>
-        <div class="detail-line">
-          <div class="detail-label">Telefone</div>
-          <div class="detail-value" id="detailPhone">(51) 99999-9999</div>
-        </div>
-    <div class="detail-line">
-  <div class="detail-label">E-mail</div>
-  <div class="detail-value" id="detailEmail">cliente@email.com</div>
-</div>
+      <button type="button" class="expand-client-btn">+</button>
+    </div>
 
-<div class="detail-line">
-  <div class="detail-label">Canal</div>
-  <div class="detail-value" id="detailChannel">WhatsApp</div>
-</div>
+    <div class="client-compact-lines">
+      <div>
+        <span>Telefone</span>
+        <strong id="detailPhone">(51) 99999-9999</strong>
+      </div>
 
-<div class="detail-line">
-  <div class="detail-label">Status</div>
-  <div
-    class="detail-value"
-    id="detailStatus"
-    style="color:#12b76a"
+      <div>
+        <span>E-mail</span>
+        <strong id="detailEmail">cliente@email.com</strong>
+      </div>
+
+      <div>
+        <span>Status</span>
+        <strong id="detailStatus">aguardando</strong>
+      </div>
+
+      <div>
+        <span>Responsável</span>
+        <strong id="detailResponsible">Não atribuído</strong>
+      </div>
+    </div>
+  </div>
+
+  <button class="danger-btn" id="finishBtn">
+    Finalizar Atendimento
+  </button>
+
+  <button
+    class="secondary-action-btn"
+    id="backToQueueBtn"
   >
-    aguardando
-  </div>
-</div>
-
-<div class="detail-line">
-  <div class="detail-label">Responsável</div>
-  <div class="detail-value" id="detailResponsible">
-    Não atribuído
-  </div>
-</div>
-
-</div>
-
-      <div class="detail-card">
-        <h3>Tags</h3>
-        <div class="tag-list">
-          <span class="tag">REDE</span>
-          <span class="tag">AUTORIZAÇÃO</span>
-          <span class="tag">CADASTRO</span>
-        </div>
-      </div>
-
-      <button class="danger-btn" id="finishBtn">Finalizar Atendimento</button>
-<button
-  class="secondary-action-btn"
-  id="backToQueueBtn"
->
-  Voltar para fila
-</button>
-    </aside>
+    Voltar para fila
+  </button>
+</aside>
   </div>
 
 <div class="image-modal" id="imageModal">
@@ -3382,8 +3807,6 @@ let isRecordingAudio = false;
       document.getElementById("backToQueueBtn");
     const topFinishBtn =
       document.getElementById("topFinishBtn");
-    const topBackToQueueBtn =
-      document.getElementById("topBackToQueueBtn");
     const tabs = document.querySelectorAll(".tab[data-filter]");
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
@@ -4229,7 +4652,6 @@ acceptBtn.classList.add("hidden");
 finishBtn.classList.add("hidden");
 backToQueueBtn.classList.add("hidden");
 topFinishBtn.classList.add("hidden");
-topBackToQueueBtn.classList.add("hidden");
 composer.classList.add("hidden");
 composer.classList.remove("locked-composer");
 
@@ -5192,8 +5614,12 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
 
   if (isSendingMessage) return;
 
-  const text = input.value.trim();
   const file = fileInput.files[0];
+
+const text =
+  input.disabled && file
+    ? ""
+    : input.value.trim();
 
   if (!text && !file) return;
 
@@ -5267,6 +5693,13 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
 if (conversation.channel === "WhatsApp") {
   await enviarMensagemWhatsApp(conversation, mensagemInserida);
 }
+
+await supabaseClient
+  .from("conversas")
+  .update({
+    updated_at: new Date().toISOString()
+  })
+  .eq("id", conversation.id);
 
  input.value = "";
 cancelAudioBtn.style.display = "none";
@@ -6847,19 +7280,9 @@ chatArea.addEventListener("drop", event => {
     acceptBtn.addEventListener("click", assumirConversa);
 finishBtn.addEventListener("click", finalizarAtendimento);
 
-backToQueueBtn.addEventListener(
-  "click",
-  voltarParaFila
-);
-
 topFinishBtn.addEventListener(
   "click",
   finalizarAtendimento
-);
-
-topBackToQueueBtn.addEventListener(
-  "click",
-  voltarParaFila
 );
 
 searchInput.addEventListener("input", () => {
