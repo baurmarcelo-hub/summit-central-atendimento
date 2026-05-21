@@ -6938,28 +6938,15 @@ ownerFilterBtns.forEach(btn => {
     chatUser.addEventListener("click", () => app.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
 settingsMenuItem.addEventListener("click", () => {
- 
- if (selectionMode) {
+
+  if (selectionMode) {
     limparSelecaoMensagens();
   }
 
   settingsMenuItem.classList.add("active");
-  chatMenuItem.classList.remove("active");
-  settingsSubmenu.classList.remove("hidden");
-
-  app.classList.add("settings-open");
-
-  clientPanel.classList.remove("hidden");
-  teamPanel.classList.add("hidden");
-
-  mainConversationPanel.classList.add("hidden");
-
-document.querySelector(".chat-area").classList.add("hidden");
-
-carregarClientesPainel();
+  settingsSubmenu.classList.toggle("hidden");
 
 });
-
 const clientSearchInput =
   document.getElementById("clientSearchInput");
 
@@ -7082,6 +7069,16 @@ chatMenuItem.addEventListener("click", () => {
 });
 
 function abrirPainelClientes() {
+
+app.classList.add("settings-open");
+chatMenuItem.classList.remove("active");
+settingsMenuItem.classList.add("active");
+settingsSubmenu.classList.remove("hidden");
+
+mainConversationPanel.classList.add("hidden");
+document.querySelector(".chat-area").classList.add("hidden");
+
+
   clientPanel.classList.remove("hidden");
   teamPanel.classList.add("hidden");
  carregarClientesPainel();
@@ -7097,6 +7094,16 @@ function abrirPainelClientes() {
 }
 
 function abrirPainelEquipe() {
+
+app.classList.add("settings-open");
+chatMenuItem.classList.remove("active");
+settingsMenuItem.classList.add("active");
+settingsSubmenu.classList.remove("hidden");
+
+mainConversationPanel.classList.add("hidden");
+document.querySelector(".chat-area").classList.add("hidden");
+
+
   teamPanel.classList.remove("hidden");
   clientPanel.classList.add("hidden");
 
