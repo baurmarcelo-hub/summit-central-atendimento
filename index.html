@@ -974,6 +974,18 @@ line-height: 1.15;
   gap: 14px;
 }
 
+.client-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.client-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
 .client-edit-form input {
   width: 100%;
   height: 52px;
@@ -3189,32 +3201,56 @@ line-height: 1.15;
 
     <div class="client-edit-form">
 
-      <input
-        type="text"
-        id="editClientName"
-        placeholder="Nome"
-      />
+  <div class="client-field">
+    <label for="editClientName">
+      Nome
+    </label>
 
-      <input
-  type="text"
-  id="editClientPhone"
-  placeholder="+55 (51) 99999-9999"
-  maxlength="19"
-/>
+    <input
+      type="text"
+      id="editClientName"
+      placeholder="Digite o nome"
+    />
+  </div>
 
-      <input
-        type="email"
-        id="editClientEmail"
-        placeholder="E-mail"
-      />
+  <div class="client-field">
+    <label for="editClientPhone">
+      WhatsApp
+    </label>
 
-      <input
-        type="text"
-        id="editClientCompany"
-        placeholder="Empresa"
-      />
+    <input
+      type="text"
+      id="editClientPhone"
+      placeholder="+55 (51) 99999-9999"
+      maxlength="19"
+    />
+  </div>
 
-    </div>
+  <div class="client-field">
+    <label for="editClientEmail">
+      E-mail
+    </label>
+
+    <input
+      type="email"
+      id="editClientEmail"
+      placeholder="Digite o e-mail"
+    />
+  </div>
+
+  <div class="client-field">
+    <label for="editClientCompany">
+      Empresa
+    </label>
+
+    <input
+      type="text"
+      id="editClientCompany"
+      placeholder="Digite a empresa"
+    />
+  </div>
+
+</div>
 
     <div class="client-edit-footer">
       <button
