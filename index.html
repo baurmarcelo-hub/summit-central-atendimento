@@ -2676,16 +2676,16 @@ line-height: 1.15;
 </section>
     <section class="conversation-panel">
       <div class="tabs">
-  <button class="tab" data-filter="em_atendimento">
-    Em atendimento <span id="countAtendimento">0</span>
-  </button>
-
   <button class="tab active" data-filter="aguardando">
-    Aguardando <span id="countAguardando">0</span>
+    Conversas <span id="countAguardando">0</span>
   </button>
 
-  <button class="tab" data-filter="finalizado">
-    Resolvidos <span id="countFinalizado">0</span>
+  <button class="tab" data-filter="em_atendimento">
+    Conversas em atendimento <span id="countAtendimento">0</span>
+  </button>
+
+  <button class="tab create-conversation-tab" id="createConversationBtn" type="button">
+    + Criar Conversa
   </button>
 </div>
 
@@ -3250,10 +3250,11 @@ let isRecordingAudio = false;
       document.getElementById("topFinishBtn");
     const topBackToQueueBtn =
       document.getElementById("topBackToQueueBtn");
-    const tabs = document.querySelectorAll(".tab");
+    const tabs = document.querySelectorAll(".tab[data-filter]");
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
-    const countFinalizado = document.getElementById("countFinalizado");
+    const createConversationBtn =
+               document.getElementById("createConversationBtn");
     const ownerFilterBtns = document.querySelectorAll(".owner-filter-btn");
     const imageModal = document.getElementById("imageModal");
     const imageModalImg = document.getElementById("imageModalImg");
@@ -3674,7 +3675,10 @@ if (ownerFilterBox) {
 }
 
   const filteredConversations = conversations.filter(conversation => {
-    const matchStatus = conversation.status === currentFilter;
+    const matchStatus =
+  currentFilter === "aguardando"
+    ? conversation.status !== "em_atendimento"
+    : conversation.status === "em_atendimento";
 
 const matchOwner =
   ownerFilter === "todas"
@@ -3904,13 +3908,16 @@ async function confirmarEncaminhamento(conversaDestinoId) {
     limparSelecaoMensagens();
   }
 
-  currentFilter = conversaDestino.status;
+  currentFilter =
+  conversaDestino.status === "em_atendimento"
+    ? "em_atendimento"
+    : "aguardando";
 
   tabs.forEach(t => t.classList.remove("active"));
 
   document
-    .querySelector(`[data-filter="${conversaDestino.status}"]`)
-    ?.classList.add("active");
+  .querySelector(`[data-filter="${currentFilter}"]`)
+  ?.classList.add("active");
 
   selectedConversationId = conversaDestino.id;
 
@@ -4066,13 +4073,10 @@ topFinishBtn.classList.add("hidden");
 topBackToQueueBtn.classList.add("hidden");
 composer.classList.add("hidden");
 
-if (conversation.status === "aguardando") {
+if (conversation.status !== "em_atendimento") {
   acceptBtn.classList.remove("hidden");
-  topFinishBtn.classList.remove("hidden");
 
-  topFinishBtn.textContent = "Finalizar";
-
-  composer.classList.remove("hidden");
+  composer.classList.add("hidden");
 }
 
 if (conversation.status === "em_atendimento") {
@@ -4087,15 +4091,8 @@ if (conversation.status === "em_atendimento") {
   composer.classList.remove("hidden");
 }
 
-if (conversation.status === "finalizado") {
-  finishBtn.classList.remove("hidden");
-  finishBtn.textContent = "Reabrir Conversa";
-
-  topFinishBtn.classList.remove("hidden");
-  topFinishBtn.textContent = "Reabrir";
-} else {
-  finishBtn.textContent = "Finalizar Atendimento";
-}
+finishBtn.textContent = "Finalizar Atendimento";
+topFinishBtn.textContent = "Finalizar";
 
   const pagination =
   messagePagination[conversation.id];
@@ -4371,8 +4368,9 @@ const selectOption =
 const deleteOption =
   row.querySelector(".msg-delete-option");
 
-if (conversation.status === "finalizado") {
+if (conversation.status !== "em_atendimento") {
   replyOption.style.display = "none";
+  editOption.style.display = "none";
 } else {
   replyOption.addEventListener("click", event => {
     event.stopPropagation();
@@ -4517,16 +4515,16 @@ if (forceScrollToBottom || distanceFromBottom < 200) {
 }
 }
 function atualizarContadores() {
-  const totalAguardando = conversations.filter(c => c.status === "aguardando").length;
+  const totalConversas = conversations.filter(
+    c => c.status !== "em_atendimento"
+  ).length;
 
-  const totalAtendimento = conversations.filter(c => c.status === "em_atendimento").length;
+  const totalAtendimento = conversations.filter(
+    c => c.status === "em_atendimento"
+  ).length;
 
-  const totalFinalizado = conversations.filter(c => c.status === "finalizado").length;
-
-  countAguardando.textContent = totalAguardando;
+  countAguardando.textContent = totalConversas;
   countAtendimento.textContent = totalAtendimento;
-  countFinalizado.textContent = totalFinalizado;
-  
 }
     function render() {
   atualizarContadores();
@@ -4793,7 +4791,11 @@ conversations.sort((a, b) => {
       const conversaSelecionadaAindaExiste =
   conversations.find(c =>
     c.id === selectedConversationId &&
-    c.status === currentFilter &&
+(
+  currentFilter === "aguardando"
+    ? c.status !== "em_atendimento"
+    : c.status === "em_atendimento"
+) &&
     (
       ownerFilter === "todas" ||
       c.atendente === usuarioLogadoNome
@@ -4803,7 +4805,11 @@ conversations.sort((a, b) => {
 if (!conversaSelecionadaAindaExiste) {
   const primeiraConversaDoFiltro =
     conversations.find(c =>
-      c.status === currentFilter &&
+      (
+  currentFilter === "aguardando"
+    ? c.status !== "em_atendimento"
+    : c.status === "em_atendimento"
+) &&
       (
         ownerFilter === "todas" ||
         c.atendente === usuarioLogadoNome
@@ -4865,7 +4871,7 @@ render();
     updated_at: new Date().toISOString()
   })
   .eq("id", conversation.id)
-  .eq("status", "aguardando")
+  .neq("status", "em_atendimento")
   .select()
   .single();
 
@@ -4902,25 +4908,18 @@ async function finalizarAtendimento() {
     return;
   }
 
-  const novoStatus =
-    conversation.status === "finalizado"
-      ? "em_atendimento"
-      : "finalizado";
+  const novoStatus = "aguardando";
 
-  const mensagemSucesso =
-    conversation.status === "finalizado"
-      ? "Conversa reaberta com sucesso!"
-      : "Atendimento finalizado com sucesso!";
+const mensagemSucesso =
+  "Conversa finalizada e devolvida para Conversas.";
 
-  const novoFiltro =
-    conversation.status === "finalizado"
-      ? "em_atendimento"
-      : "finalizado";
+const novoFiltro = "aguardando";
 
   const { error } = await supabaseClient
     .from("conversas")
     .update({
   status: novoStatus,
+  atendente: null,
   updated_at: new Date().toISOString()
 })
     .eq("id", conversation.id);
@@ -6478,7 +6477,10 @@ if (currentFilter === "aguardando") {
 }
 
     const primeiraConversa = conversations.find(c => {
-  const matchStatus = c.status === currentFilter;
+  const matchStatus =
+  currentFilter === "aguardando"
+    ? c.status !== "em_atendimento"
+    : c.status === "em_atendimento";
 
   const matchOwner =
     ownerFilter === "todas"
@@ -6509,7 +6511,9 @@ ownerFilterBtns.forEach(btn => {
     const primeiraConversa = conversations.find(c => {
 
       const matchStatus =
-        c.status === currentFilter;
+  currentFilter === "aguardando"
+    ? c.status !== "em_atendimento"
+    : c.status === "em_atendimento";
 
       const matchOwner =
         ownerFilter === "todas"
@@ -6617,6 +6621,10 @@ exportClientsBtn.addEventListener(
   "click",
   exportarClientesExcel
 );
+
+createConversationBtn.addEventListener("click", () => {
+  alert("Próximo passo: abrir modal de pesquisa para criar conversa.");
+});
 
 closeForwardModalBtn.addEventListener(
   "click",
