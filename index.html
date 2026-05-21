@@ -5886,10 +5886,15 @@ async function abrirOuCriarConversaCliente(clienteId) {
         .single();
 
     if (insertError || !novaConversa) {
-      console.error("Erro ao criar conversa:", insertError);
-      alert("Erro ao criar conversa.");
-      return;
-    }
+  console.error("Erro ao criar conversa:", insertError);
+
+  alert(
+    "Erro ao criar conversa:\n\n" +
+    (insertError?.message || JSON.stringify(insertError, null, 2))
+  );
+
+  return;
+}
 
     conversaDestino = novaConversa;
   }
