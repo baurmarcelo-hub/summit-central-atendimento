@@ -3344,6 +3344,45 @@ line-height: 1.15;
     />
   </div>
 
+  <div class="details-section client-compact-card">
+    <div class="client-compact-header">
+      <div class="client-avatar" id="detailAvatar">C</div>
+
+      <div>
+        <strong id="detailName">Cliente</strong>
+      </div>
+
+      <button type="button" class="expand-client-btn">+</button>
+    </div>
+
+    <div class="client-compact-lines hidden" id="clientExtraInfo">
+      <div>
+        <span>Telefone</span>
+        <strong id="detailPhone">(51) 99999-9999</strong>
+      </div>
+
+      <div>
+        <span>E-mail</span>
+        <strong id="detailEmail">cliente@email.com</strong>
+      </div>
+
+      <div>
+        <span>Canal</span>
+        <strong id="detailChannel">WhatsApp</strong>
+      </div>
+
+      <div>
+        <span>Status</span>
+        <strong id="detailStatus">aguardando</strong>
+      </div>
+
+      <div>
+        <span>Responsável</span>
+        <strong id="detailResponsible">Não atribuído</strong>
+      </div>
+    </div>
+  </div>
+
   <div class="details-section quick-actions-card">
     <h3>Ações rápidas</h3>
 
@@ -3438,52 +3477,7 @@ line-height: 1.15;
     </div>
   </div>
 
-  <div class="details-section client-compact-card">
-    <div class="client-compact-header">
-      <div class="client-avatar" id="detailAvatar">C</div>
-
-      <div>
-        <strong id="detailName">Cliente</strong>
-        <small id="detailChannel">WhatsApp</small>
-      </div>
-
-      <button type="button" class="expand-client-btn">+</button>
-    </div>
-
-    <div class="client-compact-lines">
-      <div>
-        <span>Telefone</span>
-        <strong id="detailPhone">(51) 99999-9999</strong>
-      </div>
-
-      <div>
-        <span>E-mail</span>
-        <strong id="detailEmail">cliente@email.com</strong>
-      </div>
-
-      <div>
-        <span>Status</span>
-        <strong id="detailStatus">aguardando</strong>
-      </div>
-
-      <div>
-        <span>Responsável</span>
-        <strong id="detailResponsible">Não atribuído</strong>
-      </div>
-    </div>
-  </div>
-
-  <button class="danger-btn" id="finishBtn">
-    Finalizar Atendimento
-  </button>
-
-  <button
-    class="secondary-action-btn"
-    id="backToQueueBtn"
-  >
-    Voltar para fila
-  </button>
-</aside>
+  </aside>
   </div>
 
 <div class="image-modal" id="imageModal">
@@ -3736,6 +3730,7 @@ line-height: 1.15;
     const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
           const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
 
+
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
       SUPABASE_ANON_KEY
@@ -3802,9 +3797,6 @@ let isRecordingAudio = false;
     const userName = document.getElementById("userName");
     const logoutBtn = document.getElementById("logoutBtn");
     const acceptBtn = document.getElementById("acceptBtn");
-    const finishBtn = document.getElementById("finishBtn");
-    const backToQueueBtn =
-      document.getElementById("backToQueueBtn");
     const topFinishBtn =
       document.getElementById("topFinishBtn");
     const tabs = document.querySelectorAll(".tab[data-filter]");
@@ -3975,6 +3967,12 @@ const createConversationSearchInput =
 
 const createConversationClientList =
   document.getElementById("createConversationClientList");
+
+const expandClientBtn =
+  document.querySelector(".expand-client-btn");
+
+const clientExtraInfo =
+  document.getElementById("clientExtraInfo");
 
 
 let messagesToForward = [];
@@ -4649,8 +4647,6 @@ if (!conversation) {
     conversation.atendente || "Não atribuído";
 
 acceptBtn.classList.add("hidden");
-finishBtn.classList.add("hidden");
-backToQueueBtn.classList.add("hidden");
 topFinishBtn.classList.add("hidden");
 composer.classList.add("hidden");
 composer.classList.remove("locked-composer");
@@ -4663,8 +4659,6 @@ if (conversation.status !== "em_atendimento") {
 }
 
 if (conversation.status === "em_atendimento") {
-  finishBtn.classList.remove("hidden");
-  
   topFinishBtn.classList.remove("hidden");
   
   topFinishBtn.textContent = "Finalizar";
@@ -4673,7 +4667,6 @@ if (conversation.status === "em_atendimento") {
   composer.classList.remove("locked-composer");
 }
 
-finishBtn.textContent = "Finalizar Atendimento";
 topFinishBtn.textContent = "Finalizar";
 
   const pagination =
@@ -5520,45 +5513,6 @@ const novoFiltro = "aguardando";
 
   document
     .querySelector(`[data-filter="${novoFiltro}"]`)
-    .classList.add("active");
-
-  await carregarClientes();
-}
-
-async function voltarParaFila() {
-
-  const conversation = getSelectedConversation();
-
-  if (!conversation) {
-    alert("Nenhuma conversa selecionada.");
-    return;
-  }
-
-  const { error } = await supabaseClient
-    .from("conversas")
-    .update({
-      status: "aguardando",
-      atendente: null,
-      updated_at: new Date().toISOString()
-    })
-    .eq("id", conversation.id);
-
-  if (error) {
-    console.error("Erro ao voltar conversa para fila:", error);
-
-    alert("Erro ao voltar conversa para fila.");
-
-    return;
-  }
-
-  alert("Conversa devolvida para fila!");
-
-  currentFilter = "aguardando";
-
-  tabs.forEach(t => t.classList.remove("active"));
-
-  document
-    .querySelector('[data-filter="aguardando"]')
     .classList.add("active");
 
   await carregarClientes();
@@ -7278,7 +7232,6 @@ chatArea.addEventListener("drop", event => {
 
 });
     acceptBtn.addEventListener("click", assumirConversa);
-finishBtn.addEventListener("click", finalizarAtendimento);
 
 topFinishBtn.addEventListener(
   "click",
@@ -7381,6 +7334,15 @@ ownerFilterBtns.forEach(btn => {
 
     chatUser.addEventListener("click", () => app.classList.add("details-open"));
     closeDetailsBtn.addEventListener("click", () => app.classList.remove("details-open"));
+
+expandClientBtn.addEventListener("click", () => {
+  clientExtraInfo.classList.toggle("hidden");
+
+  expandClientBtn.textContent =
+    clientExtraInfo.classList.contains("hidden")
+      ? "+"
+      : "−";
+});
 settingsMenuItem.addEventListener("click", () => {
 
   if (selectionMode) {
