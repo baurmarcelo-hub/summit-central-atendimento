@@ -99,7 +99,8 @@
 }
 
 .app.settings-open #teamPanel,
-.app.settings-open #clientPanel {
+.app.settings-open #clientPanel,
+.app.settings-open #tagsPanel {
   grid-column: 2 / 3;
 }
 
@@ -1072,17 +1073,19 @@ line-height: 1.15;
 }
 
     @media (max-width: 1200px) {
-      .app,
-      .app.details-open {
-        grid-template-columns: 80px 320px 1fr;
-      }
+      .app.settings-open #teamPanel,
+.app.settings-open #clientPanel,
+.app.settings-open #tagsPanel {
+  grid-column: 2 / 3;
+}
 
 .app.settings-open {
   grid-template-columns: 80px 1fr;
 }
 
 .app.settings-open #teamPanel,
-.app.settings-open #clientPanel {
+.app.settings-open #clientPanel,
+.app.settings-open #tagsPanel {
   grid-column: 2 / 3;
 }
 
@@ -3089,6 +3092,58 @@ line-height: 1.15;
     <div id="teamList"></div>
   </div>
 </section>
+<section class="team-page hidden" id="tagsPanel">
+  <div class="team-topbar">
+    <div class="team-title">
+      <h2>Cadastro TAGs</h2>
+      <span>Gerencie TAGs operacionais, estatísticas e críticas</span>
+    </div>
+
+    <div class="team-actions-top">
+      <button class="accept-btn" id="newTagBtn">
+        + Adicionar TAG
+      </button>
+    </div>
+  </div>
+
+  <div class="team-filterbar">
+    <input
+      id="tagSearchInput"
+      type="text"
+      placeholder="Pesquisar TAG..."
+      autocomplete="off"
+    />
+
+    <select id="tagStatusFilter">
+      <option value="todas">Status</option>
+      <option value="ativas">Ativas</option>
+      <option value="inativas">Inativas</option>
+    </select>
+
+    <select id="tagTypeFilter">
+      <option value="todos">Tipo</option>
+      <option value="estatistica">Estatística</option>
+      <option value="operacional">Operacional</option>
+      <option value="critica">Crítica</option>
+    </select>
+  </div>
+
+  <div class="team-table">
+    <div class="team-table-header">
+      <div>TAG</div>
+      <div>Categoria</div>
+      <div>Tipo</div>
+      <div>Status</div>
+      <div></div>
+    </div>
+
+    <div id="tagList">
+      <div style="padding:18px;color:#667085;">
+        Cadastro de TAGs pronto para ser conectado ao Supabase.
+      </div>
+    </div>
+  </div>
+</section>
     <section class="conversation-panel">
       <div class="tabs">
   <button class="tab active" data-filter="aguardando">
@@ -3857,6 +3912,24 @@ const teamPanel =
   document.getElementById("teamPanel");
 const clientPanel =
   document.getElementById("clientPanel");
+
+const tagsPanel =
+  document.getElementById("tagsPanel");
+
+const newTagBtn =
+  document.getElementById("newTagBtn");
+
+const tagList =
+  document.getElementById("tagList");
+
+const tagSearchInput =
+  document.getElementById("tagSearchInput");
+
+const tagStatusFilter =
+  document.getElementById("tagStatusFilter");
+
+const tagTypeFilter =
+  document.getElementById("tagTypeFilter");
 
 const clientsTabBtn =
   document.getElementById("clientsTabBtn");
@@ -6465,6 +6538,7 @@ async function abrirOuCriarConversaCliente(clienteId) {
 
   clientPanel.classList.add("hidden");
   teamPanel.classList.add("hidden");
+  tagsPanel.classList.add("hidden");
   mainConversationPanel.classList.remove("hidden");
   document.querySelector(".chat-area").classList.remove("hidden");
 
@@ -7474,6 +7548,8 @@ chatMenuItem.addEventListener("click", () => {
   teamPanel.classList.add("hidden");
 
   clientPanel.classList.add("hidden");
+  tagsPanel.classList.add("hidden");
+  sidebarTagsBtn.classList.remove("active");
 
   mainConversationPanel.classList.remove("hidden");
 
@@ -7494,7 +7570,8 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   clientPanel.classList.remove("hidden");
   teamPanel.classList.add("hidden");
- carregarClientesPainel();
+  tagsPanel.classList.add("hidden");
+  carregarClientesPainel();
 
   clientsTabBtn.classList.add("active");
   teamTabBtn.classList.remove("active");
@@ -7504,6 +7581,7 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   sidebarClientsBtn.classList.add("active");
   sidebarTeamBtn.classList.remove("active");
+  sidebarTagsBtn.classList.remove("active");
 }
 
 function abrirPainelEquipe() {
@@ -7519,6 +7597,7 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   teamPanel.classList.remove("hidden");
   clientPanel.classList.add("hidden");
+  tagsPanel.classList.add("hidden");
 
   clientsTabBtn.classList.remove("active");
   teamTabBtn.classList.add("active");
@@ -7528,6 +7607,7 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   sidebarTeamBtn.classList.add("active");
   sidebarClientsBtn.classList.remove("active");
+  sidebarTagsBtn.classList.remove("active");
 
   carregarEquipe();
 }
@@ -7541,8 +7621,28 @@ teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 
-sidebarTagsBtn.addEventListener("click", () => {
-  alert("Cadastro de TAGs será implementado na próxima etapa.");
+function abrirPainelTags() {
+  app.classList.add("settings-open");
+
+  chatMenuItem.classList.remove("active");
+  settingsMenuItem.classList.add("active");
+  settingsSubmenu.classList.remove("hidden");
+
+  mainConversationPanel.classList.add("hidden");
+  document.querySelector(".chat-area").classList.add("hidden");
+
+  clientPanel.classList.add("hidden");
+  teamPanel.classList.add("hidden");
+  tagsPanel.classList.remove("hidden");
+
+  sidebarClientsBtn.classList.remove("active");
+  sidebarTeamBtn.classList.remove("active");
+  sidebarTagsBtn.classList.add("active");
+}
+
+sidebarTagsBtn.addEventListener("click", abrirPainelTags);
+newTagBtn.addEventListener("click", () => {
+  alert("Modal de criação de TAG será implementado na próxima etapa.");
 });
 
 if (imageModalClose) {
