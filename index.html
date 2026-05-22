@@ -6369,6 +6369,146 @@ async function carregarEquipe() {
   configurarMenusEquipe();
 }
 
+async function carregarTags() {
+  const { data, error } = await supabaseClient
+    .from("tags")
+    .select("*")
+    .order("nome", { ascending: true });
+
+  if (error) {
+    console.error("Erro ao carregar TAGs:", error);
+
+    tagList.innerHTML = `
+      <div style="padding:18px;color:#dc2626;font-weight:700;">
+        Erro ao carregar TAGs.
+      </div>
+    `;
+
+    return;
+  }
+
+  let tags = data || [];
+
+  const termo =
+    tagSearchInput?.value.trim().toLowerCase() || "";
+
+  const statusFiltro =
+    tagStatusFilter?.value || "todas";
+
+  const tipoFiltro =
+    tagTypeFilter?.value || "todos";
+
+  tags = tags.filter(tag => {
+    const nome = (tag.nome || "").toLowerCase();
+    const categoria = (tag.categoria || "").toLowerCase();
+    const tipo = tag.tipo || "estatistica";
+    const ativo = tag.ativo !== false;
+
+    const matchBusca =
+      !termo ||
+      nome.includes(termo) ||
+      categoria.includes(termo);
+
+    const matchStatus =
+      statusFiltro === "todas" ||
+      (statusFiltro === "ativas" && ativo) ||
+      (statusFiltro === "inativas" && !ativo);
+
+    const matchTipo =
+      tipoFiltro === "todos" ||
+      tipo === tipoFiltro;
+
+    return matchBusca && matchStatus && matchTipo;
+  });
+
+  if (tags.length === 0) {
+    tagList.innerHTML = `
+      <div style="padding:18px;color:#667085;">
+        Nenhuma TAG encontrada.
+      </div>
+    `;
+
+    return;
+  }
+
+  tagList.innerHTML = tags.map(tag => {
+    const ativo = tag.ativo !== false;
+
+    return `
+      <div class="team-row">
+        <div class="team-name">
+          <span
+            style="
+              display:inline-flex;
+              align-items:center;
+              gap:8px;
+            "
+          >
+            <span
+              style="
+                width:12px;
+                height:12px;
+                border-radius:50%;
+                background:${tag.cor || "#2563eb"};
+                display:inline-block;
+              "
+            ></span>
+
+            ${tag.nome || "TAG sem nome"}
+          </span>
+        </div>
+
+        <div class="team-email">
+          ${tag.categoria || "geral"}
+        </div>
+
+        <div>
+          <span class="status-badge status-em_atendimento">
+            ${tag.tipo || "estatistica"}
+          </span>
+        </div>
+
+        <div>
+          <span class="status-badge ${
+            ativo ? "status-finalizado" : "status-aguardando"
+          }">
+            ${ativo ? "ativa" : "inativa"}
+          </span>
+        </div>
+
+        <div class="team-actions">
+          <button
+            class="team-more-btn tag-edit-btn"
+            title="Editar TAG"
+            data-tag-id="${tag.id}"
+          >
+            ⋮
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document
+    .querySelectorAll(".tag-edit-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", async event => {
+        event.stopPropagation();
+
+        const tagId = Number(btn.dataset.tagId);
+
+        const tag = data.find(t => t.id === tagId);
+
+        if (!tag) {
+          alert("TAG não encontrada.");
+          return;
+        }
+
+        abrirModalEditarTag(tag);
+      });
+    });
+}
+
 async function exportarClientesExcel() {
   exportClientsBtn.disabled = true;
   exportClientsBtn.textContent = "Exportando...";
@@ -7917,6 +8057,9 @@ function abrirPainelTags() {
   sidebarClientsBtn.classList.remove("active");
   sidebarTeamBtn.classList.remove("active");
   sidebarTagsBtn.classList.add("active");
+
+ carregarTags();
+
 }
 
 function abrirModalNovaTag() {
@@ -7932,6 +8075,27 @@ function abrirModalNovaTag() {
   tagModalCorTexto.value = "#2563eb";
 
   saveTagModalBtn.textContent = "Salvar TAG";
+
+  tagModal.classList.add("open");
+
+  setTimeout(() => {
+    tagModalNome.focus();
+  }, 100);
+}
+
+function abrirModalEditarTag(tag) {
+  tagModalId.value = tag.id;
+  tagModalTitle.textContent = "Editar TAG";
+
+  tagModalNome.value = tag.nome || "";
+  tagModalDescricao.value = tag.descricao || "";
+  tagModalCategoria.value = tag.categoria || "";
+  tagModalTipo.value = tag.tipo || "estatistica";
+  tagModalAtivo.value = tag.ativo === false ? "false" : "true";
+  tagModalCor.value = tag.cor || "#2563eb";
+  tagModalCorTexto.value = tag.cor || "#2563eb";
+
+  saveTagModalBtn.textContent = "Salvar alterações";
 
   tagModal.classList.add("open");
 
@@ -7966,26 +8130,91 @@ function sincronizarCorTag(origem) {
   }
 }
 
-function validarTagModal() {
-  const nome = tagModalNome.value.trim();
+async function salvarTagModal() {
+  const id = tagModalId.value;
 
-  if (!nome) {
+  const payload = {
+    nome: tagModalNome.value.trim(),
+    descricao: tagModalDescricao.value.trim(),
+    categoria: tagModalCategoria.value.trim() || "geral",
+    tipo: tagModalTipo.value,
+    ativo: tagModalAtivo.value === "true",
+    cor: tagModalCorTexto.value.trim()
+  };
+
+  if (!payload.nome) {
     alert("Informe o nome da TAG.");
     tagModalNome.focus();
-    return false;
+    return;
   }
 
-  const cor = tagModalCorTexto.value.trim();
+  if (!/^#[0-9A-Fa-f]{6}$/.test(payload.cor)) {
+    alert(
+      "Informe uma cor válida no formato hexadecimal. Ex.: #2563eb"
+    );
 
-  if (!/^#[0-9A-Fa-f]{6}$/.test(cor)) {
-    alert("Informe uma cor válida no formato hexadecimal. Ex.: #2563eb");
     tagModalCorTexto.focus();
-    return false;
+    return;
   }
 
-  alert("Validação OK. Na próxima etapa vamos salvar no Supabase.");
+  saveTagModalBtn.disabled = true;
 
-  return true;
+  saveTagModalBtn.textContent = id
+    ? "Salvando..."
+    : "Criando...";
+
+  let result;
+
+  if (id) {
+    result = await supabaseClient
+      .from("tags")
+      .update(payload)
+      .eq("id", Number(id))
+      .select("*");
+  } else {
+    result = await supabaseClient
+      .from("tags")
+      .insert([payload])
+      .select("*");
+  }
+
+  saveTagModalBtn.disabled = false;
+
+  saveTagModalBtn.textContent = id
+    ? "Salvar alterações"
+    : "Salvar TAG";
+
+  const { data, error } = result;
+
+  if (error) {
+    console.error("Erro ao salvar TAG:", error);
+
+    alert(
+      "Erro ao salvar TAG:\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert(
+      "Nenhuma TAG foi salva no Supabase.\n\n" +
+      "Verifique permissões/RLS da tabela tags."
+    );
+
+    return;
+  }
+
+  fecharModalTag();
+
+  await carregarTags();
+
+  alert(
+    id
+      ? "TAG atualizada com sucesso."
+      : "TAG criada com sucesso."
+  );
 }
 
 sidebarTagsBtn.addEventListener("click", abrirPainelTags);
@@ -7994,7 +8223,7 @@ newTagBtn.addEventListener("click", abrirModalNovaTag);
 closeTagModalBtn.addEventListener("click", fecharModalTag);
 cancelTagModalBtn.addEventListener("click", fecharModalTag);
 
-saveTagModalBtn.addEventListener("click", validarTagModal);
+saveTagModalBtn.addEventListener("click", salvarTagModal);
 
 tagModalCor.addEventListener("input", () => {
   sincronizarCorTag("color");
@@ -8003,6 +8232,10 @@ tagModalCor.addEventListener("input", () => {
 tagModalCorTexto.addEventListener("input", () => {
   sincronizarCorTag("text");
 });
+
+tagSearchInput.addEventListener("input", carregarTags);
+tagStatusFilter.addEventListener("change", carregarTags);
+tagTypeFilter.addEventListener("change", carregarTags);
 
 if (imageModalClose) {
 
