@@ -99,7 +99,8 @@
 }
 
 .app.settings-open #teamPanel,
-.app.settings-open #clientPanel {
+.app.settings-open #clientPanel,
+.app.settings-open #tagPanel {
   grid-column: 2 / 3;
 }
 
@@ -1082,7 +1083,8 @@ line-height: 1.15;
 }
 
 .app.settings-open #teamPanel,
-.app.settings-open #clientPanel {
+.app.settings-open #clientPanel,
+.app.settings-open #tagPanel {
   grid-column: 2 / 3;
 }
 
@@ -2866,6 +2868,336 @@ line-height: 1.15;
   word-break: break-word;
 }
 
+/* TAGS - CADASTRO E HISTÓRICO */
+
+.tag-page {
+  background: #f6f8fb;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+}
+
+.tag-filterbar {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.tag-filterbar input,
+.tag-filterbar select {
+  height: 44px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 13px;
+  outline: none;
+}
+
+.tag-filterbar input {
+  width: 320px;
+}
+
+.tag-filterbar select {
+  width: 160px;
+}
+
+.tag-table-header,
+.tag-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr 0.7fr 40px;
+  gap: 16px;
+  align-items: center;
+}
+
+.tag-table-header {
+  background: #f8fafc;
+  padding: 15px 18px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #667085;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.tag-row {
+  padding: 16px 18px;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 14px;
+}
+
+.tag-row:last-child {
+  border-bottom: 0;
+}
+
+.tag-row:hover {
+  background: #f8fafc;
+}
+
+.tag-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tag-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(15, 23, 42, 0.12);
+  flex-shrink: 0;
+}
+
+.tag-name-text {
+  font-weight: 900;
+  color: #101828;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag-muted {
+  color: #667085;
+  font-size: 13px;
+}
+
+.tag-action-menu {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  width: 170px;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(16, 24, 40, 0.18);
+  padding: 8px;
+  display: none;
+  z-index: 999;
+}
+
+.tag-action-menu.open {
+  display: block;
+}
+
+.tag-action-menu button {
+  width: 100%;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  text-align: left;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #344054;
+  cursor: pointer;
+}
+
+.tag-action-menu button:hover {
+  background: #eef4ff;
+  color: #2563eb;
+}
+
+.tag-action-menu button.danger {
+  color: #dc2626;
+}
+
+.tag-action-menu button.danger:hover {
+  background: #fef2f2;
+}
+
+.tag-modal,
+.apply-tag-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+  padding: 24px;
+}
+
+.tag-modal.open,
+.apply-tag-modal.open {
+  display: flex;
+}
+
+.tag-modal-card,
+.apply-tag-card {
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.apply-tag-card {
+  max-width: 620px;
+}
+
+.tag-modal-header,
+.apply-tag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.tag-modal-header h3,
+.apply-tag-header h3 {
+  font-size: 22px;
+  font-weight: 900;
+  color: #101828;
+}
+
+.tag-modal-close,
+.apply-tag-close {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: #f2f4f7;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.tag-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tag-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tag-field label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.tag-form input,
+.tag-form select,
+.tag-form textarea,
+.apply-tag-card textarea {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  background: #ffffff;
+}
+
+.tag-form input,
+.tag-form select {
+  height: 52px;
+}
+
+.tag-form textarea,
+.apply-tag-card textarea {
+  min-height: 90px;
+  padding-top: 14px;
+  resize: vertical;
+}
+
+.tag-form input:focus,
+.tag-form select:focus,
+.tag-form textarea:focus,
+.apply-tag-card textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.tag-modal-footer,
+.apply-tag-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.apply-tag-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.apply-tag-item {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e5eaf1;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.apply-tag-item:hover {
+  background: #f8fafc;
+  border-color: #bfdbfe;
+}
+
+.apply-tag-item.selected {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
+.apply-tag-item strong {
+  font-size: 14px;
+  color: #101828;
+}
+
+.apply-tag-item small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #667085;
+}
+
+.tag-history-item {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.tag-history-item:last-child {
+  border-bottom: 0;
+}
+
+.tag-history-item strong {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.tag-history-item p {
+  font-size: 12px;
+  color: #334155;
+  margin: 3px 0;
+  line-height: 1.4;
+}
+
+.tag-history-item small {
+  font-size: 11px;
+  color: #64748b;
+}
+
 
   </style>
 </head>
@@ -2918,6 +3250,10 @@ line-height: 1.15;
 
     <div class="submenu-item" id="sidebarTeamBtn">
       Equipe
+    </div>
+
+    <div class="submenu-item" id="sidebarTagsBtn">
+      Cadastro TAGs
     </div>
   </div>
 </div>
@@ -3084,7 +3420,58 @@ line-height: 1.15;
 
     <div id="teamList"></div>
   </div>
+
 </section>
+
+<section class="tag-page hidden" id="tagPanel">
+  <div class="team-topbar">
+    <div class="team-title">
+      <h2>Cadastro TAGs</h2>
+      <span>Crie, edite e inative TAGs usadas nas conversas e estatísticas</span>
+    </div>
+
+    <div class="team-actions-top">
+      <button class="accept-btn" id="addTagBtn">
+        + Adicionar TAG
+      </button>
+    </div>
+  </div>
+
+  <div class="tag-filterbar">
+    <input
+      id="tagSearchInput"
+      type="text"
+      placeholder="Pesquisar TAG..."
+      autocomplete="off"
+    />
+
+    <select id="tagStatusFilter">
+      <option value="ativas">Ativas</option>
+      <option value="inativas">Inativas</option>
+      <option value="todas">Todas</option>
+    </select>
+
+    <select id="tagTipoFilter">
+      <option value="todos">Tipo</option>
+      <option value="estatistica">Estatística</option>
+      <option value="operacional">Operacional</option>
+      <option value="critica">Crítica</option>
+    </select>
+  </div>
+
+  <div class="team-table">
+    <div class="tag-table-header">
+      <div>TAG</div>
+      <div>Categoria</div>
+      <div>Tipo</div>
+      <div>Cor</div>
+      <div>Status</div>
+      <div></div>
+    </div>
+
+    <div id="tagList"></div>
+  </div>
+
     <section class="conversation-panel">
       <div class="tabs">
   <button class="tab active" data-filter="aguardando">
@@ -3387,7 +3774,7 @@ line-height: 1.15;
     <h3>Ações rápidas</h3>
 
     <div class="quick-actions-grid">
-      <button type="button" class="quick-action-btn">
+      <button type="button" class="quick-action-btn" id="applyTagQuickBtn">
         🏷️
         <span>
           <strong>Aplicar TAG</strong>
@@ -3465,15 +3852,14 @@ line-height: 1.15;
 
   <div class="details-section">
     <div class="section-title-row">
-      <h3>Tags aplicadas</h3>
-      <button type="button">Gerenciar</button>
+      <h3>Últimas TAGs aplicadas</h3>
+      <button type="button" id="openFullTagHistoryBtn">Ver histórico</button>
     </div>
 
-    <div class="tag-list">
-      <span class="tag">INTERESSADO</span>
-      <span class="tag tag-blue">PLANO EMPRESARIAL</span>
-      <span class="tag tag-orange">PROPOSTA ENVIADA</span>
-      <span class="tag tag-red">PRIORITÁRIO</span>
+    <div id="recentTagEventsList">
+      <div style="font-size:12px;color:#667085;">
+        Nenhuma TAG aplicada nesta conversa.
+      </div>
     </div>
   </div>
 
@@ -3723,12 +4109,129 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="tag-modal" id="tagModal">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <h3 id="tagModalTitle">Adicionar TAG</h3>
+
+      <button
+        type="button"
+        class="tag-modal-close"
+        id="closeTagModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="tag-form">
+      <input type="hidden" id="tagModalId" />
+
+      <div class="tag-field">
+        <label>Nome da TAG</label>
+        <input id="tagModalNome" type="text" placeholder="Ex.: Financeiro" />
+      </div>
+
+      <div class="tag-field">
+        <label>Descrição</label>
+        <textarea id="tagModalDescricao" placeholder="Explique quando esta TAG deve ser usada"></textarea>
+      </div>
+
+      <div class="tag-field">
+        <label>Categoria</label>
+        <input id="tagModalCategoria" type="text" placeholder="Ex.: comercial, financeiro, suporte" />
+      </div>
+
+      <div class="tag-field">
+        <label>Tipo</label>
+        <select id="tagModalTipo">
+          <option value="estatistica">Estatística</option>
+          <option value="operacional">Operacional</option>
+          <option value="critica">Crítica</option>
+        </select>
+      </div>
+
+      <div class="tag-field">
+        <label>Cor</label>
+        <input id="tagModalCor" type="color" value="#2563eb" />
+      </div>
+
+      <div class="tag-field">
+        <label>Status</label>
+        <select id="tagModalAtivo">
+          <option value="true">Ativa</option>
+          <option value="false">Inativa</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tag-modal-footer">
+      <button
+        type="button"
+        class="client-cancel-btn"
+        id="cancelTagModalBtn"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="client-save-btn"
+        id="saveTagModalBtn"
+      >
+        Salvar TAG
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="apply-tag-modal" id="applyTagModal">
+  <div class="apply-tag-card">
+    <div class="apply-tag-header">
+      <h3>Aplicar TAG na conversa</h3>
+
+      <button
+        type="button"
+        class="apply-tag-close"
+        id="closeApplyTagModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="apply-tag-list" id="applyTagList"></div>
+
+    <textarea
+      id="applyTagObservation"
+      placeholder="Observação opcional sobre este registro..."
+    ></textarea>
+
+    <div class="apply-tag-footer">
+      <button
+        type="button"
+        class="client-cancel-btn"
+        id="cancelApplyTagModalBtn"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="client-save-btn"
+        id="confirmApplyTagBtn"
+      >
+        Aplicar TAG
+      </button>
+    </div>
+  </div>
+</div>
+
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-          const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_URL = "SUA CHAVE AQUI";
+          const SUPABASE_ANON_KEY = "SUA CHAVE AQUI";
 
 
     const supabaseClient = supabase.createClient(
@@ -3974,10 +4477,99 @@ const expandClientBtn =
 const clientExtraInfo =
   document.getElementById("clientExtraInfo");
 
+const sidebarTagsBtn =
+  document.getElementById("sidebarTagsBtn");
+
+const tagPanel =
+  document.getElementById("tagPanel");
+
+const tagList =
+  document.getElementById("tagList");
+
+const tagSearchInput =
+  document.getElementById("tagSearchInput");
+
+const tagStatusFilter =
+  document.getElementById("tagStatusFilter");
+
+const tagTipoFilter =
+  document.getElementById("tagTipoFilter");
+
+const addTagBtn =
+  document.getElementById("addTagBtn");
+
+const tagModal =
+  document.getElementById("tagModal");
+
+const closeTagModalBtn =
+  document.getElementById("closeTagModalBtn");
+
+const cancelTagModalBtn =
+  document.getElementById("cancelTagModalBtn");
+
+const saveTagModalBtn =
+  document.getElementById("saveTagModalBtn");
+
+const tagModalTitle =
+  document.getElementById("tagModalTitle");
+
+const tagModalId =
+  document.getElementById("tagModalId");
+
+const tagModalNome =
+  document.getElementById("tagModalNome");
+
+const tagModalDescricao =
+  document.getElementById("tagModalDescricao");
+
+const tagModalCategoria =
+  document.getElementById("tagModalCategoria");
+
+const tagModalTipo =
+  document.getElementById("tagModalTipo");
+
+const tagModalCor =
+  document.getElementById("tagModalCor");
+
+const tagModalAtivo =
+  document.getElementById("tagModalAtivo");
+
+const applyTagQuickBtn =
+  document.getElementById("applyTagQuickBtn");
+
+const applyTagModal =
+  document.getElementById("applyTagModal");
+
+const closeApplyTagModalBtn =
+  document.getElementById("closeApplyTagModalBtn");
+
+const cancelApplyTagModalBtn =
+  document.getElementById("cancelApplyTagModalBtn");
+
+const confirmApplyTagBtn =
+  document.getElementById("confirmApplyTagBtn");
+
+const applyTagList =
+  document.getElementById("applyTagList");
+
+const applyTagObservation =
+  document.getElementById("applyTagObservation");
+
+const recentTagEventsList =
+  document.getElementById("recentTagEventsList");
+
+const openFullTagHistoryBtn =
+  document.getElementById("openFullTagHistoryBtn");
+
+
 
 let messagesToForward = [];
 let editingClientId = null;
 let clientModalMode = "edit";
+let allTags = [];
+let editingTagId = null;
+let tagModalMode = "add";
+let selectedApplyTagId = null;
 
 function normalizarTelefoneBrasil(valor) {
   let telefone = String(valor || "").trim();
@@ -4645,6 +5237,8 @@ if (!conversation) {
 
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
+
+  carregarEventosTagsConversa(conversation.id);
 
 acceptBtn.classList.add("hidden");
 topFinishBtn.classList.add("hidden");
@@ -5858,6 +6452,670 @@ configurarMenusClientes();
 
 }
 
+async function carregarTagsPainel() {
+  if (!tagList) return;
+
+  const { data, error } = await supabaseClient
+    .from("tags")
+    .select("*")
+    .order("nome", { ascending: true });
+
+  if (error) {
+    console.error("Erro ao carregar TAGs:", error);
+
+    tagList.innerHTML = `
+      <div style="padding:18px;color:#dc2626;font-weight:700;">
+        Erro ao carregar TAGs.
+      </div>
+    `;
+
+    return;
+  }
+
+  allTags = data || [];
+
+  const termo =
+    tagSearchInput?.value.trim().toLowerCase() || "";
+
+  const statusFiltro =
+    tagStatusFilter?.value || "ativas";
+
+  const tipoFiltro =
+    tagTipoFilter?.value || "todos";
+
+  let tags = allTags.filter(tag => {
+    const nome = (tag.nome || "").toLowerCase();
+    const categoria = (tag.categoria || "").toLowerCase();
+    const tipo = tag.tipo || "estatistica";
+    const ativo = tag.ativo !== false;
+
+    const matchBusca =
+      !termo ||
+      nome.includes(termo) ||
+      categoria.includes(termo);
+
+    const matchStatus =
+      statusFiltro === "todas" ||
+      (statusFiltro === "ativas" && ativo) ||
+      (statusFiltro === "inativas" && !ativo);
+
+    const matchTipo =
+      tipoFiltro === "todos" ||
+      tipo === tipoFiltro;
+
+    return matchBusca && matchStatus && matchTipo;
+  });
+
+  if (tags.length === 0) {
+    tagList.innerHTML = `
+      <div style="padding:18px;color:#667085;">
+        Nenhuma TAG encontrada.
+      </div>
+    `;
+
+    return;
+  }
+
+  tagList.innerHTML = tags.map(tag => {
+    const ativo = tag.ativo !== false;
+    const cor = tag.cor || "#2563eb";
+
+    return `
+      <div class="tag-row">
+        <div class="tag-name-cell">
+          <span
+            class="tag-color-dot"
+            style="background:${cor};"
+          ></span>
+
+          <div class="tag-name-text">
+            ${tag.nome || "TAG sem nome"}
+          </div>
+        </div>
+
+        <div class="tag-muted">
+          ${tag.categoria || "geral"}
+        </div>
+
+        <div>
+          <span class="status-badge status-em_atendimento">
+            ${tag.tipo || "estatistica"}
+          </span>
+        </div>
+
+        <div class="tag-muted">
+          ${cor}
+        </div>
+
+        <div>
+          <span class="status-badge ${
+            ativo ? "status-finalizado" : "status-aguardando"
+          }">
+            ${ativo ? "ativa" : "inativa"}
+          </span>
+        </div>
+
+        <div class="team-actions">
+          <button
+            class="team-more-btn tag-more-btn"
+            title="Ações"
+            data-tag-id="${tag.id}"
+          >
+            ⋮
+          </button>
+
+          <div
+            class="tag-action-menu"
+            data-menu-tag-id="${tag.id}"
+          >
+            <button
+              type="button"
+              class="tag-edit-btn"
+              data-tag-id="${tag.id}"
+            >
+              ✏️ Editar
+            </button>
+
+            <button
+              type="button"
+              class="tag-toggle-btn danger"
+              data-tag-id="${tag.id}"
+              data-tag-active="${ativo}"
+            >
+              ${ativo ? "🚫 Inativar" : "✅ Ativar"}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  configurarMenusTags();
+}
+
+function fecharMenusTags() {
+  document
+    .querySelectorAll(".tag-action-menu")
+    .forEach(menu => {
+      menu.classList.remove("open");
+    });
+}
+
+function configurarMenusTags() {
+  document
+    .querySelectorAll(".tag-more-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        const tagId = btn.dataset.tagId;
+
+        const menu = document.querySelector(
+          `.tag-action-menu[data-menu-tag-id="${tagId}"]`
+        );
+
+        if (!menu) return;
+
+        const jaAberto = menu.classList.contains("open");
+
+        fecharMenusTags();
+
+        if (!jaAberto) {
+          menu.classList.add("open");
+        }
+      });
+    });
+
+  document
+    .querySelectorAll(".tag-edit-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        fecharMenusTags();
+
+        const tag = allTags.find(
+          t => t.id === Number(btn.dataset.tagId)
+        );
+
+        if (!tag) {
+          alert("TAG não encontrada.");
+          return;
+        }
+
+        abrirModalEditarTag(tag);
+      });
+    });
+
+  document
+    .querySelectorAll(".tag-toggle-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", async event => {
+        event.stopPropagation();
+
+        const tagId = Number(btn.dataset.tagId);
+        const ativoAtual = btn.dataset.tagActive === "true";
+        const novoStatus = !ativoAtual;
+
+        const confirmar = confirm(
+          ativoAtual
+            ? "Deseja inativar esta TAG?"
+            : "Deseja ativar esta TAG?"
+        );
+
+        if (!confirmar) {
+          fecharMenusTags();
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("tags")
+          .update({
+            ativo: novoStatus,
+            atualizado_em: new Date().toISOString()
+          })
+          .eq("id", tagId);
+
+        if (error) {
+          console.error("Erro ao alterar TAG:", error);
+          alert("Erro ao alterar TAG.");
+          fecharMenusTags();
+          return;
+        }
+
+        fecharMenusTags();
+
+        await carregarTagsPainel();
+
+        alert(
+          novoStatus
+            ? "TAG ativada com sucesso."
+            : "TAG inativada com sucesso."
+        );
+      });
+    });
+}
+
+function abrirModalAdicionarTag() {
+  tagModalMode = "add";
+  editingTagId = null;
+
+  tagModalId.value = "";
+  tagModalNome.value = "";
+  tagModalDescricao.value = "";
+  tagModalCategoria.value = "geral";
+  tagModalTipo.value = "estatistica";
+  tagModalCor.value = "#2563eb";
+  tagModalAtivo.value = "true";
+
+  tagModalTitle.textContent = "Adicionar TAG";
+  saveTagModalBtn.textContent = "Salvar TAG";
+
+  tagModal.classList.add("open");
+
+  setTimeout(() => {
+    tagModalNome.focus();
+  }, 100);
+}
+
+function abrirModalEditarTag(tag) {
+  tagModalMode = "edit";
+  editingTagId = tag.id;
+
+  tagModalId.value = tag.id;
+  tagModalNome.value = tag.nome || "";
+  tagModalDescricao.value = tag.descricao || "";
+  tagModalCategoria.value = tag.categoria || "geral";
+  tagModalTipo.value = tag.tipo || "estatistica";
+  tagModalCor.value = tag.cor || "#2563eb";
+  tagModalAtivo.value = tag.ativo === false ? "false" : "true";
+
+  tagModalTitle.textContent = "Editar TAG";
+  saveTagModalBtn.textContent = "Salvar alterações";
+
+  tagModal.classList.add("open");
+}
+
+function fecharModalTag() {
+  tagModal.classList.remove("open");
+
+  editingTagId = null;
+  tagModalMode = "add";
+
+  tagModalId.value = "";
+  tagModalNome.value = "";
+  tagModalDescricao.value = "";
+  tagModalCategoria.value = "";
+  tagModalTipo.value = "estatistica";
+  tagModalCor.value = "#2563eb";
+  tagModalAtivo.value = "true";
+}
+
+async function salvarTagModal() {
+  const nome = tagModalNome.value.trim();
+  const descricao = tagModalDescricao.value.trim();
+  const categoria = tagModalCategoria.value.trim() || "geral";
+  const tipo = tagModalTipo.value || "estatistica";
+  const cor = tagModalCor.value || "#2563eb";
+  const ativo = tagModalAtivo.value === "true";
+
+  if (!nome) {
+    alert("Informe o nome da TAG.");
+    return;
+  }
+
+  saveTagModalBtn.disabled = true;
+  saveTagModalBtn.textContent =
+    tagModalMode === "add"
+      ? "Salvando..."
+      : "Atualizando...";
+
+  let result;
+
+  if (tagModalMode === "add") {
+    result = await supabaseClient
+      .from("tags")
+      .insert([
+        {
+          nome,
+          descricao,
+          categoria,
+          tipo,
+          cor,
+          ativo,
+          criado_por: (await supabaseClient.auth.getUser()).data.user?.id || null,
+          atualizado_em: new Date().toISOString()
+        }
+      ])
+      .select();
+  } else {
+    result = await supabaseClient
+      .from("tags")
+      .update({
+        nome,
+        descricao,
+        categoria,
+        tipo,
+        cor,
+        ativo,
+        atualizado_em: new Date().toISOString()
+      })
+      .eq("id", editingTagId)
+      .select();
+  }
+
+  saveTagModalBtn.disabled = false;
+  saveTagModalBtn.textContent =
+    tagModalMode === "add"
+      ? "Salvar TAG"
+      : "Salvar alterações";
+
+  const { data, error } = result;
+
+  if (error) {
+    console.error("Erro ao salvar TAG:", error);
+
+    alert(
+      "Erro ao salvar TAG:\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert(
+      "Nenhuma TAG foi salva no Supabase. Verifique as policies/RLS da tabela tags."
+    );
+
+    return;
+  }
+
+  fecharModalTag();
+
+  await carregarTagsPainel();
+
+  alert(
+    tagModalMode === "add"
+      ? "TAG salva com sucesso."
+      : "TAG atualizada com sucesso."
+  );
+}
+
+async function abrirModalAplicarTag() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Selecione uma conversa antes de aplicar TAG.");
+    return;
+  }
+
+  if (!allTags.length) {
+    const { data, error } = await supabaseClient
+      .from("tags")
+      .select("*")
+      .eq("ativo", true)
+      .order("nome", { ascending: true });
+
+    if (error) {
+      console.error("Erro ao carregar TAGs:", error);
+      alert("Erro ao carregar TAGs.");
+      return;
+    }
+
+    allTags = data || [];
+  }
+
+  selectedApplyTagId = null;
+  applyTagObservation.value = "";
+
+  renderAplicarTagsLista();
+
+  applyTagModal.classList.add("open");
+}
+
+function renderAplicarTagsLista() {
+  const tagsAtivas = (allTags || [])
+    .filter(tag => tag.ativo !== false)
+    .sort((a, b) =>
+      (a.nome || "").localeCompare(
+        b.nome || "",
+        "pt-BR"
+      )
+    );
+
+  if (!tagsAtivas.length) {
+    applyTagList.innerHTML = `
+      <div style="padding:16px;color:#667085;font-size:14px;">
+        Nenhuma TAG ativa cadastrada.
+      </div>
+    `;
+    return;
+  }
+
+  applyTagList.innerHTML = tagsAtivas.map(tag => `
+    <div
+      class="apply-tag-item ${
+        selectedApplyTagId === tag.id ? "selected" : ""
+      }"
+      data-apply-tag-id="${tag.id}"
+    >
+      <span
+        class="tag-color-dot"
+        style="background:${tag.cor || "#2563eb"};"
+      ></span>
+
+      <div>
+        <strong>${tag.nome}</strong>
+        <small>${tag.categoria || "geral"} • ${tag.tipo || "estatistica"}</small>
+      </div>
+
+      <span class="forward-send">+</span>
+    </div>
+  `).join("");
+
+  document
+    .querySelectorAll(".apply-tag-item")
+    .forEach(item => {
+      item.addEventListener("click", () => {
+        selectedApplyTagId = Number(
+          item.dataset.applyTagId
+        );
+
+        renderAplicarTagsLista();
+      });
+    });
+}
+
+function fecharModalAplicarTag() {
+  applyTagModal.classList.remove("open");
+
+  selectedApplyTagId = null;
+  applyTagObservation.value = "";
+}
+
+async function confirmarAplicacaoTag() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  if (!selectedApplyTagId) {
+    alert("Selecione uma TAG.");
+    return;
+  }
+
+  const { data: userData } =
+    await supabaseClient.auth.getUser();
+
+  confirmApplyTagBtn.disabled = true;
+  confirmApplyTagBtn.textContent = "Aplicando...";
+
+  const { data, error } = await supabaseClient
+    .from("conversa_tag_eventos")
+    .insert([
+      {
+        cliente_id: conversation.clienteId,
+        conversa_id: conversation.id,
+        tag_id: selectedApplyTagId,
+        observacao: applyTagObservation.value.trim() || null,
+        criado_por: userData.user?.id || null,
+        criado_por_nome: usuarioLogadoNome || userData.user?.email || "Usuário"
+      }
+    ])
+    .select();
+
+  confirmApplyTagBtn.disabled = false;
+  confirmApplyTagBtn.textContent = "Aplicar TAG";
+
+  if (error) {
+    console.error("Erro ao aplicar TAG:", error);
+
+    alert(
+      "Erro ao aplicar TAG:\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert(
+      "Nenhum registro de TAG foi criado. Verifique as policies/RLS da tabela conversa_tag_eventos."
+    );
+
+    return;
+  }
+
+  fecharModalAplicarTag();
+
+  await carregarEventosTagsConversa(conversation.id);
+
+  alert("TAG aplicada com sucesso.");
+}
+
+async function carregarEventosTagsConversa(conversaId) {
+  if (!conversaId || !recentTagEventsList) return;
+
+  const { data, error } = await supabaseClient
+    .from("conversa_tag_eventos")
+    .select(`
+      id,
+      observacao,
+      criado_por_nome,
+      criado_em,
+      tags (
+        nome,
+        cor,
+        categoria,
+        tipo
+      )
+    `)
+    .eq("conversa_id", conversaId)
+    .order("criado_em", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error("Erro ao carregar histórico de TAGs:", error);
+
+    recentTagEventsList.innerHTML = `
+      <div style="font-size:12px;color:#dc2626;">
+        Erro ao carregar TAGs aplicadas.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    recentTagEventsList.innerHTML = `
+      <div style="font-size:12px;color:#667085;">
+        Nenhuma TAG aplicada nesta conversa.
+      </div>
+    `;
+
+    return;
+  }
+
+  recentTagEventsList.innerHTML = data.map(evento => {
+    const tag = evento.tags || {};
+    const dataHora = evento.criado_em
+      ? new Date(evento.criado_em).toLocaleString("pt-BR")
+      : "-";
+
+    return `
+      <div class="tag-history-item">
+        <span
+          class="tag-color-dot"
+          style="background:${tag.cor || "#2563eb"};"
+        ></span>
+
+        <div>
+          <strong>${tag.nome || "TAG"}</strong>
+          <p>${evento.observacao || "Sem observação."}</p>
+          <small>
+            ${evento.criado_por_nome || "Usuário"} • ${dataHora}
+          </small>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function abrirHistoricoCompletoTags() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Selecione uma conversa.");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("conversa_tag_eventos")
+    .select(`
+      id,
+      observacao,
+      criado_por_nome,
+      criado_em,
+      tags (
+        nome,
+        categoria,
+        tipo
+      )
+    `)
+    .eq("cliente_id", conversation.clienteId)
+    .order("criado_em", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("Erro ao carregar histórico completo:", error);
+    alert("Erro ao carregar histórico completo de TAGs.");
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert("Este cliente ainda não possui histórico de TAGs.");
+    return;
+  }
+
+  const resumo = data.map(evento => {
+    const tag = evento.tags || {};
+    const dataHora = evento.criado_em
+      ? new Date(evento.criado_em).toLocaleString("pt-BR")
+      : "-";
+
+    return `${dataHora} | ${tag.nome || "TAG"} | ${evento.criado_por_nome || "Usuário"} | ${evento.observacao || "Sem observação"}`;
+  }).join("\n");
+
+  alert(
+    "Histórico de TAGs do cliente:\n\n" +
+    resumo
+  );
+}
+
+
 async function carregarEquipe() {
   const { data, error } = await supabaseClient
     .from("usuarios_perfis")
@@ -6455,9 +7713,11 @@ async function abrirOuCriarConversaCliente(clienteId) {
  settingsSubmenu.classList.add("hidden");
  sidebarClientsBtn.classList.remove("active");
  sidebarTeamBtn.classList.remove("active");
+ sidebarTagsBtn.classList.remove("active");
 
   clientPanel.classList.add("hidden");
   teamPanel.classList.add("hidden");
+  tagPanel.classList.add("hidden");
   mainConversationPanel.classList.remove("hidden");
   document.querySelector(".chat-area").classList.remove("hidden");
 
@@ -6684,6 +7944,7 @@ function configurarMenusEquipe() {
       fecharMenusEquipe();
 
       await carregarEquipe();
+	await carregarTagsPainel();
 
       alert(
         novoStatus
@@ -6939,6 +8200,7 @@ async function carregarPerfilUsuario(user) {
   await carregarClientes();
 
   await carregarEquipe();
+  await carregarTagsPainel();
 
 }, 150);
     }
@@ -7375,6 +8637,7 @@ if (teamProfileFilter) {
 document.addEventListener("click", () => {
   fecharMenusEquipe();
   fecharMenusClientes();
+  fecharMenusTags();
 
   document
     .querySelectorAll(".message-action-menu.open")
@@ -7467,6 +8730,7 @@ chatMenuItem.addEventListener("click", () => {
   teamPanel.classList.add("hidden");
 
   clientPanel.classList.add("hidden");
+  tagPanel.classList.add("hidden");
 
   mainConversationPanel.classList.remove("hidden");
 
@@ -7487,6 +8751,7 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   clientPanel.classList.remove("hidden");
   teamPanel.classList.add("hidden");
+  tagPanel.classList.add("hidden");
  carregarClientesPainel();
 
   clientsTabBtn.classList.add("active");
@@ -7497,6 +8762,7 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   sidebarClientsBtn.classList.add("active");
   sidebarTeamBtn.classList.remove("active");
+  sidebarTagsBtn.classList.remove("active");
 }
 
 function abrirPainelEquipe() {
@@ -7512,6 +8778,7 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   teamPanel.classList.remove("hidden");
   clientPanel.classList.add("hidden");
+  tagPanel.classList.add("hidden");
 
   clientsTabBtn.classList.remove("active");
   teamTabBtn.classList.add("active");
@@ -7521,8 +8788,30 @@ document.querySelector(".chat-area").classList.add("hidden");
 
   sidebarTeamBtn.classList.add("active");
   sidebarClientsBtn.classList.remove("active");
+  sidebarTagsBtn.classList.remove("active");
 
   carregarEquipe();
+}
+
+
+function abrirPainelTags() {
+  app.classList.add("settings-open");
+  chatMenuItem.classList.remove("active");
+  settingsMenuItem.classList.add("active");
+  settingsSubmenu.classList.remove("hidden");
+
+  mainConversationPanel.classList.add("hidden");
+  document.querySelector(".chat-area").classList.add("hidden");
+
+  tagPanel.classList.remove("hidden");
+  clientPanel.classList.add("hidden");
+  teamPanel.classList.add("hidden");
+
+  sidebarTagsBtn.classList.add("active");
+  sidebarClientsBtn.classList.remove("active");
+  sidebarTeamBtn.classList.remove("active");
+
+  carregarTagsPainel();
 }
 
 clientsTabBtn.addEventListener("click", abrirPainelClientes);
@@ -7533,6 +8822,47 @@ teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
+
+sidebarTagsBtn.addEventListener("click", abrirPainelTags);
+
+if (tagSearchInput) {
+  tagSearchInput.addEventListener("input", carregarTagsPainel);
+}
+
+if (tagStatusFilter) {
+  tagStatusFilter.addEventListener("change", carregarTagsPainel);
+}
+
+if (tagTipoFilter) {
+  tagTipoFilter.addEventListener("change", carregarTagsPainel);
+}
+
+addTagBtn.addEventListener("click", abrirModalAdicionarTag);
+
+closeTagModalBtn.addEventListener("click", fecharModalTag);
+cancelTagModalBtn.addEventListener("click", fecharModalTag);
+saveTagModalBtn.addEventListener("click", salvarTagModal);
+
+tagModal.addEventListener("click", event => {
+  if (event.target === tagModal) {
+    fecharModalTag();
+  }
+});
+
+applyTagQuickBtn.addEventListener("click", abrirModalAplicarTag);
+
+closeApplyTagModalBtn.addEventListener("click", fecharModalAplicarTag);
+cancelApplyTagModalBtn.addEventListener("click", fecharModalAplicarTag);
+confirmApplyTagBtn.addEventListener("click", confirmarAplicacaoTag);
+
+applyTagModal.addEventListener("click", event => {
+  if (event.target === applyTagModal) {
+    fecharModalAplicarTag();
+  }
+});
+
+openFullTagHistoryBtn.addEventListener("click", abrirHistoricoCompletoTags);
+
 
 if (imageModalClose) {
 
