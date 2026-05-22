@@ -2919,6 +2919,10 @@ line-height: 1.15;
     <div class="submenu-item" id="sidebarTeamBtn">
       Equipe
     </div>
+
+    <div class="submenu-item" id="sidebarTagsBtn">
+      Cadastro TAGs
+    </div>
   </div>
 </div>
       </div>
@@ -3845,6 +3849,9 @@ const sidebarClientsBtn =
 
 const sidebarTeamBtn =
   document.getElementById("sidebarTeamBtn");
+
+const sidebarTagsBtn =
+  document.getElementById("sidebarTagsBtn");
 
 const teamPanel =
   document.getElementById("teamPanel");
@@ -7533,6 +7540,10 @@ teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
+
+sidebarTagsBtn.addEventListener("click", () => {
+  alert("Cadastro de TAGs será implementado na próxima etapa.");
+});
 
 if (imageModalClose) {
 
