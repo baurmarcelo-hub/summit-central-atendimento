@@ -2216,6 +2216,145 @@ line-height: 1.15;
   padding: 24px;
 }
 
+.tag-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+  padding: 24px;
+}
+
+.tag-modal.open {
+  display: flex;
+}
+
+.tag-modal-card {
+  width: 520px;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgba(16, 24, 40, 0.28);
+  overflow: hidden;
+}
+
+.tag-modal-header {
+  padding: 22px 24px;
+  border-bottom: 1px solid #edf0f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tag-modal-header h3 {
+  font-size: 18px;
+  font-weight: 900;
+  color: #101828;
+}
+
+.tag-modal-close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: #f2f4f7;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  color: #667085;
+}
+
+.tag-modal-body {
+  padding: 24px;
+}
+
+.tag-field {
+  margin-bottom: 14px;
+}
+
+.tag-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #667085;
+  margin-bottom: 6px;
+}
+
+.tag-field input,
+.tag-field select,
+.tag-field textarea {
+  width: 100%;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.tag-field input,
+.tag-field select {
+  height: 44px;
+}
+
+.tag-field textarea {
+  min-height: 88px;
+  padding-top: 10px;
+  resize: vertical;
+  font-family: "Inter", Arial, sans-serif;
+}
+
+.tag-field input:focus,
+.tag-field select:focus,
+.tag-field textarea:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.tag-color-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.tag-color-row input[type="color"] {
+  height: 44px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.tag-modal-footer {
+  padding: 18px 24px;
+  border-top: 1px solid #edf0f5;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.tag-cancel-btn {
+  height: 42px;
+  border: 1px solid #d9dee8;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #344054;
+}
+
+.tag-save-btn {
+  height: 42px;
+  border: 0;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 0 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .user-field {
   margin-bottom: 14px;
 }
@@ -3632,6 +3771,105 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="tag-modal" id="tagModal">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <h3 id="tagModalTitle">Adicionar TAG</h3>
+
+      <button
+        type="button"
+        class="tag-modal-close"
+        id="closeTagModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="tag-modal-body">
+      <input type="hidden" id="tagModalId" />
+
+      <div class="tag-field">
+        <label>Nome da TAG</label>
+        <input
+          id="tagModalNome"
+          type="text"
+          placeholder="Ex.: Financeiro, Reclamação, Cliente VIP"
+        />
+      </div>
+
+      <div class="tag-field">
+        <label>Descrição</label>
+        <textarea
+          id="tagModalDescricao"
+          placeholder="Explique quando esta TAG deve ser usada"
+        ></textarea>
+      </div>
+
+      <div class="tag-field">
+        <label>Categoria</label>
+        <input
+          id="tagModalCategoria"
+          type="text"
+          placeholder="Ex.: atendimento, comercial, financeiro"
+        />
+      </div>
+
+      <div class="tag-field">
+        <label>Tipo</label>
+        <select id="tagModalTipo">
+          <option value="estatistica">Estatística</option>
+          <option value="operacional">Operacional</option>
+          <option value="critica">Crítica</option>
+        </select>
+      </div>
+
+      <div class="tag-field">
+        <label>Status</label>
+        <select id="tagModalAtivo">
+          <option value="true">Ativa</option>
+          <option value="false">Inativa</option>
+        </select>
+      </div>
+
+      <div class="tag-field">
+        <label>Cor</label>
+
+        <div class="tag-color-row">
+          <input
+            id="tagModalCor"
+            type="color"
+            value="#2563eb"
+          />
+
+          <input
+            id="tagModalCorTexto"
+            type="text"
+            value="#2563eb"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="tag-modal-footer">
+      <button
+        type="button"
+        class="tag-cancel-btn"
+        id="cancelTagModalBtn"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="tag-save-btn"
+        id="saveTagModalBtn"
+      >
+        Salvar TAG
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="forward-modal" id="createConversationModal">
   <div class="forward-modal-card">
     <div class="forward-modal-header">
@@ -3662,6 +3900,8 @@ line-height: 1.15;
     </div>
   </div>
 </div>
+
+
 
 <div class="forward-modal" id="forwardModal">
   <div class="forward-modal-card">
@@ -3930,6 +4170,45 @@ const tagStatusFilter =
 
 const tagTypeFilter =
   document.getElementById("tagTypeFilter");
+
+const tagModal =
+  document.getElementById("tagModal");
+
+const closeTagModalBtn =
+  document.getElementById("closeTagModalBtn");
+
+const cancelTagModalBtn =
+  document.getElementById("cancelTagModalBtn");
+
+const saveTagModalBtn =
+  document.getElementById("saveTagModalBtn");
+
+const tagModalId =
+  document.getElementById("tagModalId");
+
+const tagModalTitle =
+  document.getElementById("tagModalTitle");
+
+const tagModalNome =
+  document.getElementById("tagModalNome");
+
+const tagModalDescricao =
+  document.getElementById("tagModalDescricao");
+
+const tagModalCategoria =
+  document.getElementById("tagModalCategoria");
+
+const tagModalTipo =
+  document.getElementById("tagModalTipo");
+
+const tagModalAtivo =
+  document.getElementById("tagModalAtivo");
+
+const tagModalCor =
+  document.getElementById("tagModalCor");
+
+const tagModalCorTexto =
+  document.getElementById("tagModalCorTexto");
 
 const clientsTabBtn =
   document.getElementById("clientsTabBtn");
@@ -7640,9 +7919,89 @@ function abrirPainelTags() {
   sidebarTagsBtn.classList.add("active");
 }
 
+function abrirModalNovaTag() {
+  tagModalId.value = "";
+  tagModalTitle.textContent = "Adicionar TAG";
+
+  tagModalNome.value = "";
+  tagModalDescricao.value = "";
+  tagModalCategoria.value = "";
+  tagModalTipo.value = "estatistica";
+  tagModalAtivo.value = "true";
+  tagModalCor.value = "#2563eb";
+  tagModalCorTexto.value = "#2563eb";
+
+  saveTagModalBtn.textContent = "Salvar TAG";
+
+  tagModal.classList.add("open");
+
+  setTimeout(() => {
+    tagModalNome.focus();
+  }, 100);
+}
+
+function fecharModalTag() {
+  tagModal.classList.remove("open");
+
+  tagModalId.value = "";
+  tagModalNome.value = "";
+  tagModalDescricao.value = "";
+  tagModalCategoria.value = "";
+  tagModalTipo.value = "estatistica";
+  tagModalAtivo.value = "true";
+  tagModalCor.value = "#2563eb";
+  tagModalCorTexto.value = "#2563eb";
+}
+
+function sincronizarCorTag(origem) {
+  if (origem === "color") {
+    tagModalCorTexto.value = tagModalCor.value;
+    return;
+  }
+
+  const cor = tagModalCorTexto.value.trim();
+
+  if (/^#[0-9A-Fa-f]{6}$/.test(cor)) {
+    tagModalCor.value = cor;
+  }
+}
+
+function validarTagModal() {
+  const nome = tagModalNome.value.trim();
+
+  if (!nome) {
+    alert("Informe o nome da TAG.");
+    tagModalNome.focus();
+    return false;
+  }
+
+  const cor = tagModalCorTexto.value.trim();
+
+  if (!/^#[0-9A-Fa-f]{6}$/.test(cor)) {
+    alert("Informe uma cor válida no formato hexadecimal. Ex.: #2563eb");
+    tagModalCorTexto.focus();
+    return false;
+  }
+
+  alert("Validação OK. Na próxima etapa vamos salvar no Supabase.");
+
+  return true;
+}
+
 sidebarTagsBtn.addEventListener("click", abrirPainelTags);
-newTagBtn.addEventListener("click", () => {
-  alert("Modal de criação de TAG será implementado na próxima etapa.");
+newTagBtn.addEventListener("click", abrirModalNovaTag);
+
+closeTagModalBtn.addEventListener("click", fecharModalTag);
+cancelTagModalBtn.addEventListener("click", fecharModalTag);
+
+saveTagModalBtn.addEventListener("click", validarTagModal);
+
+tagModalCor.addEventListener("input", () => {
+  sincronizarCorTag("color");
+});
+
+tagModalCorTexto.addEventListener("input", () => {
+  sincronizarCorTag("text");
 });
 
 if (imageModalClose) {
@@ -7679,7 +8038,6 @@ document.addEventListener("keydown", (event) => {
   }
 
 });
-
 
     loginPassword.addEventListener("keydown", event => {
       if (event.key === "Enter") fazerLogin();
