@@ -8717,24 +8717,29 @@ forwardModal.addEventListener("click", event => {
   }
 });
 
-chatMenuItem.addEventListener("click", () => {
+chatMenuItem.addEventListener("click", async () => {
+
+  if (selectionMode) {
+    limparSelecaoMensagens();
+  }
 
   settingsSubmenu.classList.add("hidden");
   sidebarClientsBtn.classList.remove("active");
   sidebarTeamBtn.classList.remove("active");
+  sidebarTagsBtn.classList.remove("active");
 
   chatMenuItem.classList.add("active");
   app.classList.remove("settings-open");
   settingsMenuItem.classList.remove("active");
 
   teamPanel.classList.add("hidden");
-
   clientPanel.classList.add("hidden");
   tagPanel.classList.add("hidden");
 
   mainConversationPanel.classList.remove("hidden");
-
   document.querySelector(".chat-area").classList.remove("hidden");
+
+  await carregarClientes();
 
 });
 
@@ -8845,7 +8850,7 @@ saveTagModalBtn.addEventListener("click", salvarTagModal);
 
 tagModal.addEventListener("click", event => {
   if (event.target === tagModal) {
-    fecharModalTag();
+    event.stopPropagation();
   }
 });
 
