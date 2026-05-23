@@ -4353,6 +4353,15 @@ const exportClientsBtn =
 const applyTagBtn =
   document.getElementById("applyTagBtn");
 
+const applyTagModal =
+  document.getElementById("applyTagModal");
+
+const closeApplyTagModalBtn =
+  document.getElementById("closeApplyTagModalBtn");
+
+const applyTagList =
+  document.getElementById("applyTagList");
+
 const createConversationModal =
   document.getElementById("createConversationModal");
 
@@ -8100,6 +8109,102 @@ function abrirPainelTags() {
 
 }
 
+async function abrirModalAplicarTag() {
+  applyTagModal.classList.add("open");
+
+  applyTagList.innerHTML = `
+    <div class="tag-loading">
+      Carregando TAGs...
+    </div>
+  `;
+
+  const { data, error } = await supabaseClient
+    .from("tags")
+    .select("*")
+    .eq("ativo", true)
+    .order("nome", { ascending: true });
+
+  if (error) {
+    console.error("Erro ao carregar TAGs:", error);
+
+    applyTagList.innerHTML = `
+      <div class="tag-empty">
+        Erro ao carregar TAGs.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    applyTagList.innerHTML = `
+      <div class="tag-empty">
+        Nenhuma TAG disponível.
+      </div>
+    `;
+
+    return;
+  }
+
+  applyTagList.innerHTML = data
+    .map(tag => {
+      return `
+        <button
+          type="button"
+          class="apply-tag-item"
+          onclick="aplicarTagConversa(${tag.id})"
+        >
+          <span
+            class="apply-tag-color"
+            style="background:${tag.cor}"
+          ></span>
+
+          <div class="apply-tag-info">
+            <strong>${tag.nome}</strong>
+            <small>${tag.categoria || "geral"}</small>
+          </div>
+        </button>
+      `;
+    })
+    .join("");
+}
+
+async function aplicarTagConversa(tagId) {
+  if (!selectedConversationId) {
+    alert("Selecione uma conversa.");
+    return;
+  }
+
+  const conversation = getSelectedConversation();
+
+const payload = {
+  cliente_id: conversation.clienteId,
+  conversa_id: selectedConversationId,
+  tag_id: tagId
+};
+
+  const { error } = await supabaseClient
+    .from("cliente_tags_historico")
+    .insert([payload]);
+
+  if (error) {
+    console.error("Erro ao aplicar TAG:", error);
+
+    alert(
+      "Erro ao aplicar TAG.\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+
+    return;
+  }
+
+  applyTagModal.classList.remove("open");
+
+  alert("TAG aplicada com sucesso.");
+
+  await carregarClientes();
+}
+
 function abrirModalNovaTag() {
   tagModalId.value = "";
   tagModalTitle.textContent = "Adicionar TAG";
@@ -8265,7 +8370,17 @@ applyTagBtn?.addEventListener("click", () => {
     return;
   }
 
-  abrirPainelTags();
+  abrirModalAplicarTag();
+});
+
+closeApplyTagModalBtn.addEventListener("click", () => {
+  applyTagModal.classList.remove("open");
+});
+
+applyTagModal.addEventListener("click", event => {
+  if (event.target === applyTagModal) {
+    applyTagModal.classList.remove("open");
+  }
 });
 
 closeTagModalBtn.addEventListener("click", fecharModalTag);
