@@ -3749,12 +3749,11 @@ line-height: 1.15;
       <button type="button">Gerenciar</button>
     </div>
 
-    <div class="tag-list">
-      <span class="tag">INTERESSADO</span>
-      <span class="tag tag-blue">PLANO EMPRESARIAL</span>
-      <span class="tag tag-orange">PROPOSTA ENVIADA</span>
-      <span class="tag tag-red">PRIORITÁRIO</span>
-    </div>
+    <div class="tag-list" id="conversationTagsList">
+  <span style="font-size:12px;color:#667085;">
+    Nenhuma TAG aplicada.
+  </span>
+</div>
   </div>
 
   </aside>
@@ -4440,6 +4439,9 @@ const closeApplyTagModalBtn =
 
 const applyTagList =
   document.getElementById("applyTagList");
+
+const conversationTagsList =
+  document.getElementById("conversationTagsList");
 
 const applyTagSearchInput =
   document.getElementById("applyTagSearchInput");
