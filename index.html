@@ -8371,9 +8371,11 @@ const payload = {
 
   applyTagModal.classList.remove("open");
 
-  alert("TAG aplicada com sucesso.");
+await carregarTagsDaConversa();
 
-  await carregarClientes();
+alert("TAG aplicada com sucesso.");
+
+await carregarClientes();
 }
 
 function abrirModalNovaTag() {
