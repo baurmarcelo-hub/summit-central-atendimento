@@ -5136,6 +5136,8 @@ if (!conversation) {
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
 
+carregarTagsDaConversa();
+
 acceptBtn.classList.add("hidden");
 topFinishBtn.classList.add("hidden");
 composer.classList.add("hidden");
@@ -8191,6 +8193,76 @@ function abrirPainelTags() {
 
  carregarTags();
 
+}
+
+async function carregarTagsDaConversa() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    conversationTagsList.innerHTML = `
+      <span style="font-size:12px;color:#667085;">
+        Nenhuma conversa selecionada.
+      </span>
+    `;
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("cliente_tags_historico")
+    .select(`
+      id,
+      created_at,
+      tags (
+        id,
+        nome,
+        categoria,
+        tipo,
+        cor
+      )
+    `)
+    .eq("cliente_id", conversation.clienteId)
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  if (error) {
+    console.error("Erro ao carregar TAGs da conversa:", error);
+
+    conversationTagsList.innerHTML = `
+      <span style="font-size:12px;color:#dc2626;">
+        Erro ao carregar TAGs.
+      </span>
+    `;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    conversationTagsList.innerHTML = `
+      <span style="font-size:12px;color:#667085;">
+        Nenhuma TAG aplicada.
+      </span>
+    `;
+    return;
+  }
+
+  conversationTagsList.innerHTML = data.map(item => {
+    const tag = item.tags;
+
+    if (!tag) return "";
+
+    return `
+      <span
+        class="tag"
+        title="${new Date(item.created_at).toLocaleString("pt-BR")}"
+        style="
+          background:${tag.cor || "#eff6ff"}22;
+          color:${tag.cor || "#2563eb"};
+          border-color:${tag.cor || "#2563eb"}55;
+        "
+      >
+        ${tag.nome}
+      </span>
+    `;
+  }).join("");
 }
 
 async function abrirModalAplicarTag() {
