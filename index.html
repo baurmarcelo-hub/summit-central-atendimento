@@ -4440,6 +4440,9 @@ const closeApplyTagModalBtn =
 const applyTagList =
   document.getElementById("applyTagList");
 
+const applyTagSearchInput =
+  document.getElementById("applyTagSearchInput");
+
 const createConversationModal =
   document.getElementById("createConversationModal");
 
@@ -8189,6 +8192,7 @@ function abrirPainelTags() {
 
 async function abrirModalAplicarTag() {
   applyTagModal.classList.add("open");
+ applyTagSearchInput.value = "";
 
   applyTagList.innerHTML = `
     <div class="tag-loading">
@@ -8245,6 +8249,20 @@ async function abrirModalAplicarTag() {
       `;
     })
     .join("");
+
+applyTagSearchInput.oninput = () => {
+  const termo = applyTagSearchInput.value.trim().toLowerCase();
+
+  document.querySelectorAll(".apply-tag-item").forEach(item => {
+    const texto = item.textContent.toLowerCase();
+
+    item.style.display = texto.includes(termo) ? "flex" : "none";
+  });
+};
+
+setTimeout(() => {
+  applyTagSearchInput.focus();
+}, 100);
 }
 
 async function aplicarTagConversa(tagId) {
