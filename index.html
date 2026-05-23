@@ -3585,13 +3585,17 @@ line-height: 1.15;
     <h3>Ações rápidas</h3>
 
     <div class="quick-actions-grid">
-      <button type="button" class="quick-action-btn">
-        🏷️
-        <span>
-          <strong>Aplicar TAG</strong>
-          <small>Marcar atendimento</small>
-        </span>
-      </button>
+      <button
+  type="button"
+  class="quick-action-btn"
+  id="applyTagBtn"
+>
+  🏷️
+  <span>
+    <strong>Aplicar TAG</strong>
+    <small>Marcar atendimento</small>
+  </span>
+</button>
 
       <button type="button" class="quick-action-btn">
         📋
@@ -3767,6 +3771,37 @@ line-height: 1.15;
       >
         Salvar alterações
       </button>
+    </div>
+  </div>
+</div>
+
+<div class="tag-modal" id="applyTagModal">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <h3>Aplicar TAG</h3>
+
+      <button
+        type="button"
+        class="tag-modal-close"
+        id="closeApplyTagModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="tag-modal-body">
+      <div
+        id="applyTagList"
+        style="
+          display:flex;
+          flex-direction:column;
+          gap:10px;
+        "
+      >
+        <div style="color:#667085;font-size:14px;">
+          Carregando TAGs...
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -4314,6 +4349,9 @@ const importClientsInput =
 
 const exportClientsBtn =
   document.getElementById("exportClientsBtn");
+
+const applyTagBtn =
+  document.getElementById("applyTagBtn");
 
 const createConversationModal =
   document.getElementById("createConversationModal");
@@ -8218,7 +8256,17 @@ async function salvarTagModal() {
 }
 
 sidebarTagsBtn.addEventListener("click", abrirPainelTags);
+
 newTagBtn.addEventListener("click", abrirModalNovaTag);
+
+applyTagBtn?.addEventListener("click", () => {
+  if (!selectedConversationId) {
+    alert("Selecione uma conversa.");
+    return;
+  }
+
+  abrirPainelTags();
+});
 
 closeTagModalBtn.addEventListener("click", fecharModalTag);
 cancelTagModalBtn.addEventListener("click", fecharModalTag);
@@ -8238,7 +8286,6 @@ tagStatusFilter.addEventListener("change", carregarTags);
 tagTypeFilter.addEventListener("change", carregarTags);
 
 if (imageModalClose) {
-
   imageModalClose.onclick = closeImageModal;
 
 }
