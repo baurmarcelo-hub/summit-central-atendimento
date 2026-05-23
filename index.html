@@ -2285,6 +2285,37 @@ line-height: 1.15;
   transition: all 0.18s ease;
 }
 
+.apply-tag-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.apply-tag-search {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 13px;
+  outline: none;
+}
+
+.apply-tag-search:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.apply-tag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .apply-tag-item:hover {
   background: #eff6ff;
   border-color: #93c5fd;
@@ -3835,20 +3866,21 @@ line-height: 1.15;
       </button>
     </div>
 
-    <div class="tag-modal-body">
-      <div
-        id="applyTagList"
-        style="
-          display:flex;
-          flex-direction:column;
-          gap:10px;
-        "
-      >
-        <div style="color:#667085;font-size:14px;">
-          Carregando TAGs...
-        </div>
-      </div>
+ <div class="tag-modal-body apply-tag-modal-body">
+  <input
+    id="applyTagSearchInput"
+    class="apply-tag-search"
+    type="text"
+    placeholder="Buscar TAG..."
+    autocomplete="off"
+  />
+
+  <div id="applyTagList" class="apply-tag-list">
+    <div style="color:#667085;font-size:14px;">
+      Carregando TAGs...
     </div>
+  </div>
+</div>
   </div>
 </div>
 
