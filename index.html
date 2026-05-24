@@ -8134,8 +8134,14 @@ iniciarRealtimeTarefas();
       loginPassword.value = "";
     }
 
+let tarefasRealtimeChannel = null;
+
 function iniciarRealtimeTarefas() {
-  supabaseClient
+  if (tarefasRealtimeChannel) {
+    return;
+  }
+
+  tarefasRealtimeChannel = supabaseClient
     .channel("tarefas-realtime")
     .on(
       "postgres_changes",
@@ -8145,11 +8151,7 @@ function iniciarRealtimeTarefas() {
         table: "tarefas"
       },
       async payload => {
-        console.log("Atualização em tarefas:", payload);
-
-        if (!app || app.style.display === "none") {
-          return;
-        }
+        console.log("Realtime tarefas recebido:", payload);
 
         if (
           tasksPanel &&
@@ -8163,7 +8165,9 @@ function iniciarRealtimeTarefas() {
         }
       }
     )
-    .subscribe();
+    .subscribe(status => {
+      console.log("Status realtime tarefas:", status);
+    });
 }
 
     async function verificarSessao() {
