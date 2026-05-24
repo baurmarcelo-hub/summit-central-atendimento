@@ -3168,6 +3168,18 @@ line-height: 1.15;
   box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
 }
 
+.kanban-card.dragging {
+  opacity: 0.55;
+  transform: rotate(1deg);
+}
+
+.kanban-list.drag-over {
+  background: #eff6ff;
+  border-radius: 16px;
+  outline: 2px dashed #93c5fd;
+  outline-offset: -6px;
+}
+
 .kanban-card:hover {
   border-color: #bfdbfe;
   box-shadow: 0 8px 22px rgba(37, 99, 235, 0.10);
@@ -3515,7 +3527,11 @@ line-height: 1.15;
         <span id="kanbanCountPendente">0</span>
       </div>
 
-      <div class="kanban-list" id="kanbanPendenteList"></div>
+      <div
+  class="kanban-list"
+  id="kanbanPendenteList"
+  data-kanban-status="pendente"
+></div>
     </div>
 
     <div class="kanban-column">
@@ -3524,7 +3540,11 @@ line-height: 1.15;
         <span id="kanbanCountAndamento">0</span>
       </div>
 
-      <div class="kanban-list" id="kanbanAndamentoList"></div>
+      <div
+  class="kanban-list"
+  id="kanbanAndamentoList"
+  data-kanban-status="em_andamento"
+></div>
     </div>
 
     <div class="kanban-column">
@@ -3533,7 +3553,11 @@ line-height: 1.15;
         <span id="kanbanCountConcluida">0</span>
       </div>
 
-      <div class="kanban-list" id="kanbanConcluidaList"></div>
+      <div
+  class="kanban-list"
+  id="kanbanConcluidaList"
+  data-kanban-status="concluida"
+></div>
     </div>
   </div>
 </section>
@@ -4587,8 +4611,8 @@ line-height: 1.15;
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-          const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_URL = "SUA CHAVE AQUI";
+          const SUPABASE_ANON_KEY = "SUA CHAVE AQUI";
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -8838,7 +8862,9 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
     return `
       <div
   class="kanban-card"
-  >
+  draggable="true"
+  data-task-id="${tarefa.id}"
+>
        <div class="kanban-card-top">
   <div
     style="
@@ -8946,6 +8972,7 @@ async function carregarKanbanTarefas() {
   renderKanbanLista(kanbanPendenteList, pendentes, "pendente");
   renderKanbanLista(kanbanAndamentoList, emAndamento, "em_andamento");
   renderKanbanLista(kanbanConcluidaList, concluidas, "concluida");
+configurarDragAndDropKanban();
 }
 
 async function alterarStatusTarefa(tarefaId, novoStatus) {
@@ -8966,6 +8993,62 @@ async function alterarStatusTarefa(tarefaId, novoStatus) {
   await carregarKanbanTarefas();
 
   await carregarTarefasDaConversa();
+}
+
+function configurarDragAndDropKanban() {
+  const cards =
+    document.querySelectorAll(".kanban-card[draggable='true']");
+
+  const listas =
+    document.querySelectorAll(".kanban-list[data-kanban-status]");
+
+  cards.forEach(card => {
+    card.addEventListener("dragstart", event => {
+      card.classList.add("dragging");
+
+      event.dataTransfer.setData(
+        "text/plain",
+        card.dataset.taskId
+      );
+
+      event.dataTransfer.effectAllowed = "move";
+    });
+
+    card.addEventListener("dragend", () => {
+      card.classList.remove("dragging");
+
+      listas.forEach(lista =>
+        lista.classList.remove("drag-over")
+      );
+    });
+  });
+
+  listas.forEach(lista => {
+    lista.addEventListener("dragover", event => {
+      event.preventDefault();
+      lista.classList.add("drag-over");
+    });
+
+    lista.addEventListener("dragleave", () => {
+      lista.classList.remove("drag-over");
+    });
+
+    lista.addEventListener("drop", async event => {
+      event.preventDefault();
+
+      lista.classList.remove("drag-over");
+
+      const tarefaId =
+        event.dataTransfer.getData("text/plain");
+
+      const novoStatus =
+        lista.dataset.kanbanStatus;
+
+      if (!tarefaId || !novoStatus) return;
+
+      await alterarStatusTarefa(Number(tarefaId), novoStatus);
+    });
+  });
 }
 
 function abrirPainelTarefas() {
