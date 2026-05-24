@@ -3186,6 +3186,26 @@ line-height: 1.15;
   color: #2563eb;
 }
 
+.kanban-card-edit-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kanban-card-edit-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
 .kanban-priority {
   font-size: 10px;
   font-weight: 900;
@@ -8818,17 +8838,35 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
     return `
       <div
   class="kanban-card"
-  onclick="abrirDetalhesTarefa(${tarefa.id})"
->
-        <div class="kanban-card-top">
-          <span class="kanban-card-code">
-            #T-${String(tarefa.id).padStart(6, "0")}
-          </span>
+  >
+       <div class="kanban-card-top">
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      gap:8px;
+    "
+  >
+    <span class="kanban-card-code">
+      #T-${String(tarefa.id).padStart(6, "0")}
+    </span>
 
-          <span class="kanban-priority ${prioridade}">
-            ${prioridade}
-          </span>
-        </div>
+    <button
+      type="button"
+      class="kanban-card-edit-btn"
+      onclick="
+        event.stopPropagation();
+        abrirDetalhesTarefa(${tarefa.id});
+      "
+    >
+      ⋮
+    </button>
+  </div>
+
+  <span class="kanban-priority ${prioridade}">
+    ${prioridade}
+  </span>
+</div>
 
         <h4>${tarefa.titulo || "Tarefa sem título"}</h4>
 
