@@ -6247,7 +6247,8 @@ atualizarBarraSelecao();
 </button>
       </div>
     `
-    : message.media_mime?.startsWith("audio/")
+    : message.media_mime?.startsWith("audio/") ||
+         message.media_nome?.toLowerCase().match(/\.(ogg|mp3|wav|webm|m4a)$/)
     ? `
       <audio
         controls
