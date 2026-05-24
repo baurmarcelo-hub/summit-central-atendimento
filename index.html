@@ -3307,6 +3307,23 @@ line-height: 1.15;
   background: #dbeafe;
 }
 
+.kanban-load-more-btn {
+  width: 100%;
+  height: 38px;
+  border: 1px dashed #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.kanban-load-more-btn:hover {
+  background: #dbeafe;
+}
+
 .kanban-empty {
   font-size: 13px;
   color: #667085;
@@ -4691,6 +4708,13 @@ let ownerFilter = "todas";
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecordingAudio = false;
+const KANBAN_PAGE_SIZE = 20;
+
+let kanbanVisibleByStatus = {
+  pendente: KANBAN_PAGE_SIZE,
+  em_andamento: KANBAN_PAGE_SIZE,
+  concluida: KANBAN_PAGE_SIZE
+};
 
     const app = document.getElementById("app");
     const conversationList = document.getElementById("conversationList");
@@ -8866,10 +8890,25 @@ teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 tasksMenuItem.addEventListener("click", abrirPainelTarefas);
-kanbanSearchInput?.addEventListener(
-  "input",
-  carregarKanbanTarefas
-);
+kanbanSearchInput?.addEventListener("input", async () => {
+  resetarPaginacaoKanban();
+  await carregarKanbanTarefas();
+});
+
+kanbanClientFilter?.addEventListener("change", async () => {
+  resetarPaginacaoKanban();
+  await carregarKanbanTarefas();
+});
+
+kanbanResponsibleFilter?.addEventListener("change", async () => {
+  resetarPaginacaoKanban();
+  await carregarKanbanTarefas();
+});
+
+kanbanPriorityFilter?.addEventListener("change", async () => {
+  resetarPaginacaoKanban();
+  await carregarKanbanTarefas();
+});
 
 kanbanClientFilter?.addEventListener(
   "change",
@@ -8960,6 +8999,14 @@ function preencherFiltrosKanban(tarefas) {
       : "todos";
 }
 
+function resetarPaginacaoKanban() {
+  kanbanVisibleByStatus = {
+    pendente: KANBAN_PAGE_SIZE,
+    em_andamento: KANBAN_PAGE_SIZE,
+    concluida: KANBAN_PAGE_SIZE
+  };
+}
+
 function filtrarTarefasKanban(tarefas) {
   const termo =
     kanbanSearchInput?.value.trim().toLowerCase() || "";
@@ -9032,7 +9079,13 @@ function formatarDataKanban(dataIso) {
 function renderKanbanLista(listaEl, tarefas, statusAtual) {
   if (!listaEl) return;
 
-  if (!tarefas.length) {
+  const limite =
+    kanbanVisibleByStatus[statusAtual] || KANBAN_PAGE_SIZE;
+
+  const tarefasVisiveis =
+    tarefas.slice(0, limite);
+
+  if (!tarefasVisiveis.length) {
     listaEl.innerHTML = `
       <div class="kanban-empty">
         Nenhuma tarefa nesta coluna.
@@ -9041,7 +9094,7 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
     return;
   }
 
-  listaEl.innerHTML = tarefas.map(tarefa => {
+  listaEl.innerHTML = tarefasVisiveis.map(tarefa => {
     const prioridade =
       tarefa.prioridade || "media";
 
@@ -9056,38 +9109,38 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
 
     return `
       <div
-  class="kanban-card"
-  draggable="true"
-  data-task-id="${tarefa.id}"
->
-       <div class="kanban-card-top">
-  <div
-    style="
-      display:flex;
-      align-items:center;
-      gap:8px;
-    "
-  >
-    <span class="kanban-card-code">
-      #T-${String(tarefa.id).padStart(6, "0")}
-    </span>
+        class="kanban-card"
+        draggable="true"
+        data-task-id="${tarefa.id}"
+      >
+        <div class="kanban-card-top">
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:8px;
+            "
+          >
+            <span class="kanban-card-code">
+              #T-${String(tarefa.id).padStart(6, "0")}
+            </span>
 
-    <button
-      type="button"
-      class="kanban-card-edit-btn"
-      onclick="
-        event.stopPropagation();
-        abrirDetalhesTarefa(${tarefa.id});
-      "
-    >
-      ⋮
-    </button>
-  </div>
+            <button
+              type="button"
+              class="kanban-card-edit-btn"
+              onclick="
+                event.stopPropagation();
+                abrirDetalhesTarefa(${tarefa.id});
+              "
+            >
+              ⋮
+            </button>
+          </div>
 
-  <span class="kanban-priority ${prioridade}">
-    ${prioridade}
-  </span>
-</div>
+          <span class="kanban-priority ${prioridade}">
+            ${prioridade}
+          </span>
+        </div>
 
         <h4>${tarefa.titulo || "Tarefa sem título"}</h4>
 
@@ -9121,6 +9174,26 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
       </div>
     `;
   }).join("");
+
+  if (tarefas.length > limite) {
+    listaEl.innerHTML += `
+      <button
+        type="button"
+        class="kanban-load-more-btn"
+        onclick="carregarMaisKanban('${statusAtual}')"
+      >
+        Carregar mais ${Math.min(KANBAN_PAGE_SIZE, tarefas.length - limite)}
+      </button>
+    `;
+  }
+}
+
+async function carregarMaisKanban(status) {
+  kanbanVisibleByStatus[status] =
+    (kanbanVisibleByStatus[status] || KANBAN_PAGE_SIZE) +
+    KANBAN_PAGE_SIZE;
+
+  await carregarKanbanTarefas();
 }
 
 async function carregarKanbanTarefas() {
@@ -9276,7 +9349,8 @@ function abrirPainelTarefas() {
   sidebarTeamBtn.classList.remove("active");
   sidebarTagsBtn.classList.remove("active");
 
-  carregarKanbanTarefas();
+  resetarPaginacaoKanban();
+carregarKanbanTarefas();
 }
 
 function abrirPainelTags() {
