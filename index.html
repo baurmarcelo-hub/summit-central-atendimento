@@ -1175,6 +1175,15 @@ line-height: 1.15;
   cursor: pointer;
 }
 
+.chat-video {
+  max-width: 300px;
+  max-height: 360px;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  display: block;
+  background: #000000;
+}
+
 .file-card {
   display: grid;
   grid-template-columns: 42px 1fr;
@@ -6179,6 +6188,46 @@ atualizarBarraSelecao();
 
   const mediaHtml = message.media_url
   ? message.media_mime?.startsWith("image/")
+    ? `
+      <div class="media-image-box">
+        <img
+          src="${message.media_url}"
+          class="chat-image"
+          alt="${message.media_nome || "Imagem"}"
+          onclick="openImageModal('${message.media_url}', '${message.media_nome || "imagem"}')"
+        />
+
+        <button
+          type="button"
+          class="media-download-link"
+          title="Baixar imagem"
+          onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "imagem"}')"
+        >
+          ⬇ Baixar
+        </button>
+      </div>
+    `
+    : message.media_mime?.startsWith("video/")
+    ? `
+      <div class="media-image-box">
+        <video
+          src="${message.media_url}"
+          controls
+          class="chat-video"
+          preload="metadata"
+        ></video>
+
+        <button
+          type="button"
+          class="media-download-link"
+          title="Baixar vídeo"
+          onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "video"}')"
+        >
+          ⬇ Baixar
+        </button>
+      </div>
+    `
+    : message.media_mime?.startsWith("audio/")
     ? `
       <div class="media-image-box">
         <img
