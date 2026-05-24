@@ -4171,6 +4171,115 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="tag-modal" id="taskDetailsModal">
+  <div class="tag-modal-card large">
+    <div class="tag-modal-header">
+      <h3>Detalhes da tarefa</h3>
+
+      <button
+        type="button"
+        class="tag-modal-close"
+        id="closeTaskDetailsModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="tag-modal-body">
+      <input type="hidden" id="taskDetailsId" />
+
+      <div class="tag-field">
+        <label>Título</label>
+
+        <input
+          id="taskDetailsTitle"
+          type="text"
+          placeholder="Título da tarefa"
+        />
+      </div>
+
+      <div class="tag-field">
+        <label>Descrição</label>
+
+        <textarea
+          id="taskDetailsDescription"
+          placeholder="Descrição da tarefa"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="tag-field">
+          <label>Responsável</label>
+
+          <select id="taskDetailsResponsible">
+            <option value="">Selecione</option>
+          </select>
+        </div>
+
+        <div class="tag-field">
+          <label>Prioridade</label>
+
+          <select id="taskDetailsPriority">
+            <option value="baixa">Baixa</option>
+            <option value="media">Média</option>
+            <option value="alta">Alta</option>
+            <option value="critica">Crítica</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="tag-field">
+          <label>Status</label>
+
+          <select id="taskDetailsStatus">
+            <option value="pendente">Pendente</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="concluida">Concluída</option>
+          </select>
+        </div>
+
+        <div class="tag-field">
+          <label>Prazo</label>
+
+          <input
+            id="taskDetailsDeadline"
+            type="datetime-local"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="tag-modal-footer">
+      <button
+        type="button"
+        class="tag-cancel-btn"
+        id="deleteTaskBtn"
+      >
+        Excluir
+      </button>
+
+      <div style="display:flex; gap:10px;">
+        <button
+          type="button"
+          class="tag-cancel-btn"
+          id="cancelTaskDetailsBtn"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="tag-save-btn"
+          id="saveTaskDetailsBtn"
+        >
+          Salvar alterações
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="tag-modal" id="applyTagModal">
   <div class="tag-modal-card">
     <div class="tag-modal-header">
