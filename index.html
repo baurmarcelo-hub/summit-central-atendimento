@@ -3709,12 +3709,17 @@ line-height: 1.15;
   </div>
 
   <div class="details-section">
-    <div class="section-title-row">
-      <h3>Últimas observações</h3>
-      <button type="button">Ver todas</button>
-    </div>
+  <div class="section-title-row">
+    <h3>Últimas observações</h3>
+    <button type="button">Ver todas</button>
+  </div>
 
-    <div class="internal-note">
+  <div id="conversationNotesList">
+    <div style="font-size:12px;color:#667085;">
+      Nenhuma observação registrada.
+    </div>
+  </div>
+</div>
       <div class="note-avatar">MB</div>
       <div>
         <strong>Marcelo Baur</strong>
@@ -4521,6 +4526,9 @@ const applyTagList =
 
 const conversationTagsList =
   document.getElementById("conversationTagsList");
+
+const conversationNotesList =
+  document.getElementById("conversationNotesList");
 
 const applyTagSearchInput =
   document.getElementById("applyTagSearchInput");
