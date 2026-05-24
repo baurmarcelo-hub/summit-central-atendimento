@@ -100,7 +100,8 @@
 
 .app.settings-open #teamPanel,
 .app.settings-open #clientPanel,
-.app.settings-open #tagsPanel {
+.app.settings-open #tagsPanel,
+.app.settings-open #tasksPanel {
   grid-column: 2 / 3;
 }
 
@@ -1075,7 +1076,8 @@ line-height: 1.15;
     @media (max-width: 1200px) {
       .app.settings-open #teamPanel,
 .app.settings-open #clientPanel,
-.app.settings-open #tagsPanel {
+.app.settings-open #tagsPanel,
+.app.settings-open #tasksPanel {
   grid-column: 2 / 3;
 }
 
@@ -3101,6 +3103,159 @@ line-height: 1.15;
   word-break: break-word;
 }
 
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 18px;
+  height: calc(100vh - 120px);
+  min-height: 0;
+}
+
+.kanban-column {
+  background: #ffffff;
+  border: 1px solid #e5eaf1;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.kanban-column-header {
+  height: 58px;
+  padding: 0 16px;
+  border-bottom: 1px solid #edf0f5;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.kanban-column-header h3 {
+  font-size: 15px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.kanban-column-header span {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kanban-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.kanban-card {
+  background: #ffffff;
+  border: 1px solid #e5eaf1;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+}
+
+.kanban-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.10);
+}
+
+.kanban-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.kanban-card-code {
+  font-size: 11px;
+  font-weight: 900;
+  color: #2563eb;
+}
+
+.kanban-priority {
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  white-space: nowrap;
+}
+
+.kanban-priority.alta,
+.kanban-priority.critica {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.kanban-priority.media {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.kanban-card h4 {
+  font-size: 14px;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+
+.kanban-card p {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.kanban-card-meta {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.kanban-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kanban-actions button {
+  height: 30px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 10px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.kanban-actions button:hover {
+  background: #dbeafe;
+}
+
+.kanban-empty {
+  font-size: 13px;
+  color: #667085;
+  text-align: center;
+  padding: 24px 8px;
+}
 
   </style>
 </head>
@@ -3324,6 +3479,45 @@ line-height: 1.15;
     <div id="teamList"></div>
   </div>
 </section>
+
+<section class="team-page hidden" id="tasksPanel">
+  <div class="team-topbar">
+    <div class="team-title">
+      <h2>Kanban / Tarefas</h2>
+      <span>Acompanhe tarefas por status, responsável e prazo</span>
+    </div>
+  </div>
+
+  <div class="kanban-board">
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <h3>Pendente</h3>
+        <span id="kanbanCountPendente">0</span>
+      </div>
+
+      <div class="kanban-list" id="kanbanPendenteList"></div>
+    </div>
+
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <h3>Em andamento</h3>
+        <span id="kanbanCountAndamento">0</span>
+      </div>
+
+      <div class="kanban-list" id="kanbanAndamentoList"></div>
+    </div>
+
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <h3>Concluída</h3>
+        <span id="kanbanCountConcluida">0</span>
+      </div>
+
+      <div class="kanban-list" id="kanbanConcluidaList"></div>
+    </div>
+  </div>
+</section>
+
 <section class="team-page hidden" id="tagsPanel">
   <div class="team-topbar">
     <div class="team-title">
@@ -4392,6 +4586,30 @@ const clientPanel =
 
 const tagsPanel =
   document.getElementById("tagsPanel");
+
+const tasksPanel =
+  document.getElementById("tasksPanel");
+
+const tasksMenuItem =
+  document.getElementById("tasksMenuItem");
+
+const kanbanPendenteList =
+  document.getElementById("kanbanPendenteList");
+
+const kanbanAndamentoList =
+  document.getElementById("kanbanAndamentoList");
+
+const kanbanConcluidaList =
+  document.getElementById("kanbanConcluidaList");
+
+const kanbanCountPendente =
+  document.getElementById("kanbanCountPendente");
+
+const kanbanCountAndamento =
+  document.getElementById("kanbanCountAndamento");
+
+const kanbanCountConcluida =
+  document.getElementById("kanbanCountConcluida");
 
 const newTagBtn =
   document.getElementById("newTagBtn");
@@ -8281,6 +8499,8 @@ chatMenuItem.addEventListener("click", () => {
 
   clientPanel.classList.add("hidden");
   tagsPanel.classList.add("hidden");
+  tasksPanel.classList.add("hidden");
+  tasksMenuItem.classList.remove("active");
   sidebarTagsBtn.classList.remove("active");
 
   mainConversationPanel.classList.remove("hidden");
@@ -8352,6 +8572,184 @@ teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
+tasksMenuItem.addEventListener("click", abrirPainelTarefas);
+
+function formatarDataKanban(dataIso) {
+  if (!dataIso) return "Sem prazo";
+
+  return new Date(dataIso).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderKanbanLista(listaEl, tarefas, statusAtual) {
+  if (!listaEl) return;
+
+  if (!tarefas.length) {
+    listaEl.innerHTML = `
+      <div class="kanban-empty">
+        Nenhuma tarefa nesta coluna.
+      </div>
+    `;
+    return;
+  }
+
+  listaEl.innerHTML = tarefas.map(tarefa => {
+    const prioridade =
+      tarefa.prioridade || "media";
+
+    const descricao =
+      tarefa.descricao || "Sem descrição.";
+
+    const responsavel =
+      tarefa.responsavel_nome || "Sem responsável";
+
+    const cliente =
+      tarefa.clientes?.nome || "Cliente não informado";
+
+    return `
+      <div class="kanban-card">
+        <div class="kanban-card-top">
+          <span class="kanban-card-code">
+            #T-${String(tarefa.id).padStart(6, "0")}
+          </span>
+
+          <span class="kanban-priority ${prioridade}">
+            ${prioridade}
+          </span>
+        </div>
+
+        <h4>${tarefa.titulo || "Tarefa sem título"}</h4>
+
+        <p>${descricao}</p>
+
+        <div class="kanban-card-meta">
+          <strong>Cliente:</strong> ${cliente}<br />
+          <strong>Responsável:</strong> ${responsavel}<br />
+          <strong>Prazo:</strong> ${formatarDataKanban(tarefa.prazo)}
+        </div>
+
+        <div class="kanban-actions">
+          ${
+            statusAtual !== "pendente"
+              ? `<button type="button" onclick="alterarStatusTarefa(${tarefa.id}, 'pendente')">Pendente</button>`
+              : ""
+          }
+
+          ${
+            statusAtual !== "em_andamento"
+              ? `<button type="button" onclick="alterarStatusTarefa(${tarefa.id}, 'em_andamento')">Em andamento</button>`
+              : ""
+          }
+
+          ${
+            statusAtual !== "concluida"
+              ? `<button type="button" onclick="alterarStatusTarefa(${tarefa.id}, 'concluida')">Concluir</button>`
+              : ""
+          }
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function carregarKanbanTarefas() {
+  const { data, error } = await supabaseClient
+    .from("tarefas")
+    .select(`
+      *,
+      clientes (
+        nome,
+        telefone,
+        email
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erro ao carregar Kanban:", error);
+
+    kanbanPendenteList.innerHTML = `
+      <div class="kanban-empty">Erro ao carregar tarefas.</div>
+    `;
+
+    kanbanAndamentoList.innerHTML = "";
+    kanbanConcluidaList.innerHTML = "";
+
+    return;
+  }
+
+  const tarefas = data || [];
+
+  const pendentes =
+    tarefas.filter(t => (t.status || "pendente") === "pendente");
+
+  const emAndamento =
+    tarefas.filter(t => t.status === "em_andamento");
+
+  const concluidas =
+    tarefas.filter(t => t.status === "concluida");
+
+  kanbanCountPendente.textContent = pendentes.length;
+  kanbanCountAndamento.textContent = emAndamento.length;
+  kanbanCountConcluida.textContent = concluidas.length;
+
+  renderKanbanLista(kanbanPendenteList, pendentes, "pendente");
+  renderKanbanLista(kanbanAndamentoList, emAndamento, "em_andamento");
+  renderKanbanLista(kanbanConcluidaList, concluidas, "concluida");
+}
+
+async function alterarStatusTarefa(tarefaId, novoStatus) {
+  const { error } = await supabaseClient
+    .from("tarefas")
+    .update({
+      status: novoStatus,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", tarefaId);
+
+  if (error) {
+    console.error("Erro ao alterar status da tarefa:", error);
+    alert("Erro ao alterar status da tarefa.");
+    return;
+  }
+
+  await carregarKanbanTarefas();
+
+  await carregarTarefasDaConversa();
+}
+
+function abrirPainelTarefas() {
+  if (selectionMode) {
+    limparSelecaoMensagens();
+  }
+
+  app.classList.add("settings-open");
+
+  chatMenuItem.classList.remove("active");
+  settingsMenuItem.classList.remove("active");
+  tasksMenuItem.classList.add("active");
+
+  settingsSubmenu.classList.add("hidden");
+
+  mainConversationPanel.classList.add("hidden");
+  document.querySelector(".chat-area").classList.add("hidden");
+
+  clientPanel.classList.add("hidden");
+  teamPanel.classList.add("hidden");
+  tagsPanel.classList.add("hidden");
+  tasksPanel.classList.remove("hidden");
+
+  sidebarClientsBtn.classList.remove("active");
+  sidebarTeamBtn.classList.remove("active");
+  sidebarTagsBtn.classList.remove("active");
+
+  carregarKanbanTarefas();
+}
 
 function abrirPainelTags() {
   app.classList.add("settings-open");
