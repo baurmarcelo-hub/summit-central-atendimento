@@ -3757,6 +3757,10 @@ line-height: 1.15;
 
         <div class="header-actions">
   
+<button class="secondary-action-btn header-action-btn" id="transferConversationBtn">
+  Transferir
+</button>
+
   <button class="danger-btn header-action-btn" id="topFinishBtn">
     Finalizar
   </button>
@@ -4554,7 +4558,36 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="forward-modal" id="transferConversationModal">
+  <div class="forward-modal-card">
+    <div class="forward-modal-header">
+      <h3>Transferir conversa</h3>
 
+      <button
+        type="button"
+        class="forward-modal-close"
+        id="closeTransferConversationModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="forward-modal-body">
+      <input
+        id="transferUserSearchInput"
+        type="text"
+        placeholder="Buscar atendente..."
+        autocomplete="off"
+        class="create-conversation-search-input"
+      />
+
+      <div
+        class="forward-list"
+        id="transferUserList"
+      ></div>
+    </div>
+  </div>
+</div>
 
 <div class="forward-modal" id="forwardModal">
   <div class="forward-modal-card">
@@ -4952,6 +4985,23 @@ const userModalAtivo =
 
 const forwardModal =
   document.getElementById("forwardModal");
+
+const transferConversationBtn =
+  document.getElementById("transferConversationBtn");
+
+const transferConversationModal =
+  document.getElementById("transferConversationModal");
+
+const closeTransferConversationModalBtn =
+  document.getElementById("closeTransferConversationModalBtn");
+
+const transferUserSearchInput =
+  document.getElementById("transferUserSearchInput");
+
+const transferUserList =
+  document.getElementById("transferUserList");
+
+let transferUsers = [];
 
 const closeForwardModalBtn =
   document.getElementById("closeForwardModalBtn");
@@ -5511,6 +5561,179 @@ function mostrarDigitando() {
   }, 1500);
 }
 
+async function abrirModalTransferencia() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  if (conversation.status !== "em_atendimento") {
+    alert("Só é possível transferir conversas em atendimento.");
+    return;
+  }
+
+  transferUserSearchInput.value = "";
+  transferUserList.innerHTML = `
+    <div style="padding:16px;color:#667085;font-size:14px;">
+      Carregando atendentes...
+    </div>
+  `;
+
+  transferConversationModal.classList.add("open");
+
+  const { data, error } = await supabaseClient
+    .from("usuarios_perfis")
+    .select("id, nome, sobrenome, email, ativo")
+    .eq("ativo", true)
+    .order("nome", { ascending: true });
+
+  if (error) {
+    console.error("Erro ao carregar atendentes:", error);
+
+    transferUserList.innerHTML = `
+      <div style="padding:16px;color:#dc2626;font-size:14px;font-weight:700;">
+        Erro ao carregar atendentes.
+      </div>
+    `;
+
+    return;
+  }
+
+  transferUsers = (data || [])
+    .map(usuario => {
+      const nomeCompleto =
+        `${usuario.nome || ""} ${usuario.sobrenome || ""}`.trim();
+
+      return {
+        id: usuario.id,
+        nome: nomeCompleto || usuario.email || "Usuário",
+        email: usuario.email || ""
+      };
+    })
+    .filter(usuario => usuario.nome !== usuarioLogadoNome);
+
+  renderTransferUsers();
+
+  setTimeout(() => {
+    transferUserSearchInput.focus();
+  }, 100);
+}
+
+function fecharModalTransferencia() {
+  transferConversationModal.classList.remove("open");
+
+  transferUserSearchInput.value = "";
+  transferUserList.innerHTML = "";
+  transferUsers = [];
+}
+
+function renderTransferUsers() {
+  const termo =
+    transferUserSearchInput.value.trim().toLowerCase();
+
+  const lista = transferUsers.filter(usuario => {
+    return (
+      !termo ||
+      usuario.nome.toLowerCase().includes(termo) ||
+      usuario.email.toLowerCase().includes(termo)
+    );
+  });
+
+  if (lista.length === 0) {
+    transferUserList.innerHTML = `
+      <div style="padding:16px;color:#667085;font-size:14px;">
+        Nenhum atendente encontrado.
+      </div>
+    `;
+
+    return;
+  }
+
+  transferUserList.innerHTML = lista.map(usuario => {
+    const inicial =
+      usuario.nome.charAt(0).toUpperCase();
+
+    return `
+      <div
+        class="forward-item transfer-user-item"
+        data-transfer-user-name="${usuario.nome}"
+      >
+        <div class="client-avatar">
+          ${inicial}
+        </div>
+
+        <div style="min-width:0;">
+          <div class="forward-name">
+            ${usuario.nome}
+          </div>
+
+          <div class="forward-subtitle">
+            ${usuario.email || "Atendente ativo"}
+          </div>
+        </div>
+
+        <div class="forward-send">
+          ➤
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document
+    .querySelectorAll(".transfer-user-item")
+    .forEach(item => {
+      item.addEventListener("click", async () => {
+        const novoAtendente =
+          item.dataset.transferUserName;
+
+        await confirmarTransferenciaConversa(novoAtendente);
+      });
+    });
+}
+
+async function confirmarTransferenciaConversa(novoAtendente) {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  if (!novoAtendente) {
+    alert("Atendente inválido.");
+    return;
+  }
+
+  const confirmar = confirm(
+    `Deseja transferir esta conversa para ${novoAtendente}?`
+  );
+
+  if (!confirmar) return;
+
+  const { error } = await supabaseClient
+    .from("conversas")
+    .update({
+      status: "em_atendimento",
+      atendente: novoAtendente,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", conversation.id);
+
+  if (error) {
+    console.error("Erro ao transferir conversa:", error);
+    alert("Erro ao transferir conversa.");
+    return;
+  }
+
+  fecharModalTransferencia();
+
+  alert("Conversa transferida com sucesso.");
+
+  await carregarClientes();
+}
+
 function abrirModalEncaminhar(messages) {
   messagesToForward = Array.isArray(messages)
     ? messages
@@ -5756,6 +5979,8 @@ if (!conversation) {
   detailResponsible.textContent = "-";
 
   acceptBtn.classList.add("hidden");
+  topFinishBtn.classList.add("hidden");
+  transferConversationBtn.classList.add("hidden");
   chatTabs.classList.add("hidden");
   composer.classList.add("hidden");
   messageSearchBox.classList.add("hidden");
@@ -5814,6 +6039,7 @@ carregarTarefasDaConversa();
 
 acceptBtn.classList.add("hidden");
 topFinishBtn.classList.add("hidden");
+transferConversationBtn.classList.add("hidden");
 composer.classList.add("hidden");
 composer.classList.remove("locked-composer");
 
@@ -5826,6 +6052,8 @@ if (conversation.status !== "em_atendimento") {
 
 if (conversation.status === "em_atendimento") {
   topFinishBtn.classList.remove("hidden");
+
+  transferConversationBtn.classList.remove("hidden");
   
   topFinishBtn.textContent = "Finalizar";
 
@@ -8584,6 +8812,27 @@ topFinishBtn.addEventListener(
   "click",
   finalizarAtendimento
 );
+
+transferConversationBtn.addEventListener(
+  "click",
+  abrirModalTransferencia
+);
+
+closeTransferConversationModalBtn.addEventListener(
+  "click",
+  fecharModalTransferencia
+);
+
+transferUserSearchInput.addEventListener(
+  "input",
+  renderTransferUsers
+);
+
+transferConversationModal.addEventListener("click", event => {
+  if (event.target === transferConversationModal) {
+    fecharModalTransferencia();
+  }
+});
 
 searchInput.addEventListener("input", () => {
   renderConversations();
