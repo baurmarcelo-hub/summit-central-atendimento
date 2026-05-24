@@ -7028,7 +7028,7 @@ const text =
       {
         conversa_id: conversation.id,
 	conteudo: text,
-	autor_nome: text ? usuarioLogadoNome : null,
+	autor_nome: text ? (usuarioLogadoNome || userName.textContent || "Atendente") : null,
 	reply_to_message_id: replyingToMessage?.id || null,
 
         canal: conversation.channel || "WhatsApp",
@@ -7047,6 +7047,14 @@ const text =
         ])
     .select()
     .single();
+
+if (mensagemInserida) {
+  mensagemInserida.autor_nome =
+    mensagemInserida.autor_nome ||
+    usuarioLogadoNome ||
+    userName.textContent ||
+    "Atendente";
+}
 
   if (error) {
   console.error("Erro ao enviar mensagem:", error);
