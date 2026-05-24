@@ -1498,6 +1498,14 @@ line-height: 1.15;
   text-rendering: optimizeLegibility;
 }
 
+.message-author-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
 .message-search-box {
   padding: 10px 20px;
   border-bottom: 1px solid #edf0f5;
@@ -3932,7 +3940,7 @@ line-height: 1.15;
   <div class="details-tabs">
     <button class="details-tab active" data-details-tab="resumo">Resumo</button>
     <button class="details-tab" data-details-tab="observacoes">Observações</button>
-    <button class="details-tab" data-details-tab="tarefas">Tarefas (2)</button>
+    <button class="details-tab" data-details-tab="tarefas">Tarefas</button>
     <button class="details-tab" data-details-tab="tags">Tags</button>
   </div>
 
@@ -6230,6 +6238,15 @@ atualizarBarraSelecao();
     `
   : "";
 
+const autorMensagemHtml =
+  message.direction === "out" && message.text?.trim()
+    ? `
+      <div class="message-author-name">
+        ${message.autor_nome || "Atendente"}:
+      </div>
+    `
+    : "";
+
 row.innerHTML = `
   <div class="message-select-check"></div>
 
@@ -6262,7 +6279,8 @@ row.innerHTML = `
 </button>
 </div>
     ${replyHtml}
-    ${mediaHtml}
+${mediaHtml}
+${autorMensagemHtml}
 
 ${
   message.media_url
@@ -6538,6 +6556,7 @@ function adicionarMensagemNaConversa(conversaId, mensagem) {
 
   direction: msg.direcao,
   text: msg.conteudo,
+  autor_nome: msg.autor_nome,
 
   tipo: msg.tipo || "texto",
   media_url: msg.media_url,
@@ -6619,6 +6638,7 @@ if (loadingOldMessages) {
       id: msg.id,
       direction: msg.direcao,
       text: msg.conteudo,
+      autor_nome: msg.autor_nome,
 
       tipo: msg.tipo || "texto",
       media_url: msg.media_url,
@@ -7007,7 +7027,8 @@ const text =
   .insert([
       {
         conversa_id: conversation.id,
-        conteudo: text,
+	conteudo: text,
+	autor_nome: text ? usuarioLogadoNome : null,
 	reply_to_message_id: replyingToMessage?.id || null,
 
         canal: conversation.channel || "WhatsApp",
