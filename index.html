@@ -8653,12 +8653,6 @@ cancelNoteModalBtn.addEventListener("click", () => {
   noteModal.classList.remove("open");
 });
 
-noteModal.addEventListener("click", event => {
-  if (event.target === noteModal) {
-    noteModal.classList.remove("open");
-  }
-});
-
 closeTagModalBtn.addEventListener("click", fecharModalTag);
 cancelTagModalBtn.addEventListener("click", fecharModalTag);
 
