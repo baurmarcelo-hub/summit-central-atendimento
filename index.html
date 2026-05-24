@@ -8274,6 +8274,54 @@ function abrirPainelTags() {
 
 }
 
+async function salvarObservacaoModal() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Selecione uma conversa.");
+    return;
+  }
+
+  const texto = noteModalText.value.trim();
+
+  if (!texto) {
+    alert("Digite a observação.");
+    noteModalText.focus();
+    return;
+  }
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+
+  const payload = {
+    cliente_id: conversation.clienteId,
+    conversa_id: conversation.id,
+    usuario_id: userData?.user?.id || null,
+    autor_nome: usuarioLogadoNome || "Usuário",
+    observacao: texto
+  };
+
+  saveNoteModalBtn.disabled = true;
+  saveNoteModalBtn.textContent = "Salvando...";
+
+  const { error } = await supabaseClient
+    .from("cliente_observacoes")
+    .insert([payload]);
+
+  saveNoteModalBtn.disabled = false;
+  saveNoteModalBtn.textContent = "Salvar observação";
+
+  if (error) {
+    console.error("Erro ao salvar observação:", error);
+    alert("Erro ao salvar observação.");
+    return;
+  }
+
+  noteModal.classList.remove("open");
+  noteModalText.value = "";
+
+  alert("Observação salva com sucesso.");
+}
+
 async function carregarTagsDaConversa() {
   const conversation = getSelectedConversation();
 
@@ -8652,6 +8700,11 @@ closeNoteModalBtn.addEventListener("click", () => {
 cancelNoteModalBtn.addEventListener("click", () => {
   noteModal.classList.remove("open");
 });
+
+saveNoteModalBtn.addEventListener(
+  "click",
+  salvarObservacaoModal
+);
 
 closeTagModalBtn.addEventListener("click", fecharModalTag);
 cancelTagModalBtn.addEventListener("click", fecharModalTag);
