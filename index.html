@@ -2766,12 +2766,21 @@ line-height: 1.15;
   background: #f8fafc;
   border-left: 1px solid #e2e8f0;
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden;
+  height: 100vh;
+  min-height: 0;
 }
 
 .app.details-open .details-panel {
   display: flex;
   flex-direction: column;
+}
+
+.details-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 24px;
 }
 
 .details-header {
@@ -3620,6 +3629,8 @@ line-height: 1.15;
     />
   </div>
 
+<div class="details-scroll-area">
+
   <div class="details-section client-compact-card">
     <div class="client-compact-header">
       <div class="client-avatar" id="detailAvatar">C</div>
@@ -3755,6 +3766,8 @@ line-height: 1.15;
   </span>
 </div>
   </div>
+
+</div>
 
   </aside>
   </div>
