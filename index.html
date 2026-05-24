@@ -8839,19 +8839,19 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
         <div class="kanban-actions">
           ${
             statusAtual !== "pendente"
-              ? `<button type="button" onclick="alterarStatusTarefa(${tarefa.id}, 'pendente')">Pendente</button>`
+              ? `<button type="button" onclick="event.stopPropagation(); alterarStatusTarefa(${tarefa.id}, 'pendente')">Pendente</button>`
               : ""
           }
 
           ${
             statusAtual !== "em_andamento"
-              ? `<button type="button" onclick="alterarStatusTarefa(${tarefa.id}, 'em_andamento')">Em andamento</button>`
+              ? `<button type="button" onclick="event.stopPropagation(); alterarStatusTarefa(${tarefa.id}, 'em_andamento')">Em andamento</button>`
               : ""
           }
 
           ${
             statusAtual !== "concluida"
-              ? `<button type="button" onclick="alterarStatusTarefa(${tarefa.id}, 'concluida')">Concluir</button>`
+              ? `<button type="button" onclick="event.stopPropagation(); alterarStatusTarefa(${tarefa.id}, 'concluida')">Concluir</button>`
               : ""
           }
         </div>
