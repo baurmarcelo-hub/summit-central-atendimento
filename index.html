@@ -3694,13 +3694,17 @@ line-height: 1.15;
         </span>
       </button>
 
-      <button type="button" class="quick-action-btn">
-        📝
-        <span>
-          <strong>Nova observação</strong>
-          <small>Adicionar registro</small>
-        </span>
-      </button>
+      <button
+  type="button"
+  class="quick-action-btn"
+  id="newNoteBtn"
+>
+  📝
+  <span>
+    <strong>Nova observação</strong>
+    <small>Adicionar registro</small>
+  </span>
+</button>
     </div>
   </div>
 
@@ -3860,6 +3864,50 @@ line-height: 1.15;
         id="saveUserModalBtn"
       >
         Salvar alterações
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="tag-modal" id="noteModal">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <h3>Nova observação</h3>
+
+      <button
+        type="button"
+        class="tag-modal-close"
+        id="closeNoteModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="tag-modal-body">
+      <div class="tag-field">
+        <label>Observação</label>
+        <textarea
+          id="noteModalText"
+          placeholder="Digite a observação interna sobre este atendimento..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="tag-modal-footer">
+      <button
+        type="button"
+        class="tag-cancel-btn"
+        id="cancelNoteModalBtn"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="tag-save-btn"
+        id="saveNoteModalBtn"
+      >
+        Salvar observação
       </button>
     </div>
   </div>
@@ -4440,6 +4488,24 @@ const importClientsInput =
 
 const exportClientsBtn =
   document.getElementById("exportClientsBtn");
+
+const noteModal =
+  document.getElementById("noteModal");
+
+const closeNoteModalBtn =
+  document.getElementById("closeNoteModalBtn");
+
+const cancelNoteModalBtn =
+  document.getElementById("cancelNoteModalBtn");
+
+const saveNoteModalBtn =
+  document.getElementById("saveNoteModalBtn");
+
+const noteModalText =
+  document.getElementById("noteModalText");
+
+const newNoteBtn =
+  document.getElementById("newNoteBtn");
 
 const applyTagBtn =
   document.getElementById("applyTagBtn");
@@ -8559,6 +8625,16 @@ applyTagBtn?.addEventListener("click", () => {
   abrirModalAplicarTag();
 });
 
+newNoteBtn?.addEventListener("click", () => {
+  noteModal.classList.add("open");
+
+  noteModalText.value = "";
+
+  setTimeout(() => {
+    noteModalText.focus();
+  }, 100);
+});
+
 closeApplyTagModalBtn.addEventListener("click", () => {
   applyTagModal.classList.remove("open");
 });
@@ -8566,6 +8642,20 @@ closeApplyTagModalBtn.addEventListener("click", () => {
 applyTagModal.addEventListener("click", event => {
   if (event.target === applyTagModal) {
     applyTagModal.classList.remove("open");
+  }
+});
+
+closeNoteModalBtn.addEventListener("click", () => {
+  noteModal.classList.remove("open");
+});
+
+cancelNoteModalBtn.addEventListener("click", () => {
+  noteModal.classList.remove("open");
+});
+
+noteModal.addEventListener("click", event => {
+  if (event.target === noteModal) {
+    noteModal.classList.remove("open");
   }
 });
 
