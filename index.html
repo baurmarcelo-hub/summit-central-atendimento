@@ -5207,6 +5207,7 @@ if (!conversation) {
     conversation.atendente || "Não atribuído";
 
 carregarTagsDaConversa();
+carregarObservacoesDaConversa();
 
 acceptBtn.classList.add("hidden");
 topFinishBtn.classList.add("hidden");
@@ -8307,10 +8308,81 @@ async function salvarObservacaoModal() {
     return;
   }
 
-  noteModal.classList.remove("open");
-  noteModalText.value = "";
+noteModal.classList.remove("open");
+noteModalText.value = "";
 
-  alert("Observação salva com sucesso.");
+await carregarObservacoesDaConversa();
+
+alert("Observação salva com sucesso.");
+
+async function carregarObservacoesDaConversa() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    conversationNotesList.innerHTML = `
+      <div style="font-size:12px;color:#667085;">
+        Nenhuma conversa selecionada.
+      </div>
+    `;
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("cliente_observacoes")
+    .select("*")
+    .eq("cliente_id", conversation.clienteId)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error("Erro ao carregar observações:", error);
+
+    conversationNotesList.innerHTML = `
+      <div style="font-size:12px;color:#dc2626;">
+        Erro ao carregar observações.
+      </div>
+    `;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    conversationNotesList.innerHTML = `
+      <div style="font-size:12px;color:#667085;">
+        Nenhuma observação registrada.
+      </div>
+    `;
+    return;
+  }
+
+  conversationNotesList.innerHTML = data.map(obs => {
+    const autor =
+      obs.autor_nome || "Usuário";
+
+    const iniciais = autor
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(nome => nome.charAt(0).toUpperCase())
+      .join("");
+
+    const dataHora = obs.created_at
+      ? new Date(obs.created_at).toLocaleString("pt-BR")
+      : "";
+
+    return `
+      <div class="internal-note">
+        <div class="note-avatar">
+          ${iniciais || "U"}
+        </div>
+
+        <div>
+          <strong>${autor}</strong>
+          <p>${obs.observacao || ""}</p>
+          <small>${dataHora}</small>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 async function carregarTagsDaConversa() {
