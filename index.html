@@ -8769,6 +8769,64 @@ function abrirModalNovaTag() {
   }, 100);
 }
 
+async function salvarTarefaModal() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Selecione uma conversa.");
+    return;
+  }
+
+  const titulo = taskModalTitle.value.trim();
+  const descricao = taskModalDescription.value.trim();
+  const responsavel = taskModalResponsible.value;
+  const prioridade = taskModalPriority.value;
+  const prazo = taskModalDeadline.value;
+
+  if (!titulo) {
+    alert("Informe o título da tarefa.");
+    taskModalTitle.focus();
+    return;
+  }
+
+  const payload = {
+    cliente_id: conversation.clienteId,
+    conversa_id: conversation.id,
+    titulo: titulo,
+    descricao: descricao || null,
+    responsavel_nome: responsavel || null,
+    prioridade: prioridade,
+    status: "pendente",
+    prazo: prazo ? new Date(prazo).toISOString() : null,
+    criado_por_nome: usuarioLogadoNome || "Usuário"
+  };
+
+  saveTaskModalBtn.disabled = true;
+  saveTaskModalBtn.textContent = "Salvando...";
+
+  const { error } = await supabaseClient
+    .from("tarefas")
+    .insert([payload]);
+
+  saveTaskModalBtn.disabled = false;
+  saveTaskModalBtn.textContent = "Salvar tarefa";
+
+  if (error) {
+    console.error("Erro ao salvar tarefa:", error);
+
+    alert(
+      "Erro ao salvar tarefa.\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+
+    return;
+  }
+
+  fecharModalTarefa();
+
+  alert("Tarefa criada com sucesso.");
+}
+
 function abrirModalEditarTag(tag) {
   tagModalId.value = tag.id;
   tagModalTitle.textContent = "Editar TAG";
@@ -8931,6 +8989,8 @@ newTaskBtn?.addEventListener("click", abrirModalNovaTarefa);
 closeTaskModalBtn?.addEventListener("click", fecharModalTarefa);
 
 cancelTaskModalBtn?.addEventListener("click", fecharModalTarefa);
+
+saveTaskModalBtn?.addEventListener("click", salvarTarefaModal);
 
 closeApplyTagModalBtn.addEventListener("click", () => {
   applyTagModal.classList.remove("open");
