@@ -8114,7 +8114,9 @@ async function carregarPerfilUsuario(user) {
 
   await carregarClientes();
 
-  await carregarEquipe();
+await carregarEquipe();
+
+iniciarRealtimeTarefas();
 
 }, 150);
     }
@@ -8132,6 +8134,38 @@ async function carregarPerfilUsuario(user) {
       loginPassword.value = "";
     }
 
+function iniciarRealtimeTarefas() {
+  supabaseClient
+    .channel("tarefas-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "tarefas"
+      },
+      async payload => {
+        console.log("Atualização em tarefas:", payload);
+
+        if (!app || app.style.display === "none") {
+          return;
+        }
+
+        if (
+          tasksPanel &&
+          !tasksPanel.classList.contains("hidden")
+        ) {
+          await carregarKanbanTarefas();
+        }
+
+        if (selectedConversationId) {
+          await carregarTarefasDaConversa();
+        }
+      }
+    )
+    .subscribe();
+}
+
     async function verificarSessao() {
       const { data, error } = await supabaseClient.auth.getSession();
 
@@ -8148,6 +8182,8 @@ async function carregarPerfilUsuario(user) {
 
         await carregarClientes();
 	await carregarEquipe();
+
+	iniciarRealtimeTarefas();
       } else {
         app.style.display = "none";
         loginScreen.style.display = "flex";
