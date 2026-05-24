@@ -3692,13 +3692,17 @@ line-height: 1.15;
   </span>
 </button>
 
-      <button type="button" class="quick-action-btn">
-        📋
-        <span>
-          <strong>Criar tarefa</strong>
-          <small>Gerar nova tarefa</small>
-        </span>
-      </button>
+      <button
+  type="button"
+  class="quick-action-btn"
+  id="newTaskBtn"
+>
+  📋
+  <span>
+    <strong>Criar tarefa</strong>
+    <small>Gerar nova tarefa</small>
+  </span>
+</button>
 
       <button
   type="button"
@@ -3902,6 +3906,84 @@ line-height: 1.15;
         id="saveNoteModalBtn"
       >
         Salvar observação
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="tag-modal" id="taskModal">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <h3>Nova tarefa</h3>
+
+      <button
+        type="button"
+        class="tag-modal-close"
+        id="closeTaskModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="tag-modal-body">
+      <div class="tag-field">
+        <label>Título</label>
+        <input
+          id="taskModalTitle"
+          type="text"
+          placeholder="Ex.: Retornar cliente sobre proposta"
+        />
+      </div>
+
+      <div class="tag-field">
+        <label>Descrição</label>
+        <textarea
+          id="taskModalDescription"
+          placeholder="Descreva o que precisa ser feito"
+        ></textarea>
+      </div>
+
+      <div class="tag-field">
+        <label>Responsável</label>
+        <select id="taskModalResponsible">
+          <option value="">Selecione um responsável</option>
+        </select>
+      </div>
+
+      <div class="tag-field">
+        <label>Prioridade</label>
+        <select id="taskModalPriority">
+          <option value="baixa">Baixa</option>
+          <option value="media" selected>Média</option>
+          <option value="alta">Alta</option>
+          <option value="critica">Crítica</option>
+        </select>
+      </div>
+
+      <div class="tag-field">
+        <label>Prazo</label>
+        <input
+          id="taskModalDeadline"
+          type="datetime-local"
+        />
+      </div>
+    </div>
+
+    <div class="tag-modal-footer">
+      <button
+        type="button"
+        class="tag-cancel-btn"
+        id="cancelTaskModalBtn"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="tag-save-btn"
+        id="saveTaskModalBtn"
+      >
+        Salvar tarefa
       </button>
     </div>
   </div>
@@ -4499,6 +4581,36 @@ const noteModalText =
 
 const newNoteBtn =
   document.getElementById("newNoteBtn");
+
+const newTaskBtn =
+  document.getElementById("newTaskBtn");
+
+const taskModal =
+  document.getElementById("taskModal");
+
+const closeTaskModalBtn =
+  document.getElementById("closeTaskModalBtn");
+
+const cancelTaskModalBtn =
+  document.getElementById("cancelTaskModalBtn");
+
+const saveTaskModalBtn =
+  document.getElementById("saveTaskModalBtn");
+
+const taskModalTitle =
+  document.getElementById("taskModalTitle");
+
+const taskModalDescription =
+  document.getElementById("taskModalDescription");
+
+const taskModalResponsible =
+  document.getElementById("taskModalResponsible");
+
+const taskModalPriority =
+  document.getElementById("taskModalPriority");
+
+const taskModalDeadline =
+  document.getElementById("taskModalDeadline");
 
 const applyTagBtn =
   document.getElementById("applyTagBtn");
@@ -8574,6 +8686,68 @@ alert("TAG aplicada com sucesso.");
 await carregarClientes();
 }
 
+async function carregarResponsaveisTarefa() {
+  const { data, error } = await supabaseClient
+    .from("usuarios_perfis")
+    .select("nome, sobrenome, email, ativo")
+    .eq("ativo", true)
+    .order("nome", { ascending: true });
+
+  if (error) {
+    console.error("Erro ao carregar responsáveis:", error);
+    return;
+  }
+
+  taskModalResponsible.innerHTML = `
+    <option value="">Selecione um responsável</option>
+  `;
+
+  (data || []).forEach(usuario => {
+    const nomeCompleto =
+      `${usuario.nome || ""} ${usuario.sobrenome || ""}`.trim();
+
+    const responsavel =
+      nomeCompleto || usuario.email || "Usuário";
+
+    taskModalResponsible.innerHTML += `
+      <option value="${responsavel}">
+        ${responsavel}
+      </option>
+    `;
+  });
+}
+
+async function abrirModalNovaTarefa() {
+  if (!selectedConversationId) {
+    alert("Selecione uma conversa.");
+    return;
+  }
+
+  taskModalTitle.value = "";
+  taskModalDescription.value = "";
+  taskModalResponsible.value = "";
+  taskModalPriority.value = "media";
+  taskModalDeadline.value = "";
+
+  await carregarResponsaveisTarefa();
+
+  taskModal.classList.add("open");
+
+  setTimeout(() => {
+    taskModalTitle.focus();
+  }, 100);
+}
+
+function fecharModalTarefa() {
+  taskModal.classList.remove("open");
+
+  taskModalTitle.value = "";
+  taskModalDescription.value = "";
+  taskModalResponsible.value = "";
+  taskModalPriority.value = "media";
+  taskModalDeadline.value = "";
+}
+
 function abrirModalNovaTag() {
   tagModalId.value = "";
   tagModalTitle.textContent = "Adicionar TAG";
@@ -8751,6 +8925,12 @@ newNoteBtn?.addEventListener("click", () => {
     noteModalText.focus();
   }, 100);
 });
+
+newTaskBtn?.addEventListener("click", abrirModalNovaTarefa);
+
+closeTaskModalBtn?.addEventListener("click", fecharModalTarefa);
+
+cancelTaskModalBtn?.addEventListener("click", fecharModalTarefa);
 
 closeApplyTagModalBtn.addEventListener("click", () => {
   applyTagModal.classList.remove("open");
