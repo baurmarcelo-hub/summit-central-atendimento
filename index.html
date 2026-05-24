@@ -8728,6 +8728,15 @@ cancelTaskDetailsBtn?.addEventListener(
   fecharTaskDetailsModal
 );
 
+saveTaskDetailsBtn?.addEventListener(
+  "click",
+  salvarAlteracoesTarefa
+);
+
+deleteTaskBtn?.addEventListener(
+  "click",
+  excluirTarefaAtual
+);
 
 function formatarDataKanban(dataIso) {
   if (!dataIso) return "Sem prazo";
@@ -9459,6 +9468,114 @@ async function abrirDetalhesTarefa(tarefaId) {
 
 function fecharTaskDetailsModal() {
   taskDetailsModal.classList.remove("open");
+}
+
+async function salvarAlteracoesTarefa() {
+  const tarefaId = taskDetailsId.value;
+
+  if (!tarefaId) {
+    alert("Tarefa inválida.");
+    return;
+  }
+
+  const payload = {
+    titulo: taskDetailsTitle.value.trim(),
+    descricao: taskDetailsDescription.value.trim(),
+    responsavel_nome:
+      taskDetailsResponsible.value || null,
+    prioridade:
+      taskDetailsPriority.value || "media",
+    status:
+      taskDetailsStatus.value || "pendente",
+    prazo:
+      taskDetailsDeadline.value
+        ? new Date(taskDetailsDeadline.value).toISOString()
+        : null,
+    updated_at: new Date().toISOString()
+  };
+
+  if (!payload.titulo) {
+    alert("Informe o título da tarefa.");
+    taskDetailsTitle.focus();
+    return;
+  }
+
+  saveTaskDetailsBtn.disabled = true;
+  saveTaskDetailsBtn.textContent = "Salvando...";
+
+  const { error } = await supabaseClient
+    .from("tarefas")
+    .update(payload)
+    .eq("id", tarefaId);
+
+  saveTaskDetailsBtn.disabled = false;
+  saveTaskDetailsBtn.textContent =
+    "Salvar alterações";
+
+  if (error) {
+    console.error(
+      "Erro ao salvar tarefa:",
+      error
+    );
+
+    alert("Erro ao salvar tarefa.");
+
+    return;
+  }
+
+  fecharTaskDetailsModal();
+
+  await carregarKanbanTarefas();
+
+  await carregarTarefasDaConversa();
+
+  alert("Tarefa atualizada com sucesso.");
+}
+
+async function excluirTarefaAtual() {
+  const tarefaId = taskDetailsId.value;
+
+  if (!tarefaId) {
+    return;
+  }
+
+  const confirmar = confirm(
+    "Deseja realmente excluir esta tarefa?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  deleteTaskBtn.disabled = true;
+  deleteTaskBtn.textContent = "Excluindo...";
+
+  const { error } = await supabaseClient
+    .from("tarefas")
+    .delete()
+    .eq("id", tarefaId);
+
+  deleteTaskBtn.disabled = false;
+  deleteTaskBtn.textContent = "Excluir";
+
+  if (error) {
+    console.error(
+      "Erro ao excluir tarefa:",
+      error
+    );
+
+    alert("Erro ao excluir tarefa.");
+
+    return;
+  }
+
+  fecharTaskDetailsModal();
+
+  await carregarKanbanTarefas();
+
+  await carregarTarefasDaConversa();
+
+  alert("Tarefa excluída com sucesso.");
 }
 
 function abrirModalNovaTag() {
