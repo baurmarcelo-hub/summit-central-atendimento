@@ -4927,6 +4927,42 @@ const taskModalPriority =
 const taskModalDeadline =
   document.getElementById("taskModalDeadline");
 
+const taskDetailsModal =
+  document.getElementById("taskDetailsModal");
+
+const closeTaskDetailsModalBtn =
+  document.getElementById("closeTaskDetailsModalBtn");
+
+const cancelTaskDetailsBtn =
+  document.getElementById("cancelTaskDetailsBtn");
+
+const saveTaskDetailsBtn =
+  document.getElementById("saveTaskDetailsBtn");
+
+const deleteTaskBtn =
+  document.getElementById("deleteTaskBtn");
+
+const taskDetailsId =
+  document.getElementById("taskDetailsId");
+
+const taskDetailsTitle =
+  document.getElementById("taskDetailsTitle");
+
+const taskDetailsDescription =
+  document.getElementById("taskDetailsDescription");
+
+const taskDetailsResponsible =
+  document.getElementById("taskDetailsResponsible");
+
+const taskDetailsPriority =
+  document.getElementById("taskDetailsPriority");
+
+const taskDetailsStatus =
+  document.getElementById("taskDetailsStatus");
+
+const taskDetailsDeadline =
+  document.getElementById("taskDetailsDeadline");
+
 const applyTagBtn =
   document.getElementById("applyTagBtn");
 
@@ -8682,6 +8718,16 @@ teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 tasksMenuItem.addEventListener("click", abrirPainelTarefas);
+closeTaskDetailsModalBtn?.addEventListener(
+  "click",
+  fecharTaskDetailsModal
+);
+
+cancelTaskDetailsBtn?.addEventListener(
+  "click",
+  fecharTaskDetailsModal
+);
+
 
 function formatarDataKanban(dataIso) {
   if (!dataIso) return "Sem prazo";
@@ -8721,7 +8767,10 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
       tarefa.clientes?.nome || "Cliente não informado";
 
     return `
-      <div class="kanban-card">
+      <div
+  class="kanban-card"
+  onclick="abrirDetalhesTarefa(${tarefa.id})"
+>
         <div class="kanban-card-top">
           <span class="kanban-card-code">
             #T-${String(tarefa.id).padStart(6, "0")}
@@ -9315,6 +9364,101 @@ function fecharModalTarefa() {
   taskModalResponsible.value = "";
   taskModalPriority.value = "media";
   taskModalDeadline.value = "";
+}
+
+async function carregarResponsaveisTaskDetails() {
+  const { data, error } = await supabaseClient
+    .from("usuarios_perfis")
+    .select("nome, sobrenome, email, ativo")
+    .eq("ativo", true)
+    .order("nome", { ascending: true });
+
+  if (error) {
+    console.error(
+      "Erro ao carregar responsáveis:",
+      error
+    );
+
+    return;
+  }
+
+  taskDetailsResponsible.innerHTML = `
+    <option value="">Selecione um responsável</option>
+  `;
+
+  (data || []).forEach(usuario => {
+    const nomeCompleto =
+      `${usuario.nome || ""} ${usuario.sobrenome || ""}`.trim();
+
+    const responsavel =
+      nomeCompleto || usuario.email || "Usuário";
+
+    taskDetailsResponsible.innerHTML += `
+      <option value="${responsavel}">
+        ${responsavel}
+      </option>
+    `;
+  });
+}
+
+async function abrirDetalhesTarefa(tarefaId) {
+  const { data, error } = await supabaseClient
+    .from("tarefas")
+    .select("*")
+    .eq("id", tarefaId)
+    .single();
+
+  if (error || !data) {
+    console.error(
+      "Erro ao abrir detalhes da tarefa:",
+      error
+    );
+
+    alert("Erro ao carregar tarefa.");
+
+    return;
+  }
+
+  await carregarResponsaveisTaskDetails();
+
+  taskDetailsId.value = data.id || "";
+
+  taskDetailsTitle.value =
+    data.titulo || "";
+
+  taskDetailsDescription.value =
+    data.descricao || "";
+
+  taskDetailsResponsible.value =
+    data.responsavel_nome || "";
+
+  taskDetailsPriority.value =
+    data.prioridade || "media";
+
+  taskDetailsStatus.value =
+    data.status || "pendente";
+
+  if (data.prazo) {
+    const dataPrazo = new Date(data.prazo);
+
+    const localDate =
+      new Date(
+        dataPrazo.getTime() -
+        dataPrazo.getTimezoneOffset() * 60000
+      )
+      .toISOString()
+      .slice(0, 16);
+
+    taskDetailsDeadline.value = localDate;
+  } else {
+    taskDetailsDeadline.value = "";
+  }
+
+  taskDetailsModal.classList.add("open");
+}
+
+function fecharTaskDetailsModal() {
+  taskDetailsModal.classList.remove("open");
 }
 
 function abrirModalNovaTag() {
