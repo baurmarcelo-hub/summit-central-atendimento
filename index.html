@@ -3103,11 +3103,36 @@ line-height: 1.15;
   word-break: break-word;
 }
 
+.kanban-filterbar {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 0.8fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.kanban-filterbar input,
+.kanban-filterbar select {
+  height: 44px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+}
+
+.kanban-filterbar input:focus,
+.kanban-filterbar select:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(3, minmax(260px, 1fr));
   gap: 18px;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 178px);
   min-height: 0;
 }
 
@@ -3512,13 +3537,40 @@ line-height: 1.15;
   </div>
 </section>
 
+</section>
+
 <section class="team-page hidden" id="tasksPanel">
   <div class="team-topbar">
     <div class="team-title">
       <h2>Tarefas</h2>
-      <span>Acompanhe tarefas por status, responsável e prazo</span>
-    </div>
+    <span>Acompanhe tarefas por status, responsável e prazo</span>
   </div>
+</div>
+
+<div class="kanban-filterbar">
+  <input
+    id="kanbanSearchInput"
+    type="text"
+    placeholder="Buscar por tarefa, descrição, cliente ou responsável..."
+    autocomplete="off"
+  />
+
+  <select id="kanbanClientFilter">
+    <option value="todos">Todos os clientes</option>
+  </select>
+
+  <select id="kanbanResponsibleFilter">
+    <option value="todos">Todos responsáveis</option>
+  </select>
+
+  <select id="kanbanPriorityFilter">
+    <option value="todos">Todas prioridades</option>
+    <option value="baixa">Baixa</option>
+    <option value="media">Média</option>
+    <option value="alta">Alta</option>
+    <option value="critica">Crítica</option>
+  </select>
+</div>
 
   <div class="kanban-board">
     <div class="kanban-column">
@@ -4763,6 +4815,18 @@ const kanbanCountAndamento =
 
 const kanbanCountConcluida =
   document.getElementById("kanbanCountConcluida");
+
+const kanbanSearchInput =
+  document.getElementById("kanbanSearchInput");
+
+const kanbanClientFilter =
+  document.getElementById("kanbanClientFilter");
+
+const kanbanResponsibleFilter =
+  document.getElementById("kanbanResponsibleFilter");
+
+const kanbanPriorityFilter =
+  document.getElementById("kanbanPriorityFilter");
 
 const newTagBtn =
   document.getElementById("newTagBtn");
@@ -8802,6 +8866,25 @@ teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 tasksMenuItem.addEventListener("click", abrirPainelTarefas);
+kanbanSearchInput?.addEventListener(
+  "input",
+  carregarKanbanTarefas
+);
+
+kanbanClientFilter?.addEventListener(
+  "change",
+  carregarKanbanTarefas
+);
+
+kanbanResponsibleFilter?.addEventListener(
+  "change",
+  carregarKanbanTarefas
+);
+
+kanbanPriorityFilter?.addEventListener(
+  "change",
+  carregarKanbanTarefas
+);
 closeTaskDetailsModalBtn?.addEventListener(
   "click",
   fecharTaskDetailsModal
@@ -8821,6 +8904,118 @@ deleteTaskBtn?.addEventListener(
   "click",
   excluirTarefaAtual
 );
+
+function preencherFiltrosKanban(tarefas) {
+  if (
+    !kanbanClientFilter ||
+    !kanbanResponsibleFilter
+  ) {
+    return;
+  }
+
+  const clienteAtual =
+    kanbanClientFilter.value || "todos";
+
+  const responsavelAtual =
+    kanbanResponsibleFilter.value || "todos";
+
+  const clientes = [...new Set(
+    tarefas
+      .map(t => t.clientes?.nome)
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+  const responsaveis = [...new Set(
+    tarefas
+      .map(t => t.responsavel_nome)
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+  kanbanClientFilter.innerHTML = `
+    <option value="todos">Todos os clientes</option>
+    ${clientes.map(cliente => `
+      <option value="${cliente}">
+        ${cliente}
+      </option>
+    `).join("")}
+  `;
+
+  kanbanResponsibleFilter.innerHTML = `
+    <option value="todos">Todos responsáveis</option>
+    ${responsaveis.map(responsavel => `
+      <option value="${responsavel}">
+        ${responsavel}
+      </option>
+    `).join("")}
+  `;
+
+  kanbanClientFilter.value =
+    clientes.includes(clienteAtual)
+      ? clienteAtual
+      : "todos";
+
+  kanbanResponsibleFilter.value =
+    responsaveis.includes(responsavelAtual)
+      ? responsavelAtual
+      : "todos";
+}
+
+function filtrarTarefasKanban(tarefas) {
+  const termo =
+    kanbanSearchInput?.value.trim().toLowerCase() || "";
+
+  const clienteFiltro =
+    kanbanClientFilter?.value || "todos";
+
+  const responsavelFiltro =
+    kanbanResponsibleFilter?.value || "todos";
+
+  const prioridadeFiltro =
+    kanbanPriorityFilter?.value || "todos";
+
+  return tarefas.filter(tarefa => {
+    const titulo =
+      (tarefa.titulo || "").toLowerCase();
+
+    const descricao =
+      (tarefa.descricao || "").toLowerCase();
+
+    const cliente =
+      (tarefa.clientes?.nome || "").toLowerCase();
+
+    const responsavel =
+      (tarefa.responsavel_nome || "").toLowerCase();
+
+    const prioridade =
+      tarefa.prioridade || "media";
+
+    const matchBusca =
+      !termo ||
+      titulo.includes(termo) ||
+      descricao.includes(termo) ||
+      cliente.includes(termo) ||
+      responsavel.includes(termo);
+
+    const matchCliente =
+      clienteFiltro === "todos" ||
+      tarefa.clientes?.nome === clienteFiltro;
+
+    const matchResponsavel =
+      responsavelFiltro === "todos" ||
+      tarefa.responsavel_nome === responsavelFiltro;
+
+    const matchPrioridade =
+      prioridadeFiltro === "todos" ||
+      prioridade === prioridadeFiltro;
+
+    return (
+      matchBusca &&
+      matchCliente &&
+      matchResponsavel &&
+      matchPrioridade
+    );
+  });
+}
 
 function formatarDataKanban(dataIso) {
   if (!dataIso) return "Sem prazo";
@@ -8939,7 +9134,8 @@ async function carregarKanbanTarefas() {
         email
       )
     `)
-    .order("created_at", { ascending: false });
+    .order("updated_at", { ascending: false })
+.order("created_at", { ascending: false });
 
   if (error) {
     console.error("Erro ao carregar Kanban:", error);
@@ -8954,7 +9150,11 @@ async function carregarKanbanTarefas() {
     return;
   }
 
-  const tarefas = data || [];
+  const tarefasBase = data || [];
+
+preencherFiltrosKanban(tarefasBase);
+
+const tarefas = filtrarTarefasKanban(tarefasBase);
 
   const pendentes =
     tarefas.filter(t => (t.status || "pendente") === "pendente");
