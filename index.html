@@ -6227,27 +6227,7 @@ atualizarBarraSelecao();
         </button>
       </div>
     `
-    : message.media_mime?.startsWith("audio/")
-    ? `
-      <div class="media-image-box">
-        <img
-          src="${message.media_url}"
-          class="chat-image"
-          alt="${message.media_nome || "Imagem"}"
-          onclick="openImageModal('${message.media_url}', '${message.media_nome || "imagem"}')"
-        />
-
-        <button
-  type="button"
-  class="media-download-link"
-  title="Baixar imagem"
-  onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "imagem"}')"
->
-  ⬇ Baixar
-</button>
-      </div>
-    `
-    : message.media_mime?.startsWith("audio/") ||
+      : message.media_mime?.startsWith("audio/") ||
          message.media_nome?.toLowerCase().match(/\.(ogg|mp3|wav|webm|m4a)$/)
     ? `
       <audio
@@ -6257,7 +6237,7 @@ atualizarBarraSelecao();
       >
         <source
           src="${message.media_url}"
-          type="${message.media_mime}"
+          type="${message.media_mime || "audio/ogg"}"
         />
       </audio>
     `
