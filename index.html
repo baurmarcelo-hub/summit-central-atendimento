@@ -5845,9 +5845,10 @@ async function confirmarEncaminhamento(conversaDestinoId) {
   }
 
   const mensagensParaInserir = mensagensOriginais.map(mensagemOriginal => ({
-    conversa_id: conversaDestino.id,
-    conteudo: mensagemOriginal.text || "",
-    canal: conversaDestino.channel || "WhatsApp",
+  conversa_id: conversaDestino.id,
+  conteudo: mensagemOriginal.text || "",
+  autor_nome: null,
+  canal: conversaDestino.channel || "WhatsApp",
     direcao: "out",
     status_entrega: "enviada",
     tipo: mensagemOriginal.tipo || "texto",
@@ -6239,7 +6240,9 @@ atualizarBarraSelecao();
   : "";
 
 const autorMensagemHtml =
-  message.direction === "out" && message.text?.trim()
+  message.direction === "out" &&
+  message.text?.trim() &&
+  !message.media_url
     ? `
       <div class="message-author-name">
         ${message.autor_nome || "Atendente"}:
