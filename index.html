@@ -3737,23 +3737,11 @@ line-height: 1.15;
       <button type="button">Ver todas</button>
     </div>
 
-    <div class="task-mini-card">
-      <div>
-        <strong>#T-000123</strong>
-        <h4>Enviar proposta comercial final</h4>
-        <p>Prazo: 23/05/2025 • Responsável: Marcelo Baur</p>
-      </div>
-      <span>Em andamento</span>
-    </div>
-
-    <div class="task-mini-card">
-      <div>
-        <strong>#T-000124</strong>
-        <h4>Acompanhar retorno do cliente</h4>
-        <p>Prazo: 26/05/2025 • Responsável: Ana Silva</p>
-      </div>
-      <span class="pending">Pendente</span>
-    </div>
+    <div id="conversationTasksList">
+  <div style="font-size:12px;color:#667085;">
+    Nenhuma tarefa em aberto.
+  </div>
+</div>
   </div>
 
   <div class="details-section">
@@ -4630,6 +4618,9 @@ const conversationTagsList =
 const conversationNotesList =
   document.getElementById("conversationNotesList");
 
+const conversationTasksList =
+  document.getElementById("conversationTasksList");
+
 const applyTagSearchInput =
   document.getElementById("applyTagSearchInput");
 
@@ -5325,6 +5316,7 @@ if (!conversation) {
 
 carregarTagsDaConversa();
 carregarObservacoesDaConversa();
+carregarTarefasDaConversa();
 
 acceptBtn.classList.add("hidden");
 topFinishBtn.classList.add("hidden");
@@ -8433,6 +8425,76 @@ await carregarObservacoesDaConversa();
 alert("Observação salva com sucesso.");
 }
 
+async function carregarTarefasDaConversa() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    conversationTasksList.innerHTML = `
+      <div style="font-size:12px;color:#667085;">
+        Nenhuma conversa selecionada.
+      </div>
+    `;
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("tarefas")
+    .select("*")
+    .eq("conversa_id", conversation.id)
+    .neq("status", "concluida")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error("Erro ao carregar tarefas:", error);
+
+    conversationTasksList.innerHTML = `
+      <div style="font-size:12px;color:#dc2626;">
+        Erro ao carregar tarefas.
+      </div>
+    `;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    conversationTasksList.innerHTML = `
+      <div style="font-size:12px;color:#667085;">
+        Nenhuma tarefa em aberto.
+      </div>
+    `;
+    return;
+  }
+
+  conversationTasksList.innerHTML = data.map(tarefa => {
+    const prazo = tarefa.prazo
+      ? new Date(tarefa.prazo).toLocaleString("pt-BR")
+      : "Sem prazo";
+
+    const responsavel =
+      tarefa.responsavel_nome || "Sem responsável";
+
+    const statusTexto =
+      (tarefa.status || "pendente").replace("_", " ");
+
+    const statusClass =
+      tarefa.status === "pendente" ? "pending" : "";
+
+    return `
+      <div class="task-mini-card">
+        <div>
+          <strong>#T-${String(tarefa.id).padStart(6, "0")}</strong>
+          <h4>${tarefa.titulo || "Tarefa sem título"}</h4>
+          <p>Prazo: ${prazo} • Responsável: ${responsavel}</p>
+        </div>
+
+        <span class="${statusClass}">
+          ${statusTexto}
+        </span>
+      </div>
+    `;
+  }).join("");
+}
+
 async function carregarObservacoesDaConversa() {
   const conversation = getSelectedConversation();
 
@@ -8824,7 +8886,9 @@ async function salvarTarefaModal() {
 
   fecharModalTarefa();
 
-  alert("Tarefa criada com sucesso.");
+await carregarTarefasDaConversa();
+
+alert("Tarefa criada com sucesso.");
 }
 
 function abrirModalEditarTag(tag) {
