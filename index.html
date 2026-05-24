@@ -3552,7 +3552,6 @@ line-height: 1.15;
 
     <div id="teamList"></div>
   </div>
-</section>
 
 </section>
 
@@ -8910,20 +8909,6 @@ kanbanPriorityFilter?.addEventListener("change", async () => {
   await carregarKanbanTarefas();
 });
 
-kanbanClientFilter?.addEventListener(
-  "change",
-  carregarKanbanTarefas
-);
-
-kanbanResponsibleFilter?.addEventListener(
-  "change",
-  carregarKanbanTarefas
-);
-
-kanbanPriorityFilter?.addEventListener(
-  "change",
-  carregarKanbanTarefas
-);
 closeTaskDetailsModalBtn?.addEventListener(
   "click",
   fecharTaskDetailsModal
@@ -9366,6 +9351,7 @@ function abrirPainelTags() {
   clientPanel.classList.add("hidden");
   teamPanel.classList.add("hidden");
   tagsPanel.classList.remove("hidden");
+  tasksPanel.classList.add("hidden");
 
   sidebarClientsBtn.classList.remove("active");
   sidebarTeamBtn.classList.remove("active");
