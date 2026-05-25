@@ -8302,15 +8302,26 @@ async function carregarTags() {
         }
 
         const confirmar = confirm(
-          `Deseja excluir a TAG "${tag.nome || "sem nome"}"?`
+          `Deseja excluir a TAG "${tag.nome || "sem nome"}"?``
         );
 
         if (!confirmar) return;
 
-        const { error } = await supabaseClient
-          .from("tags")
-          .delete()
-          .eq("id", tagId);
+        const { error: vinculoError } = await supabaseClient
+  .from("conversa_tags")
+  .delete()
+  .eq("tag_id", tagId);
+
+if (vinculoError) {
+  console.error("Erro ao remover vínculos da TAG:", vinculoError);
+  alert("Erro ao remover vínculos da TAG.");
+  return;
+}
+
+const { error } = await supabaseClient
+  .from("tags")
+  .delete()
+  .eq("id", tagId);
 
         if (error) {
           console.error("Erro ao excluir TAG:", error);
