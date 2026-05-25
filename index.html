@@ -773,17 +773,27 @@ line-height: 1.15;
 .composer-main {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  position: relative;
 }
 
 .attachment-tray {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 62px;
+
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding: 2px 0 4px;
+
+  padding: 8px;
   max-width: 100%;
+
+  background: #ffffff;
+  border: 1px solid #e5eaf1;
+  border-radius: 16px;
+
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.10);
 }
 
 .attachment-preview-card {
@@ -9178,11 +9188,6 @@ function setDroppedFile(file) {
     sendBtn.addEventListener("click", sendMessage);
     cancelReplyBtn.addEventListener("click", cancelarReply);
 
-input.addEventListener(
-  "input",
-  atualizarEstadoBotaoEnviar
-);
-
 fileInput.addEventListener("change", () => {
   const files = Array.from(fileInput.files || []);
 
@@ -11125,10 +11130,17 @@ document.addEventListener("keydown", (event) => {
     });
 
     input.addEventListener("keydown", event => {
-      if (event.key === "Enter") sendMessage();
-    });
+  if (event.key === "Enter") sendMessage();
+});
 
-input.addEventListener("input", mostrarDigitando);
+attachBtn.addEventListener("click", () => {
+  fileInput.click();
+});
+
+input.addEventListener("input", () => {
+  mostrarDigitando();
+  atualizarEstadoBotaoEnviar();
+});
 messagesEl.addEventListener("scroll", async () => {
 
   const conversation = getSelectedConversation();
