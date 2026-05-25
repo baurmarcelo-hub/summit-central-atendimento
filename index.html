@@ -9397,6 +9397,7 @@ chatMenuItem.addEventListener("click", () => {
   tagsPanel.classList.add("hidden");
   tasksPanel.classList.add("hidden");
   connectionsPanel.classList.add("hidden");
+  whatsappConnectionsPanel.classList.add("hidden");
   sidebarConnectionsBtn.classList.remove("active");
   tasksMenuItem.classList.remove("active");
   sidebarTagsBtn.classList.remove("active");
@@ -9480,6 +9481,14 @@ sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 
 sidebarConnectionsBtn.addEventListener("click", () => {
+  app.classList.add("settings-open");
+
+  chatMenuItem.classList.remove("active");
+  tasksMenuItem.classList.remove("active");
+  settingsMenuItem.classList.add("active");
+
+  settingsSubmenu.classList.remove("hidden");
+
   sidebarClientsBtn.classList.remove("active");
   sidebarTeamBtn.classList.remove("active");
   sidebarTagsBtn.classList.remove("active");
@@ -9489,16 +9498,29 @@ sidebarConnectionsBtn.addEventListener("click", () => {
   teamPanel.classList.add("hidden");
   tagsPanel.classList.add("hidden");
   tasksPanel.classList.add("hidden");
- whatsappConnectionsPanel.classList.add("hidden");
-
-  connectionsPanel.classList.remove("hidden");
+  whatsappConnectionsPanel.classList.add("hidden");
 
   mainConversationPanel.classList.add("hidden");
-  document.querySelector(".chat-area").classList.add("hidden");
+
+  document
+    .querySelector(".chat-area")
+    .classList.add("hidden");
+
+  connectionsPanel.classList.remove("hidden");
 });
 
 openWhatsappConnections.addEventListener("click", () => {
+  app.classList.add("settings-open");
+
+  mainConversationPanel.classList.add("hidden");
+  document.querySelector(".chat-area").classList.add("hidden");
+
+  clientPanel.classList.add("hidden");
+  teamPanel.classList.add("hidden");
+  tagsPanel.classList.add("hidden");
+  tasksPanel.classList.add("hidden");
   connectionsPanel.classList.add("hidden");
+
   whatsappConnectionsPanel.classList.remove("hidden");
 });
 
