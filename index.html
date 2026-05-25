@@ -862,6 +862,27 @@ line-height: 1.15;
   padding: 0;
 }
 
+.attachment-clear-all {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: #dbe3ef;
+  color: #111827;
+
+  cursor: pointer;
+
+  font-size: 14px;
+  font-weight: 900;
+
+  align-self: center;
+
+  margin-right: 4px;
+}
+
    .send-btn {
   width: 54px;
   height: 52px;
@@ -7363,7 +7384,16 @@ function renderAttachmentTray() {
 
   attachmentTray.classList.remove("hidden");
 
-  attachmentTray.innerHTML = selectedFiles.map((file, index) => {
+ attachmentTray.innerHTML = `
+  <button
+    type="button"
+    class="attachment-clear-all"
+    id="clearAllAttachmentsBtn"
+  >
+    ×
+  </button>
+
+  ${selectedFiles.map((file, index) => {
     const tamanhoKb = Math.round(file.size / 1024);
 
     const icone = file.type.startsWith("image/")
@@ -7397,20 +7427,33 @@ function renderAttachmentTray() {
         </button>
       </div>
     `;
-  }).join("");
+  }).join("")}
+`;
 
   document
-    .querySelectorAll(".attachment-remove-btn")
-    .forEach(btn => {
-      btn.addEventListener("click", () => {
-        const index = Number(btn.dataset.fileIndex);
+  .querySelectorAll(".attachment-remove-btn")
+  .forEach(btn => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.fileIndex);
 
-        selectedFiles.splice(index, 1);
+      selectedFiles.splice(index, 1);
 
-        renderAttachmentTray();
-        atualizarEstadoBotaoEnviar();
-      });
+      renderAttachmentTray();
+      atualizarEstadoBotaoEnviar();
     });
+  });
+
+const clearAllBtn =
+  document.getElementById("clearAllAttachmentsBtn");
+
+if (clearAllBtn) {
+  clearAllBtn.addEventListener("click", () => {
+    selectedFiles = [];
+
+    renderAttachmentTray();
+    atualizarEstadoBotaoEnviar();
+  });
+}
 }
 
     async function sendMessage() {
