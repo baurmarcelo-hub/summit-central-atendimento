@@ -9601,15 +9601,56 @@ if (teamProfileFilter) {
   teamProfileFilter.addEventListener("change", carregarEquipe);
 }
 
-document.addEventListener("click", () => {
-  fecharMenusEquipe();
-  fecharMenusClientes();
+document.addEventListener("click", event => {
+  const whatsappMoreBtn =
+    event.target.closest(".whatsapp-more-btn");
 
-  document
-    .querySelectorAll(".message-action-menu.open")
-    .forEach(menu => {
-      menu.classList.remove("open");
-    });
+  if (whatsappMoreBtn) {
+    event.stopPropagation();
+
+    const whatsappId =
+      whatsappMoreBtn.dataset.whatsappId;
+
+    document
+      .querySelectorAll("[data-whatsapp-menu-id]")
+      .forEach(menu => {
+        if (menu.dataset.whatsappMenuId !== whatsappId) {
+          menu.classList.remove("open");
+        }
+      });
+
+    const menu = document.querySelector(
+      `[data-whatsapp-menu-id="${whatsappId}"]`
+    );
+
+    if (menu) {
+      menu.classList.toggle("open");
+    }
+
+    return;
+  }
+
+  if (!event.target.closest(".team-actions")) {
+    fecharMenusEquipe();
+
+    document
+      .querySelectorAll("[data-whatsapp-menu-id]")
+      .forEach(menu => {
+        menu.classList.remove("open");
+      });
+  }
+
+  if (!event.target.closest(".client-actions")) {
+    fecharMenusClientes();
+  }
+
+  if (!event.target.closest(".bubble")) {
+    document
+      .querySelectorAll(".message-action-menu.open")
+      .forEach(menu => {
+        menu.classList.remove("open");
+      });
+  }
 });
 
 closeUserModalBtn.addEventListener("click", fecharModalUsuario);
