@@ -8308,7 +8308,7 @@ async function carregarTags() {
         if (!confirmar) return;
 
         const { error: vinculoError } = await supabaseClient
-  .from("conversa_tags")
+  .from("conversa_tag_eventos")
   .delete()
   .eq("tag_id", tagId);
 
