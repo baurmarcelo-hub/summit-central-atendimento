@@ -5583,6 +5583,8 @@ const clientExtraInfo =
 let messagesToForward = [];
 let editingClientId = null;
 let clientModalMode = "edit";
+let editingWhatsappConnectionId = null;
+let whatsappConnectionsCache = [];
 
 function normalizarTelefoneBrasil(valor) {
   let telefone = String(valor || "").trim();
@@ -7382,6 +7384,8 @@ async function carregarConexoesWhatsApp() {
     return;
   }
 
+  whatsappConnectionsCache = data || [];
+
   if (!data || data.length === 0) {
     lista.innerHTML = `
       <div style="padding:18px;color:#667085;font-size:14px;">
@@ -7427,17 +7431,82 @@ async function carregarConexoesWhatsApp() {
           class="team-action-menu"
           data-whatsapp-menu-id="${conexao.id}"
         >
-          <button type="button">
+                    <button
+            type="button"
+            class="whatsapp-edit-btn"
+            data-whatsapp-id="${conexao.id}"
+          >
             ✏️ Editar
           </button>
 
-          <button type="button" class="danger">
+          <button
+            type="button"
+            class="whatsapp-delete-btn danger"
+            data-whatsapp-id="${conexao.id}"
+          >
             🗑 Excluir
           </button>
         </div>
       </div>
     </div>
   `).join("");
+}
+
+function abrirModalNovaConexaoWhatsApp() {
+  editingWhatsappConnectionId = null;
+
+  whatsappConnectionNome.value = "";
+  whatsappConnectionNumero.value = "";
+  whatsappConnectionIa.value = "false";
+
+  document
+    .querySelector("#whatsappConnectionModal .tag-modal-header h3")
+    .textContent = "Nova conexão WhatsApp";
+
+  saveWhatsappConnectionModalBtn.textContent = "Salvar conexão";
+
+  whatsappConnectionModal.classList.add("open");
+
+  setTimeout(() => {
+    whatsappConnectionNome.focus();
+  }, 100);
+}
+
+function abrirModalEditarConexaoWhatsApp(conexao) {
+  editingWhatsappConnectionId = conexao.id;
+
+  whatsappConnectionNome.value = conexao.nome || "";
+  whatsappConnectionNumero.value =
+    aplicarMascaraTelefoneInput(conexao.numero || "");
+  whatsappConnectionIa.value = conexao.ia_ativa ? "true" : "false";
+
+  document
+    .querySelector("#whatsappConnectionModal .tag-modal-header h3")
+    .textContent = "Editar conexão WhatsApp";
+
+  saveWhatsappConnectionModalBtn.textContent = "Salvar alterações";
+
+  whatsappConnectionModal.classList.add("open");
+
+  setTimeout(() => {
+    whatsappConnectionNome.focus();
+  }, 100);
+}
+
+function fecharModalConexaoWhatsApp() {
+  whatsappConnectionModal.classList.remove("open");
+
+  editingWhatsappConnectionId = null;
+
+  whatsappConnectionNome.value = "";
+  whatsappConnectionNumero.value = "";
+  whatsappConnectionIa.value = "false";
+
+  document
+    .querySelector("#whatsappConnectionModal .tag-modal-header h3")
+    .textContent = "Nova conexão WhatsApp";
+
+  saveWhatsappConnectionModalBtn.textContent = "Salvar conexão";
 }
 
 async function enviarMensagemWhatsApp(conversation, mensagem) {
