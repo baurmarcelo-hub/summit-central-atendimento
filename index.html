@@ -4945,7 +4945,7 @@ line-height: 1.15;
 
   <script>
     const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-          const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -6000,8 +6000,6 @@ async function confirmarTransferenciaConversa(novoAtendente) {
 
   fecharModalTransferencia();
 
-  alert("Conversa transferida com sucesso.");
-
   await carregarClientes();
 }
 
@@ -6162,12 +6160,7 @@ async function confirmarEncaminhamento(conversaDestinoId) {
 
   await carregarClientes();
 
-  alert(
-    mensagensOriginais.length === 1
-      ? "Mensagem encaminhada com sucesso."
-      : `${mensagensOriginais.length} mensagens encaminhadas com sucesso.`
-  );
-}
+  }
 
 function getExtensaoArquivo(nomeArquivo, mime) {
   if (nomeArquivo && nomeArquivo.includes(".")) {
@@ -7163,8 +7156,6 @@ render();
   return;
 }
 
-  alert("Conversa assumida com sucesso!");
-
   currentFilter = "em_atendimento";
 
   tabs.forEach(t => t.classList.remove("active"));
@@ -7186,9 +7177,6 @@ async function finalizarAtendimento() {
 
   const novoStatus = "aguardando";
 
-const mensagemSucesso =
-  "Conversa finalizada e devolvida para Conversas.";
-
 const novoFiltro = "aguardando";
 
   const { error } = await supabaseClient
@@ -7205,8 +7193,6 @@ const novoFiltro = "aguardando";
     alert("Erro ao atualizar atendimento.");
     return;
   }
-
-  alert(mensagemSucesso);
 
   currentFilter = novoFiltro;
 
@@ -10060,7 +10046,6 @@ noteModalText.value = "";
 
 await carregarObservacoesDaConversa();
 
-alert("Observação salva com sucesso.");
 }
 
 async function carregarTarefasDaConversa() {
