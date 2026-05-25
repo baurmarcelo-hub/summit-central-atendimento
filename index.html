@@ -4065,11 +4065,25 @@ line-height: 1.15;
   ></audio>
 </div>
 
-<input
-  id="messageInput"
-  type="text"
-  placeholder="Digite sua mensagem..."
-/>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+  <div
+    id="multiFilePreview"
+    style="
+      display:none;
+      gap:8px;
+      flex-wrap:wrap;
+      max-height:72px;
+      overflow-y:auto;
+    "
+  ></div>
+
+  <input
+    id="messageInput"
+    type="text"
+    placeholder="Digite sua mensagem..."
+  />
+</div>
+
 <button class="send-btn" id="sendBtn">➤</button>
 </footer>
 
@@ -5008,6 +5022,8 @@ let kanbanVisibleByStatus = {
     const audioPreviewPlayer =
       document.getElementById("audioPreviewPlayer");
     const fileInput = document.getElementById("fileInput");
+    const multiFilePreview =
+      document.getElementById("multiFilePreview");
     const chatArea = document.querySelector(".chat-area");
     const dropHint = document.getElementById("dropHint");
     const chatUser = document.querySelector(".chat-user");
@@ -7251,6 +7267,62 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
   };
 }
 
+function renderMultiFilePreview() {
+  const files = Array.from(fileInput.files || []);
+
+  if (!multiFilePreview) return;
+
+  if (files.length === 0) {
+    multiFilePreview.style.display = "none";
+    multiFilePreview.innerHTML = "";
+    return;
+  }
+
+  multiFilePreview.style.display = "flex";
+
+  multiFilePreview.innerHTML = files.map(file => {
+    const nome = file.name;
+    const tamanhoKb = Math.round(file.size / 1024);
+
+    const icone = file.type.startsWith("image/")
+      ? "🖼️"
+      : file.type.startsWith("video/")
+      ? "🎬"
+      : file.type.startsWith("audio/")
+      ? "🎙️"
+      : "📄";
+
+    return `
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:8px;
+          max-width:220px;
+          padding:8px 10px;
+          border:1px solid #dbe3ef;
+          border-radius:12px;
+          background:#f8fafc;
+          font-size:12px;
+          color:#344054;
+        "
+      >
+        <span>${icone}</span>
+
+        <div style="min-width:0;">
+          <div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${nome}
+          </div>
+
+          <div style="font-size:11px;color:#667085;">
+            ${tamanhoKb} KB
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
     async function sendMessage() {
 
   if (isSendingMessage) return;
@@ -7390,6 +7462,8 @@ audioPreviewPlayer.src = "";
 audioPreviewBox.style.display = "none";
 
 fileInput.value = "";
+
+renderMultiFilePreview();
 
 cancelarReply();
 
@@ -9110,6 +9184,7 @@ fileInput.addEventListener("change", () => {
   cancelAudioBtn.style.display = "none";
   audioBtn.style.display = "block";
 
+ renderMultiFilePreview();
   atualizarEstadoBotaoEnviar();
 });
 
