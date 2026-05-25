@@ -5062,8 +5062,8 @@ line-height: 1.15;
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_URL = "SUA CHAVE AQUI";
+    const SUPABASE_ANON_KEY = "SUA CHAVE AQUI";
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -7418,16 +7418,36 @@ async function carregarConexoesWhatsApp() {
           ${conexao.status || "desconectado"}
         </span>
       </div>
-            <div class="team-actions">
-        <button
-          class="team-more-btn whatsapp-more-btn"
-          title="Ações"
-          data-whatsapp-id="${conexao.id}"
-        >
-          ⋮
-        </button>
+                    <div class="team-actions">
+          <button
+            class="team-more-btn tag-more-btn"
+            title="Ações"
+            data-tag-id="${tag.id}"
+          >
+            ⋮
+          </button>
 
-        <div
+          <div
+            class="team-action-menu"
+            data-tag-menu-id="${tag.id}"
+          >
+            <button
+              type="button"
+              class="tag-edit-btn"
+              data-tag-id="${tag.id}"
+            >
+              ✏️ Editar TAG
+            </button>
+
+            <button
+              type="button"
+              class="tag-delete-btn danger"
+              data-tag-id="${tag.id}"
+            >
+              🗑 Excluir TAG
+            </button>
+          </div>
+        </div>
           class="team-action-menu"
           data-whatsapp-menu-id="${conexao.id}"
         >
@@ -8214,8 +8234,59 @@ async function carregarTags() {
     `;
   }).join("");
 
+    document
+    .querySelectorAll(".tag-more-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        const tagId = btn.dataset.tagId;
+
+        document
+          .querySelectorAll("[data-tag-menu-id]")
+          .forEach(menu => {
+            if (menu.dataset.tagMenuId !== tagId) {
+              menu.classList.remove("open");
+            }
+          });
+
+        const menu = document.querySelector(
+          `[data-tag-menu-id="${tagId}"]`
+        );
+
+        if (menu) {
+          menu.classList.toggle("open");
+        }
+      });
+    });
+
   document
     .querySelectorAll(".tag-edit-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", event => {
+        event.stopPropagation();
+
+        const tagId = Number(btn.dataset.tagId);
+
+        const tag = data.find(t => t.id === tagId);
+
+        if (!tag) {
+          alert("TAG não encontrada.");
+          return;
+        }
+
+        document
+          .querySelectorAll("[data-tag-menu-id]")
+          .forEach(menu => {
+            menu.classList.remove("open");
+          });
+
+        abrirModalEditarTag(tag);
+      });
+    });
+
+  document
+    .querySelectorAll(".tag-delete-btn")
     .forEach(btn => {
       btn.addEventListener("click", async event => {
         event.stopPropagation();
@@ -8229,7 +8300,26 @@ async function carregarTags() {
           return;
         }
 
-        abrirModalEditarTag(tag);
+        const confirmar = confirm(
+          `Deseja excluir a TAG "${tag.nome || "sem nome"}"?`
+        );
+
+        if (!confirmar) return;
+
+        const { error } = await supabaseClient
+          .from("tags")
+          .delete()
+          .eq("id", tagId);
+
+        if (error) {
+          console.error("Erro ao excluir TAG:", error);
+          alert(
+            "Erro ao excluir TAG. Verifique se ela não está vinculada a atendimentos."
+          );
+          return;
+        }
+
+        await carregarTags();
       });
     });
 }
