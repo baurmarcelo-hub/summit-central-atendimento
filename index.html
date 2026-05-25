@@ -9281,9 +9281,22 @@ forwardSelectedBtn.addEventListener("click", () => {
 });
 
 chatArea.addEventListener("drop", event => {
-  const file = event.dataTransfer.files[0];
+  const files = Array.from(event.dataTransfer.files || []);
 
-  setDroppedFile(file);
+  if (files.length === 0) return;
+
+  selectedFiles = [
+    ...selectedFiles,
+    ...files
+  ];
+
+  input.disabled = false;
+  input.style.display = "block";
+
+  cancelAudioBtn.style.display = "none";
+  audioBtn.style.display = "block";
+
+  renderAttachmentTray();
   atualizarEstadoBotaoEnviar();
 });
 
