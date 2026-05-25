@@ -721,7 +721,7 @@ line-height: 1.15;
 }
 
     .composer {
-      height: 86px;
+      min-height: 86px;
       flex-shrink: 0;
       border-top: 1px solid #edf0f5;
       padding: 14px 20px;
@@ -4065,7 +4065,15 @@ line-height: 1.15;
   ></audio>
 </div>
 
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+<div
+  style="
+    flex:1;
+    display:grid;
+    grid-template-rows:auto 52px;
+    gap:8px;
+    min-width:0;
+  "
+>
   <div
     id="multiFilePreview"
     style="
@@ -4074,6 +4082,7 @@ line-height: 1.15;
       flex-wrap:wrap;
       max-height:72px;
       overflow-y:auto;
+      min-width:0;
     "
   ></div>
 
@@ -4081,9 +4090,9 @@ line-height: 1.15;
     id="messageInput"
     type="text"
     placeholder="Digite sua mensagem..."
+    style="width:100%;"
   />
 </div>
-
 <button class="send-btn" id="sendBtn">➤</button>
 </footer>
 
