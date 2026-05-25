@@ -6102,7 +6102,7 @@ async function confirmarTransferenciaConversa(novoAtendente) {
   }
 
   const confirmar = confirm(
-  `Deseja excluir a TAG "${tag.nome || "sem nome"}"?`
+  `Deseja transferir esta conversa para ${novoAtendente}?`
 );
 
   if (!confirmar) return;
@@ -8302,8 +8302,8 @@ async function carregarTags() {
         }
 
         const confirmar = confirm(
-          `Deseja excluir a TAG "${tag.nome || "sem nome"}"?``
-        );
+  `Deseja excluir a TAG "${tag.nome || "sem nome"}"?`
+);
 
         if (!confirmar) return;
 
