@@ -7354,6 +7354,71 @@ async function uploadArquivo(file) {
   };
 }
 
+async function carregarConexoesWhatsApp() {
+  const lista = document.getElementById("whatsappConnectionsList");
+
+  if (!lista) return;
+
+  lista.innerHTML = `
+    <div style="padding:18px;color:#667085;font-size:14px;">
+      Carregando conexões...
+    </div>
+  `;
+
+  const { data, error } = await supabaseClient
+    .from("whatsapp_conexoes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erro ao carregar conexões WhatsApp:", error);
+
+    lista.innerHTML = `
+      <div style="padding:18px;color:#dc2626;font-size:14px;font-weight:700;">
+        Erro ao carregar conexões WhatsApp.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    lista.innerHTML = `
+      <div style="padding:18px;color:#667085;font-size:14px;">
+        Nenhuma conexão WhatsApp cadastrada.
+      </div>
+    `;
+
+    return;
+  }
+
+  lista.innerHTML = data.map(conexao => `
+    <div class="team-row">
+      <div class="team-name">${conexao.nome || "-"}</div>
+      <div class="team-email">${conexao.numero || "-"}</div>
+      <div>${conexao.ia_ativa ? "Ativa" : "Inativa"}</div>
+      <div class="team-email">
+        ${
+          conexao.ultima_atualizacao
+            ? new Date(conexao.ultima_atualizacao).toLocaleString("pt-BR")
+            : "-"
+        }
+      </div>
+      <div>${conexao.qr_code ? "Disponível" : "-"}</div>
+      <div>
+        <span class="status-badge ${
+          conexao.status === "conectado"
+            ? "status-finalizado"
+            : "status-aguardando"
+        }">
+          ${conexao.status || "desconectado"}
+        </span>
+      </div>
+      <div></div>
+    </div>
+  `).join("");
+}
+
 async function enviarMensagemWhatsApp(conversation, mensagem) {
   // Preparação futura para Evolution API.
   // Neste momento não envia nada para fora, apenas mantém o MVP funcionando.
@@ -9725,7 +9790,7 @@ sidebarConnectionsBtn.addEventListener("click", () => {
   connectionsPanel.classList.remove("hidden");
 });
 
-openWhatsappConnections.addEventListener("click", () => {
+openWhatsappConnections.addEventListener("click", async () => {
   app.classList.add("settings-open");
 
   mainConversationPanel.classList.add("hidden");
@@ -9738,6 +9803,8 @@ openWhatsappConnections.addEventListener("click", () => {
   connectionsPanel.classList.add("hidden");
 
   whatsappConnectionsPanel.classList.remove("hidden");
+
+  await carregarConexoesWhatsApp();
 });
 
 backToConnectionsBtn.addEventListener("click", () => {
@@ -9763,6 +9830,48 @@ closeWhatsappConnectionModalBtn.addEventListener("click", () => {
 
 cancelWhatsappConnectionModalBtn.addEventListener("click", () => {
   whatsappConnectionModal.classList.remove("open");
+});
+
+saveWhatsappConnectionModalBtn.addEventListener("click", async () => {
+  const nome = whatsappConnectionNome.value.trim();
+  const numero = normalizarTelefoneBrasil(whatsappConnectionNumero.value);
+  const iaAtiva = whatsappConnectionIa.value === "true";
+
+  if (!nome) {
+    alert("Informe o nome da conexão.");
+    whatsappConnectionNome.focus();
+    return;
+  }
+
+  saveWhatsappConnectionModalBtn.disabled = true;
+  saveWhatsappConnectionModalBtn.textContent = "Salvando...";
+
+  const { error } = await supabaseClient
+    .from("whatsapp_conexoes")
+    .insert([
+      {
+        nome,
+        numero,
+        ia_ativa: iaAtiva,
+        status: "desconectado",
+        ultima_atualizacao: new Date().toISOString()
+      }
+    ]);
+
+  saveWhatsappConnectionModalBtn.disabled = false;
+  saveWhatsappConnectionModalBtn.textContent = "Salvar conexão";
+
+  if (error) {
+    console.error("Erro ao salvar conexão WhatsApp:", error);
+    alert("Erro ao salvar conexão WhatsApp.");
+    return;
+  }
+
+  whatsappConnectionModal.classList.remove("open");
+
+  await carregarConexoesWhatsApp();
+
+  alert("Conexão WhatsApp cadastrada com sucesso.");
 });
 
 tasksMenuItem.addEventListener("click", abrirPainelTarefas);
