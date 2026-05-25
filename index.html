@@ -9966,17 +9966,6 @@ saveWhatsappConnectionModalBtn.addEventListener("click", async () => {
     return;
   }
 
-saveWhatsappConnectionModalBtn.addEventListener("click", async () => {
-  const nome = whatsappConnectionNome.value.trim();
-  const numero = normalizarTelefoneBrasil(whatsappConnectionNumero.value);
-  const iaAtiva = whatsappConnectionIa.value === "true";
-
-  if (!nome) {
-    alert("Informe o nome da conexão.");
-    whatsappConnectionNome.focus();
-    return;
-  }
-
   saveWhatsappConnectionModalBtn.disabled = true;
   saveWhatsappConnectionModalBtn.textContent = "Salvando...";
 
