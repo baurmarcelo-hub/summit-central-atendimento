@@ -6102,8 +6102,8 @@ async function confirmarTransferenciaConversa(novoAtendente) {
   }
 
   const confirmar = confirm(
-    `Deseja transferir esta conversa para ${novoAtendente}?`
-  );
+  `Deseja excluir a TAG "${tag.nome || "sem nome"}"?`
+);
 
   if (!confirmar) return;
 
