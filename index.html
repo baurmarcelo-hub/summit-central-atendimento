@@ -9670,7 +9670,74 @@ if (teamProfileFilter) {
   teamProfileFilter.addEventListener("change", carregarEquipe);
 }
 
-document.addEventListener("click", event => {
+document.addEventListener("click", async event => {
+    const whatsappEditBtn =
+    event.target.closest(".whatsapp-edit-btn");
+
+  if (whatsappEditBtn) {
+    event.stopPropagation();
+
+    const id = whatsappEditBtn.dataset.whatsappId;
+
+    const conexao = whatsappConnectionsCache.find(
+      item => String(item.id) === String(id)
+    );
+
+    if (!conexao) {
+      alert("Conexão WhatsApp não encontrada.");
+      return;
+    }
+
+    document
+      .querySelectorAll("[data-whatsapp-menu-id]")
+      .forEach(menu => {
+        menu.classList.remove("open");
+      });
+
+    abrirModalEditarConexaoWhatsApp(conexao);
+
+    return;
+  }
+
+  const whatsappDeleteBtn =
+    event.target.closest(".whatsapp-delete-btn");
+
+  if (whatsappDeleteBtn) {
+    event.stopPropagation();
+
+    const id = whatsappDeleteBtn.dataset.whatsappId;
+
+    const conexao = whatsappConnectionsCache.find(
+      item => String(item.id) === String(id)
+    );
+
+    if (!conexao) {
+      alert("Conexão WhatsApp não encontrada.");
+      return;
+    }
+
+    const confirmar = confirm(
+      `Deseja excluir a conexão "${conexao.nome || "WhatsApp"}"?`
+    );
+
+    if (!confirmar) return;
+
+    const { error } = await supabaseClient
+      .from("whatsapp_conexoes")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Erro ao excluir conexão WhatsApp:", error);
+      alert("Erro ao excluir conexão WhatsApp.");
+      return;
+    }
+
+    await carregarConexoesWhatsApp();
+
+    return;
+  }
+
   const whatsappMoreBtn =
     event.target.closest(".whatsapp-more-btn");
 
