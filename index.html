@@ -9944,24 +9944,27 @@ backToConnectionsBtn.addEventListener("click", () => {
 });
 
 newWhatsappConnectionBtn.addEventListener("click", () => {
-  whatsappConnectionNome.value = "";
-  whatsappConnectionNumero.value = "";
-  whatsappConnectionIa.value = "false";
-
-  whatsappConnectionModal.classList.add("open");
-
-  setTimeout(() => {
-    whatsappConnectionNome.focus();
-  }, 100);
+  abrirModalNovaConexaoWhatsApp();
 });
 
 closeWhatsappConnectionModalBtn.addEventListener("click", () => {
-  whatsappConnectionModal.classList.remove("open");
+  fecharModalConexaoWhatsApp();
 });
 
 cancelWhatsappConnectionModalBtn.addEventListener("click", () => {
-  whatsappConnectionModal.classList.remove("open");
+  fecharModalConexaoWhatsApp();
 });
+
+saveWhatsappConnectionModalBtn.addEventListener("click", async () => {
+  const nome = whatsappConnectionNome.value.trim();
+  const numero = normalizarTelefoneBrasil(whatsappConnectionNumero.value);
+  const iaAtiva = whatsappConnectionIa.value === "true";
+
+  if (!nome) {
+    alert("Informe o nome da conexão.");
+    whatsappConnectionNome.focus();
+    return;
+  }
 
 saveWhatsappConnectionModalBtn.addEventListener("click", async () => {
   const nome = whatsappConnectionNome.value.trim();
@@ -9977,20 +9980,40 @@ saveWhatsappConnectionModalBtn.addEventListener("click", async () => {
   saveWhatsappConnectionModalBtn.disabled = true;
   saveWhatsappConnectionModalBtn.textContent = "Salvando...";
 
-  const { error } = await supabaseClient
-    .from("whatsapp_conexoes")
-    .insert([
-      {
+  let error = null;
+
+  if (editingWhatsappConnectionId) {
+    const response = await supabaseClient
+      .from("whatsapp_conexoes")
+      .update({
         nome,
         numero,
         ia_ativa: iaAtiva,
-        status: "desconectado",
         ultima_atualizacao: new Date().toISOString()
-      }
-    ]);
+      })
+      .eq("id", editingWhatsappConnectionId);
+
+    error = response.error;
+  } else {
+    const response = await supabaseClient
+      .from("whatsapp_conexoes")
+      .insert([
+        {
+          nome,
+          numero,
+          ia_ativa: iaAtiva,
+          status: "desconectado",
+          ultima_atualizacao: new Date().toISOString()
+        }
+      ]);
+
+    error = response.error;
+  }
 
   saveWhatsappConnectionModalBtn.disabled = false;
-  saveWhatsappConnectionModalBtn.textContent = "Salvar conexão";
+  saveWhatsappConnectionModalBtn.textContent = editingWhatsappConnectionId
+    ? "Salvar alterações"
+    : "Salvar conexão";
 
   if (error) {
     console.error("Erro ao salvar conexão WhatsApp:", error);
@@ -9998,11 +10021,9 @@ saveWhatsappConnectionModalBtn.addEventListener("click", async () => {
     return;
   }
 
-  whatsappConnectionModal.classList.remove("open");
+  fecharModalConexaoWhatsApp();
 
   await carregarConexoesWhatsApp();
-
-  alert("Conexão WhatsApp cadastrada com sucesso.");
 });
 
 tasksMenuItem.addEventListener("click", abrirPainelTarefas);
