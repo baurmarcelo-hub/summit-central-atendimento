@@ -770,6 +770,71 @@ line-height: 1.15;
     0 0 0 4px rgba(37, 99, 235, 0.08);
 }
 
+.composer-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attachment-tray {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 0 4px;
+  max-width: 100%;
+}
+
+.attachment-preview-card {
+  width: 150px;
+  min-width: 150px;
+  height: 64px;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 9px 10px;
+  display: grid;
+  grid-template-columns: 28px 1fr 20px;
+  gap: 8px;
+  align-items: center;
+}
+
+.attachment-preview-icon {
+  font-size: 22px;
+}
+
+.attachment-preview-info {
+  min-width: 0;
+}
+
+.attachment-preview-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #101828;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachment-preview-size {
+  font-size: 11px;
+  color: #667085;
+  margin-top: 2px;
+}
+
+.attachment-remove-btn {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #111827;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 900;
+}
+
    .send-btn {
   width: 54px;
   height: 52px;
@@ -4065,11 +4130,15 @@ line-height: 1.15;
   ></audio>
 </div>
 
-<input
-  id="messageInput"
-  type="text"
-  placeholder="Digite sua mensagem..."
-/>
+<div class="composer-main">
+  <div id="attachmentTray" class="attachment-tray hidden"></div>
+
+  <input
+    id="messageInput"
+    type="text"
+    placeholder="Digite sua mensagem..."
+  />
+</div>
 
 <button class="send-btn" id="sendBtn">➤</button>
 </footer>
@@ -5009,6 +5078,10 @@ let kanbanVisibleByStatus = {
     const audioPreviewPlayer =
       document.getElementById("audioPreviewPlayer");
     const fileInput = document.getElementById("fileInput");
+    const attachmentTray =
+      document.getElementById("attachmentTray");
+
+    let selectedFiles = [];
     const chatArea = document.querySelector(".chat-area");
     const dropHint = document.getElementById("dropHint");
     const chatUser = document.querySelector(".chat-user");
@@ -7251,11 +7324,73 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
     modo: "simulado"
   };
 }
+
+function renderAttachmentTray() {
+  if (!attachmentTray) return;
+
+  if (selectedFiles.length === 0) {
+    attachmentTray.classList.add("hidden");
+    attachmentTray.innerHTML = "";
+    return;
+  }
+
+  attachmentTray.classList.remove("hidden");
+
+  attachmentTray.innerHTML = selectedFiles.map((file, index) => {
+    const tamanhoKb = Math.round(file.size / 1024);
+
+    const icone = file.type.startsWith("image/")
+      ? "🖼️"
+      : file.type.startsWith("video/")
+      ? "🎬"
+      : file.type.startsWith("audio/")
+      ? "🎙️"
+      : "📄";
+
+    return `
+      <div class="attachment-preview-card">
+        <div class="attachment-preview-icon">${icone}</div>
+
+        <div class="attachment-preview-info">
+          <div class="attachment-preview-name">
+            ${file.name}
+          </div>
+
+          <div class="attachment-preview-size">
+            ${tamanhoKb} KB
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="attachment-remove-btn"
+          data-file-index="${index}"
+        >
+          ×
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  document
+    .querySelectorAll(".attachment-remove-btn")
+    .forEach(btn => {
+      btn.addEventListener("click", () => {
+        const index = Number(btn.dataset.fileIndex);
+
+        selectedFiles.splice(index, 1);
+
+        renderAttachmentTray();
+        atualizarEstadoBotaoEnviar();
+      });
+    });
+}
+
     async function sendMessage() {
 
   if (isSendingMessage) return;
 
-  const files = Array.from(fileInput.files || []);
+  const files = [...selectedFiles];
 
 const text =
   input.disabled && files.length > 0
@@ -7390,6 +7525,8 @@ audioPreviewPlayer.src = "";
 audioPreviewBox.style.display = "none";
 
 fileInput.value = "";
+selectedFiles = [];
+renderAttachmentTray();
 
 cancelarReply();
 
@@ -7407,19 +7544,17 @@ atualizarEstadoBotaoEnviar();
 }
 
 function atualizarEstadoBotaoEnviar() {
-
   const temTexto =
     input.value.trim().length > 0;
 
   const temArquivo =
-    fileInput.files.length > 0;
+    selectedFiles.length > 0;
 
   sendBtn.disabled =
     !temTexto && !temArquivo;
 
   sendBtn.style.opacity =
     sendBtn.disabled ? "0.5" : "1";
-
 }
 
 async function carregarClientesPainel() {
@@ -9048,12 +9183,26 @@ input.addEventListener(
   atualizarEstadoBotaoEnviar
 );
 
-fileInput.addEventListener(
-  "change",
-  atualizarEstadoBotaoEnviar
-);
-attachBtn.addEventListener("click", () => {
-  fileInput.click();
+fileInput.addEventListener("change", () => {
+  const files = Array.from(fileInput.files || []);
+
+  if (files.length === 0) return;
+
+  selectedFiles = [
+    ...selectedFiles,
+    ...files
+  ];
+
+  fileInput.value = "";
+
+  input.disabled = false;
+  input.style.display = "block";
+
+  cancelAudioBtn.style.display = "none";
+  audioBtn.style.display = "block";
+
+  renderAttachmentTray();
+  atualizarEstadoBotaoEnviar();
 });
 
 audioBtn.addEventListener("click", alternarGravacaoAudio);
@@ -9087,30 +9236,6 @@ forwardSelectedBtn.addEventListener("click", () => {
   }
 
   abrirModalEncaminhar(mensagensSelecionadas);
-});
-
-fileInput.addEventListener("change", () => {
-  const files = Array.from(fileInput.files || []);
-
-  if (files.length === 0) return;
-
-  const temApenasUmAudio =
-    files.length === 1 && files[0].type.startsWith("audio/");
-
-  if (temApenasUmAudio) {
-    setDroppedFile(files[0]);
-    atualizarEstadoBotaoEnviar();
-    return;
-  }
-
-  input.value = "";
-  input.disabled = false;
-  input.style.display = "block";
-
-  cancelAudioBtn.style.display = "none";
-  audioBtn.style.display = "block";
-
- atualizarEstadoBotaoEnviar();
 });
 
 ["dragenter", "dragover"].forEach(eventName => {
