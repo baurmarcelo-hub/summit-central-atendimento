@@ -7418,40 +7418,20 @@ async function carregarConexoesWhatsApp() {
           ${conexao.status || "desconectado"}
         </span>
       </div>
-                    <div class="team-actions">
-          <button
-            class="team-more-btn tag-more-btn"
-            title="Ações"
-            data-tag-id="${tag.id}"
-          >
-            ⋮
-          </button>
+                         <div class="team-actions">
+        <button
+          class="team-more-btn whatsapp-more-btn"
+          title="Ações"
+          data-whatsapp-id="${conexao.id}"
+        >
+          ⋮
+        </button>
 
-          <div
-            class="team-action-menu"
-            data-tag-menu-id="${tag.id}"
-          >
-            <button
-              type="button"
-              class="tag-edit-btn"
-              data-tag-id="${tag.id}"
-            >
-              ✏️ Editar TAG
-            </button>
-
-            <button
-              type="button"
-              class="tag-delete-btn danger"
-              data-tag-id="${tag.id}"
-            >
-              🗑 Excluir TAG
-            </button>
-          </div>
-        </div>
+        <div
           class="team-action-menu"
           data-whatsapp-menu-id="${conexao.id}"
         >
-                    <button
+          <button
             type="button"
             class="whatsapp-edit-btn"
             data-whatsapp-id="${conexao.id}"
@@ -7467,6 +7447,7 @@ async function carregarConexoesWhatsApp() {
             🗑 Excluir
           </button>
         </div>
+      </div>
       </div>
     </div>
   `).join("");
@@ -8221,14 +8202,35 @@ async function carregarTags() {
           </span>
         </div>
 
-        <div class="team-actions">
+                <div class="team-actions">
           <button
-            class="team-more-btn tag-edit-btn"
-            title="Editar TAG"
+            class="team-more-btn tag-more-btn"
+            title="Ações"
             data-tag-id="${tag.id}"
           >
             ⋮
           </button>
+
+          <div
+            class="team-action-menu"
+            data-tag-menu-id="${tag.id}"
+          >
+            <button
+              type="button"
+              class="tag-edit-btn"
+              data-tag-id="${tag.id}"
+            >
+              ✏️ Editar TAG
+            </button>
+
+            <button
+              type="button"
+              class="tag-delete-btn danger"
+              data-tag-id="${tag.id}"
+            >
+              🗑 Excluir TAG
+            </button>
+          </div>
         </div>
       </div>
     `;
