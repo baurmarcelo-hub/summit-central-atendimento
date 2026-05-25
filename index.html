@@ -4020,7 +4020,7 @@ line-height: 1.15;
 </div>
 
      <footer class="composer">
-  <input id="fileInput" type="file" style="display:none;" />
+  <input id="fileInput" type="file" multiple style="display:none;" />
 
   <button
   type="button"
@@ -7255,14 +7255,14 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
 
   if (isSendingMessage) return;
 
-  const file = fileInput.files[0];
+  const files = Array.from(fileInput.files || []);
 
 const text =
-  input.disabled && file
+  input.disabled && files.length > 0
     ? ""
     : input.value.trim();
 
-  if (!text && !file) return;
+if (!text && files.length === 0) return;
 
   isSendingMessage = true;
 
@@ -7282,44 +7282,72 @@ const text =
   return;
 }
 
-  let arquivo = null;
+  const arquivos = [];
 
-  if (file) {
-    arquivo = await uploadArquivo(file);
+for (const file of files) {
+  const arquivo = await uploadArquivo(file);
 
-    if (!arquivo) {
-  isSendingMessage = false;
-  sendBtn.disabled = false;
-  sendBtn.style.opacity = "1";
-  return;
-   }
+  if (!arquivo) {
+    isSendingMessage = false;
+    sendBtn.disabled = false;
+    sendBtn.style.opacity = "1";
+    return;
+  }
+
+  arquivos.push({
+    file,
+    arquivo
+  });
 }
   
-  const { data: mensagemInserida, error } = await supabaseClient
-  .from("mensagens")
-  .insert([
-      {
-        conversa_id: conversation.id,
-	conteudo: text,
-	autor_nome: text ? (usuarioLogadoNome || userName.textContent || "Atendente") : null,
-	reply_to_message_id: replyingToMessage?.id || null,
+  const mensagensParaInserir = [];
 
-        canal: conversation.channel || "WhatsApp",
-        direcao: "out",
-        status_entrega: "enviada",
-        tipo: file
-  ? file.type.startsWith("audio/")
-    ? "audio"
-    : "arquivo"
-  : "texto",
-        media_url: arquivo?.url || null,
-        media_nome: arquivo?.nome || null,
-        media_mime: arquivo?.mime || null,
-        media_tamanho: arquivo?.tamanho || null
-      }
-        ])
-    .select()
-    .single();
+if (text) {
+  mensagensParaInserir.push({
+    conversa_id: conversation.id,
+    conteudo: text,
+    autor_nome: usuarioLogadoNome || userName.textContent || "Atendente",
+    reply_to_message_id: replyingToMessage?.id || null,
+    canal: conversation.channel || "WhatsApp",
+    direcao: "out",
+    status_entrega: "enviada",
+    tipo: "texto",
+    media_url: null,
+    media_nome: null,
+    media_mime: null,
+    media_tamanho: null
+  });
+}
+
+arquivos.forEach(({ file, arquivo }) => {
+  mensagensParaInserir.push({
+    conversa_id: conversation.id,
+    conteudo: "",
+    autor_nome: null,
+    reply_to_message_id: null,
+    canal: conversation.channel || "WhatsApp",
+    direcao: "out",
+    status_entrega: "enviada",
+    tipo: file.type.startsWith("audio/")
+      ? "audio"
+      : file.type.startsWith("image/")
+      ? "imagem"
+      : file.type.startsWith("video/")
+      ? "video"
+      : "arquivo",
+    media_url: arquivo.url,
+    media_nome: arquivo.nome,
+    media_mime: arquivo.mime,
+    media_tamanho: arquivo.tamanho
+  });
+});
+
+const { data: mensagensInseridas, error } = await supabaseClient
+  .from("mensagens")
+  .insert(mensagensParaInserir)
+  .select();
+
+const mensagemInserida = mensagensInseridas?.[0] || null;
 
 if (mensagemInserida) {
   mensagemInserida.autor_nome =
