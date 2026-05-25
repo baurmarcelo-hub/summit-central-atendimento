@@ -9090,11 +9090,25 @@ forwardSelectedBtn.addEventListener("click", () => {
 });
 
 fileInput.addEventListener("change", () => {
-  const file = fileInput.files[0];
+  const files = Array.from(fileInput.files || []);
 
-  if (!file) return;
+  if (files.length === 0) return;
 
-  setDroppedFile(file);
+  const temApenasUmAudio =
+    files.length === 1 && files[0].type.startsWith("audio/");
+
+  if (temApenasUmAudio) {
+    setDroppedFile(files[0]);
+    atualizarEstadoBotaoEnviar();
+    return;
+  }
+
+  input.value = "";
+  input.disabled = false;
+  input.style.display = "block";
+
+  cancelAudioBtn.style.display = "none";
+  audioBtn.style.display = "block";
 
   atualizarEstadoBotaoEnviar();
 });
