@@ -7414,7 +7414,28 @@ async function carregarConexoesWhatsApp() {
           ${conexao.status || "desconectado"}
         </span>
       </div>
-      <div></div>
+            <div class="team-actions">
+        <button
+          class="team-more-btn whatsapp-more-btn"
+          title="Ações"
+          data-whatsapp-id="${conexao.id}"
+        >
+          ⋮
+        </button>
+
+        <div
+          class="team-action-menu"
+          data-whatsapp-menu-id="${conexao.id}"
+        >
+          <button type="button">
+            ✏️ Editar
+          </button>
+
+          <button type="button" class="danger">
+            🗑 Excluir
+          </button>
+        </div>
+      </div>
     </div>
   `).join("");
 }
