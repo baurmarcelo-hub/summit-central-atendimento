@@ -3860,17 +3860,10 @@ line-height: 1.15;
     </div>
 
     <div id="whatsappConnectionsList">
-      <div class="team-row">
-        <div class="team-name">Atendimento Comercial</div>
-        <div class="team-email">+55 (51) 9170-4454</div>
-        <div><span class="status-badge status-aguardando">desativado</span></div>
-        <div class="team-email">24/05/2026</div>
-        <div><button class="secondary-action-btn" style="width:auto;height:32px;padding:0 12px;margin:0;">Novo QR Code</button></div>
-        <div><span class="status-badge status-aguardando">desconectado</span></div>
-        <div class="team-actions">
-          <button class="team-more-btn">⋮</button>
-        </div>
-      </div>
+  <div style="padding:18px;color:#667085;font-size:14px;">
+    Nenhuma conexão WhatsApp cadastrada.
+  </div>
+</div>
     </div>
   </div>
 </section>
@@ -4621,6 +4614,68 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="tag-modal" id="whatsappConnectionModal">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <h3>Nova conexão WhatsApp</h3>
+
+      <button
+        type="button"
+        class="tag-modal-close"
+        id="closeWhatsappConnectionModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="tag-modal-body">
+      <div class="tag-field">
+        <label>Nome da conexão</label>
+        <input
+          id="whatsappConnectionNome"
+          type="text"
+          placeholder="Ex.: Atendimento Comercial"
+        />
+      </div>
+
+      <div class="tag-field">
+        <label>Número WhatsApp</label>
+        <input
+          id="whatsappConnectionNumero"
+          type="text"
+          placeholder="+55 (51) 99999-9999"
+        />
+      </div>
+
+      <div class="tag-field">
+        <label>Agente IA</label>
+        <select id="whatsappConnectionIa">
+          <option value="false">Desativado</option>
+          <option value="true">Ativado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tag-modal-footer">
+      <button
+        type="button"
+        class="tag-cancel-btn"
+        id="cancelWhatsappConnectionModalBtn"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="tag-save-btn"
+        id="saveWhatsappConnectionModalBtn"
+      >
+        Salvar conexão
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="tag-modal" id="tagModal">
   <div class="tag-modal-card">
     <div class="tag-modal-header">
@@ -5047,6 +5102,30 @@ const openWhatsappConnections =
 
 const backToConnectionsBtn =
   document.getElementById("backToConnectionsBtn");
+
+const whatsappConnectionModal =
+  document.getElementById("whatsappConnectionModal");
+
+const closeWhatsappConnectionModalBtn =
+  document.getElementById("closeWhatsappConnectionModalBtn");
+
+const cancelWhatsappConnectionModalBtn =
+  document.getElementById("cancelWhatsappConnectionModalBtn");
+
+const saveWhatsappConnectionModalBtn =
+  document.getElementById("saveWhatsappConnectionModalBtn");
+
+const newWhatsappConnectionBtn =
+  document.getElementById("newWhatsappConnectionBtn");
+
+const whatsappConnectionNome =
+  document.getElementById("whatsappConnectionNome");
+
+const whatsappConnectionNumero =
+  document.getElementById("whatsappConnectionNumero");
+
+const whatsappConnectionIa =
+  document.getElementById("whatsappConnectionIa");
 
 const teamPanel =
   document.getElementById("teamPanel");
@@ -9427,6 +9506,26 @@ openWhatsappConnections.addEventListener("click", () => {
 backToConnectionsBtn.addEventListener("click", () => {
   whatsappConnectionsPanel.classList.add("hidden");
   connectionsPanel.classList.remove("hidden");
+});
+
+newWhatsappConnectionBtn.addEventListener("click", () => {
+  whatsappConnectionNome.value = "";
+  whatsappConnectionNumero.value = "";
+  whatsappConnectionIa.value = "false";
+
+  whatsappConnectionModal.classList.add("open");
+
+  setTimeout(() => {
+    whatsappConnectionNome.focus();
+  }, 100);
+});
+
+closeWhatsappConnectionModalBtn.addEventListener("click", () => {
+  whatsappConnectionModal.classList.remove("open");
+});
+
+cancelWhatsappConnectionModalBtn.addEventListener("click", () => {
+  whatsappConnectionModal.classList.remove("open");
 });
 
 tasksMenuItem.addEventListener("click", abrirPainelTarefas);
