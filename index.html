@@ -102,7 +102,8 @@
 .app.settings-open #clientPanel,
 .app.settings-open #tagsPanel,
 .app.settings-open #tasksPanel,
-.app.settings-open #connectionsPanel {
+.app.settings-open #connectionsPanel,
+.app.settings-open #whatsappConnectionsPanel {
   grid-column: 2 / 3;
 }
 
@@ -1075,11 +1076,12 @@ line-height: 1.15;
 }
 
     @media (max-width: 1200px) {
-      .app.settings-open #teamPanel,
+.app.settings-open #teamPanel,
 .app.settings-open #clientPanel,
 .app.settings-open #tagsPanel,
 .app.settings-open #tasksPanel,
-.app.settings-open #connectionsPanel {
+.app.settings-open #connectionsPanel,
+.app.settings-open #whatsappConnectionsPanel {
   grid-column: 2 / 3;
 }
 
@@ -3423,6 +3425,11 @@ line-height: 1.15;
   color: #166534;
 }
 
+#whatsappConnectionsPanel .team-table-header,
+#whatsappConnectionsPanel .team-row {
+  grid-template-columns: 1.2fr 1fr 0.8fr 1fr 0.8fr 0.8fr 40px;
+}
+
   </style>
 </head>
 
@@ -3798,6 +3805,72 @@ line-height: 1.15;
       <h3>E-mail</h3>
       <p>Integração de e-mail em preparação.</p>
       <div class="connection-footer">Em breve</div>
+    </div>
+  </div>
+</section>
+
+<section class="team-page hidden" id="whatsappConnectionsPanel">
+  <div class="team-topbar">
+    <div class="team-title">
+      <h2>WhatsApp</h2>
+      <span>Gerencie canais conectados por QR Code</span>
+    </div>
+
+    <div class="team-actions-top">
+      <button class="secondary-action-btn" id="backToConnectionsBtn" style="width:auto;padding:0 18px;margin:0;">
+        Voltar
+      </button>
+
+      <button class="accept-btn" id="newWhatsappConnectionBtn">
+        + Nova conexão
+      </button>
+    </div>
+  </div>
+
+  <div class="team-filterbar">
+    <input
+      id="whatsappConnectionSearchInput"
+      type="text"
+      placeholder="Procure por nome ou número"
+      autocomplete="off"
+    />
+
+    <select id="whatsappConnectionStatusFilter">
+      <option value="todos">Status</option>
+      <option value="conectado">Conectado</option>
+      <option value="desconectado">Desconectado</option>
+    </select>
+
+    <select id="whatsappConnectionIaFilter">
+      <option value="todos">IA</option>
+      <option value="ativa">IA ativa</option>
+      <option value="inativa">IA inativa</option>
+    </select>
+  </div>
+
+  <div class="team-table">
+    <div class="team-table-header">
+      <div>Nome</div>
+      <div>Número</div>
+      <div>Agente IA</div>
+      <div>Última atualização</div>
+      <div>QR Code</div>
+      <div>Status</div>
+      <div></div>
+    </div>
+
+    <div id="whatsappConnectionsList">
+      <div class="team-row">
+        <div class="team-name">Atendimento Comercial</div>
+        <div class="team-email">+55 (51) 9170-4454</div>
+        <div><span class="status-badge status-aguardando">desativado</span></div>
+        <div class="team-email">24/05/2026</div>
+        <div><button class="secondary-action-btn" style="width:auto;height:32px;padding:0 12px;margin:0;">Novo QR Code</button></div>
+        <div><span class="status-badge status-aguardando">desconectado</span></div>
+        <div class="team-actions">
+          <button class="team-more-btn">⋮</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -4965,6 +5038,15 @@ const sidebarConnectionsBtn =
 
 const connectionsPanel =
   document.getElementById("connectionsPanel");
+
+const whatsappConnectionsPanel =
+  document.getElementById("whatsappConnectionsPanel");
+
+const openWhatsappConnections =
+  document.getElementById("openWhatsappConnections");
+
+const backToConnectionsBtn =
+  document.getElementById("backToConnectionsBtn");
 
 const teamPanel =
   document.getElementById("teamPanel");
@@ -9262,6 +9344,7 @@ document.querySelector(".chat-area").classList.add("hidden");
   teamPanel.classList.add("hidden");
   tagsPanel.classList.add("hidden");
   connectionsPanel.classList.add("hidden");
+  whatsappConnectionsPanel.classList.add("hidden");
   sidebarConnectionsBtn.classList.remove("active");
   carregarClientesPainel();
 
@@ -9291,6 +9374,7 @@ document.querySelector(".chat-area").classList.add("hidden");
   clientPanel.classList.add("hidden");
   tagsPanel.classList.add("hidden");
   tasksPanel.classList.add("hidden");
+  whatsappConnectionsPanel.classList.add("hidden");
   connectionsPanel.classList.add("hidden");
   sidebarConnectionsBtn.classList.remove("active");
 
@@ -9314,6 +9398,7 @@ teamTabBtn.addEventListener("click", abrirPainelEquipe);
 teamTabBtnTeam.addEventListener("click", abrirPainelEquipe);
 
 sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
+
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 
 sidebarConnectionsBtn.addEventListener("click", () => {
@@ -9326,11 +9411,22 @@ sidebarConnectionsBtn.addEventListener("click", () => {
   teamPanel.classList.add("hidden");
   tagsPanel.classList.add("hidden");
   tasksPanel.classList.add("hidden");
+ whatsappConnectionsPanel.classList.add("hidden");
 
   connectionsPanel.classList.remove("hidden");
 
   mainConversationPanel.classList.add("hidden");
   document.querySelector(".chat-area").classList.add("hidden");
+});
+
+openWhatsappConnections.addEventListener("click", () => {
+  connectionsPanel.classList.add("hidden");
+  whatsappConnectionsPanel.classList.remove("hidden");
+});
+
+backToConnectionsBtn.addEventListener("click", () => {
+  whatsappConnectionsPanel.classList.add("hidden");
+  connectionsPanel.classList.remove("hidden");
 });
 
 tasksMenuItem.addEventListener("click", abrirPainelTarefas);
@@ -9774,6 +9870,7 @@ function abrirPainelTarefas() {
   teamPanel.classList.add("hidden");
   tagsPanel.classList.add("hidden");
   tasksPanel.classList.remove("hidden");
+  whatsappConnectionsPanel.classList.add("hidden");
   connectionsPanel.classList.add("hidden");
   sidebarConnectionsBtn.classList.remove("active");
 
@@ -9799,6 +9896,7 @@ function abrirPainelTags() {
   teamPanel.classList.add("hidden");
   tagsPanel.classList.remove("hidden");
   tasksPanel.classList.add("hidden");
+  whatsappConnectionsPanel.classList.add("hidden");
   connectionsPanel.classList.add("hidden");
   sidebarConnectionsBtn.classList.remove("active");
 
