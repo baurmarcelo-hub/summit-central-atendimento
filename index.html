@@ -7546,7 +7546,7 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
   }
 
   try {
-    const response = await fetch("http://localhost:3001/whatsapp/send", {
+    const response = await fetch("https://summit-backend-hdtr.onrender.com/whatsapp/send", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
