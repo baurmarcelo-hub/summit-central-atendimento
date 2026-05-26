@@ -7510,22 +7510,76 @@ function fecharModalConexaoWhatsApp() {
 }
 
 async function enviarMensagemWhatsApp(conversation, mensagem) {
-  // Preparação futura para Evolution API.
-  // Neste momento não envia nada para fora, apenas mantém o MVP funcionando.
+  if (!conversation || !mensagem) {
+    return {
+      success: false,
+      message: "Conversa ou mensagem inválida."
+    };
+  }
 
-  console.log("Preparar envio WhatsApp:", {
-    conversa_id: conversation.id,
-    cliente: conversation.name,
-    telefone: conversation.phone,
-    mensagem_id: mensagem?.id,
-    tipo: mensagem?.tipo,
-    texto: mensagem?.conteudo
-  });
+  if (mensagem.tipo !== "texto") {
+    console.log("Envio real de mídia ainda não implementado:", mensagem);
+    return {
+      success: true,
+      modo: "midia_ainda_nao_enviada"
+    };
+  }
 
-  return {
-    success: true,
-    modo: "simulado"
-  };
+  const telefoneLimpo = String(conversation.phone || "").replace(/\D/g, "");
+
+  if (!telefoneLimpo) {
+    alert("Cliente sem telefone WhatsApp cadastrado.");
+    return {
+      success: false,
+      message: "Cliente sem telefone."
+    };
+  }
+
+  const textoMensagem =
+    mensagem.conteudo || mensagem.text || "";
+
+  if (!textoMensagem.trim()) {
+    return {
+      success: false,
+      message: "Mensagem sem texto."
+    };
+  }
+
+  try {
+    const response = await fetch("http://localhost:3001/whatsapp/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        number: telefoneLimpo,
+        text: textoMensagem
+      })
+    });
+
+    const resultado = await response.json();
+
+    if (!response.ok || !resultado.success) {
+      console.error("Erro no envio WhatsApp:", resultado);
+      alert("Mensagem salva no SUMMIT, mas não foi enviada no WhatsApp.");
+      return resultado;
+    }
+
+    console.log("WhatsApp enviado com sucesso:", resultado);
+
+    return resultado;
+  } catch (error) {
+    console.error("Erro ao chamar backend WhatsApp:", error);
+
+    alert(
+      "Mensagem salva no SUMMIT, mas não foi enviada no WhatsApp. Verifique se o backend está rodando."
+    );
+
+    return {
+      success: false,
+      message: error.message
+    };
+  }
 }
 
 function renderAttachmentTray() {
