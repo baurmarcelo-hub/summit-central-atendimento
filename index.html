@@ -7141,18 +7141,36 @@ async function carregarUltimaMensagem(conversaId) {
       conversations = await Promise.all(conversasData.map(async conversa => {
   const cliente = clientesData.find(c => c.id === conversa.cliente_id);
 
-  const ultimaMensagem = await carregarUltimaMensagem(conversa.id);
+const isGrupo = conversa.tipo_origem === "grupo";
 
-  return {
+const nomeConversa = isGrupo
+  ? conversa.nome_exibicao || "Grupo WhatsApp"
+  : cliente?.nome || "Cliente sem nome";
+
+const telefoneConversa = isGrupo
+  ? conversa.whatsapp_jid || ""
+  : cliente?.telefone || "";
+
+const emailConversa = isGrupo
+  ? ""
+  : cliente?.email || "";
+
+const canalConversa = conversa.canal || (isGrupo ? "WhatsApp Grupo" : "WhatsApp");
+
+const ultimaMensagem = await carregarUltimaMensagem(conversa.id);
+
+return {
     id: conversa.id,
     clienteId: conversa.cliente_id,
     status: conversa.status,
     atendente: conversa.atendente,
     updated_at: conversa.updated_at,
-    name: cliente?.nome || "Cliente sem nome",
-    phone: cliente?.telefone || "",
-    email: cliente?.email || "",
-    channel: conversa.canal || "WhatsApp",
+    name: nomeConversa,
+    phone: telefoneConversa,
+    email: emailConversa,
+    channel: canalConversa,
+    whatsapp_jid: conversa.whatsapp_jid || "",
+    tipo_origem: conversa.tipo_origem || "contato",
 
     lastMessage: ultimaMensagem
   ? (ultimaMensagem.text || ultimaMensagem.media_nome || "Arquivo")
@@ -7163,7 +7181,9 @@ time: ultimaMensagem
   : "",
 
     unread: unreadMap[conversa.id] || 0,
-    initials: String(cliente?.nome || "C").charAt(0).toUpperCase(),
+    initials: isGrupo
+  ? "👥"
+  : String(nomeConversa || "C").charAt(0).toUpperCase(),
 
     messages: ultimaMensagem ? [ultimaMensagem] : []
   };
@@ -7503,9 +7523,12 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
     };
   }
 
-  const telefoneLimpo = String(conversation.phone || "").replace(/\D/g, "");
+  const destinoWhatsApp =
+  conversation.tipo_origem === "grupo"
+    ? conversation.whatsapp_jid
+    : String(conversation.phone || "").replace(/\D/g, "");
 
-  if (!telefoneLimpo) {
+  if (!destinoWhatsApp) {
     alert("Cliente sem telefone WhatsApp cadastrado.");
     return {
       success: false,
@@ -7530,7 +7553,7 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        number: telefoneLimpo,
+        number: destinoWhatsApp,
         text: textoMensagem
       })
     });
@@ -7760,7 +7783,11 @@ if (mensagemInserida) {
   return;
 }
 
-if (conversation.channel === "WhatsApp") {
+if (
+  conversation.channel === "WhatsApp" ||
+  conversation.channel === "WhatsApp Grupo" ||
+  conversation.tipo_origem === "grupo"
+) {
   await enviarMensagemWhatsApp(conversation, mensagemInserida);
 }
 
@@ -10137,6 +10164,14 @@ openWhatsappConnections.addEventListener("click", async () => {
   whatsappConnectionsPanel.classList.remove("hidden");
 
   await carregarConexoesWhatsApp();
+
+  if (!window.whatsappStatusInterval) {
+    window.whatsappStatusInterval = setInterval(() => {
+      if (!whatsappConnectionsPanel.classList.contains("hidden")) {
+        carregarConexoesWhatsApp();
+      }
+    }, 10000);
+  }
 });
 
 backToConnectionsBtn.addEventListener("click", () => {
