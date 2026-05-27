@@ -7528,12 +7528,12 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
   String(conversation.phone || "").replace(/\D/g, "");
 
   if (!destinoWhatsApp) {
-    alert("Cliente sem telefone WhatsApp cadastrado.");
-    return {
-      success: false,
-      message: "Cliente sem telefone."
-    };
-  }
+  alert("Conversa sem destino WhatsApp disponível.");
+  return {
+    success: false,
+    message: "Conversa sem destino WhatsApp."
+  };
+}
 
   const textoMensagem =
     mensagem.conteudo || mensagem.text || "";
