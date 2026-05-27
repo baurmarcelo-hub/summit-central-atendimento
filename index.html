@@ -5062,8 +5062,10 @@ line-height: 1.15;
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xycxgzxzgbghrdqhcwpr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_ZDjJRIxsTAirHerOgHihcQ_90tbzh_C";
+    const SUPABASE_URL = "SUA CHAVE AQUI";
+    const SUPABASE_ANON_KEY = "SUA CHAVE AQUI";
+
+
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -6412,7 +6414,13 @@ if (!conversation) {
     `${conversation.channel} • ${conversation.status}`;
 
   detailName.textContent = conversation.name;
-  detailPhone.textContent = conversation.phone;
+  const isLidPendente =
+  conversation.whatsapp_jid?.includes("@lid") &&
+  !conversation.phone;
+
+detailPhone.textContent = isLidPendente
+  ? conversation.whatsapp_jid
+  : conversation.phone || "-";
   detailEmail.textContent = conversation.email;
   detailAvatar.textContent = conversation.initials;
 
@@ -6421,6 +6429,11 @@ if (!conversation) {
 
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
+if (isLidPendente) {
+  detailPhone.previousElementSibling.textContent = "Identidade WhatsApp";
+} else {
+  detailPhone.previousElementSibling.textContent = "Telefone";
+}
 
 carregarTagsDaConversa();
 carregarObservacoesDaConversa();
@@ -7684,6 +7697,32 @@ if (!text && files.length === 0) return;
   sendBtn.style.opacity = "0.6";
 
   const conversation = getSelectedConversation();
+
+if (!conversation) {
+  alert("Nenhuma conversa selecionada.");
+
+  isSendingMessage = false;
+  sendBtn.disabled = false;
+  sendBtn.style.opacity = "1";
+
+  return;
+}
+
+const isLidPendente =
+  conversation?.whatsapp_jid?.includes("@lid") &&
+  !conversation?.phone;
+
+if (isLidPendente) {
+  alert(
+    "Este contato ainda não possui telefone cadastrado. Vincule o número do cliente antes de responder."
+  );
+
+  isSendingMessage = false;
+  sendBtn.disabled = false;
+  sendBtn.style.opacity = "1";
+
+  return;
+}
 
   if (!conversation) {
 
