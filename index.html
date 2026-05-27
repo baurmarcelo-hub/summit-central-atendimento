@@ -7363,27 +7363,63 @@ async function carregarConexoesWhatsApp() {
 
   lista.innerHTML = `
     <div style="padding:18px;color:#667085;font-size:14px;">
-      Carregando conexões...
+      Consultando status do WhatsApp...
     </div>
   `;
 
-  const { data, error } = await supabaseClient
-    .from("whatsapp_conexoes")
-    .select("*")
-    .order("created_at", { ascending: false });
+  try {
+    const response = await fetch(
+      "https://summit-backend-hdtr.onrender.com/whatsapp/status"
+    );
 
-  if (error) {
-    console.error("Erro ao carregar conexões WhatsApp:", error);
+    const status = await response.json();
+
+    const conectado = status.connected === true;
 
     lista.innerHTML = `
-      <div style="padding:18px;color:#dc2626;font-size:14px;font-weight:700;">
-        Erro ao carregar conexões WhatsApp.
+      <div class="team-row">
+        <div class="team-name">summit01</div>
+
+        <div class="team-email">
+          ${status.data?.instance?.owner || "WhatsApp conectado"}
+        </div>
+
+        <div>Inativa</div>
+
+        <div class="team-email">
+          ${new Date().toLocaleString("pt-BR")}
+        </div>
+
+        <div>
+          ${
+            conectado
+              ? "Conectado"
+              : `<button class="secondary-action-btn" id="openQrCodeBtn" style="width:auto;padding:0 12px;margin:0;">Ver QR</button>`
+          }
+        </div>
+
+        <div>
+          <span class="status-badge ${
+            conectado ? "status-finalizado" : "status-aguardando"
+          }">
+            ${conectado ? "conectado" : "desconectado"}
+          </span>
+        </div>
+
+        <div class="team-actions">⋮</div>
       </div>
     `;
 
-    return;
-  }
+  } catch (error) {
+    console.error("Erro ao consultar WhatsApp:", error);
 
+    lista.innerHTML = `
+      <div style="padding:18px;color:#dc2626;font-size:14px;font-weight:700;">
+        Erro ao consultar status do WhatsApp.
+      </div>
+    `;
+  }
+}
   whatsappConnectionsCache = data || [];
 
   if (!data || data.length === 0) {
