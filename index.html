@@ -7376,12 +7376,23 @@ async function carregarConexoesWhatsApp() {
 
     const conectado = status.connected === true;
 
+    whatsappConnectionsCache = [
+      {
+        id: "summit01",
+        nome: "summit01",
+        numero: status.data?.instance?.owner || "-",
+        ia_ativa: false,
+        ultima_atualizacao: new Date().toISOString(),
+        status: conectado ? "conectado" : "desconectado"
+      }
+    ];
+
     lista.innerHTML = `
       <div class="team-row">
         <div class="team-name">summit01</div>
 
         <div class="team-email">
-          ${status.data?.instance?.owner || "WhatsApp conectado"}
+          ${status.data?.instance?.owner || "-"}
         </div>
 
         <div>Inativa</div>
@@ -7409,7 +7420,6 @@ async function carregarConexoesWhatsApp() {
         <div class="team-actions">⋮</div>
       </div>
     `;
-
   } catch (error) {
     console.error("Erro ao consultar WhatsApp:", error);
 
@@ -7420,74 +7430,6 @@ async function carregarConexoesWhatsApp() {
     `;
   }
 }
-  whatsappConnectionsCache = data || [];
-
-  if (!data || data.length === 0) {
-    lista.innerHTML = `
-      <div style="padding:18px;color:#667085;font-size:14px;">
-        Nenhuma conexão WhatsApp cadastrada.
-      </div>
-    `;
-
-    return;
-  }
-
-  lista.innerHTML = data.map(conexao => `
-    <div class="team-row">
-      <div class="team-name">${conexao.nome || "-"}</div>
-      <div class="team-email">${conexao.numero || "-"}</div>
-      <div>${conexao.ia_ativa ? "Ativa" : "Inativa"}</div>
-      <div class="team-email">
-        ${
-          conexao.ultima_atualizacao
-            ? new Date(conexao.ultima_atualizacao).toLocaleString("pt-BR")
-            : "-"
-        }
-      </div>
-      <div>${conexao.qr_code ? "Disponível" : "-"}</div>
-      <div>
-        <span class="status-badge ${
-          conexao.status === "conectado"
-            ? "status-finalizado"
-            : "status-aguardando"
-        }">
-          ${conexao.status || "desconectado"}
-        </span>
-      </div>
-                         <div class="team-actions">
-        <button
-          class="team-more-btn whatsapp-more-btn"
-          title="Ações"
-          data-whatsapp-id="${conexao.id}"
-        >
-          ⋮
-        </button>
-
-        <div
-          class="team-action-menu"
-          data-whatsapp-menu-id="${conexao.id}"
-        >
-          <button
-            type="button"
-            class="whatsapp-edit-btn"
-            data-whatsapp-id="${conexao.id}"
-          >
-            ✏️ Editar
-          </button>
-
-          <button
-            type="button"
-            class="whatsapp-delete-btn danger"
-            data-whatsapp-id="${conexao.id}"
-          >
-            🗑 Excluir
-          </button>
-        </div>
-      </div>
-      </div>
-  `).join("");
-}
-
 function abrirModalNovaConexaoWhatsApp() {
   editingWhatsappConnectionId = null;
 
