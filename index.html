@@ -7524,9 +7524,8 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
   }
 
   const destinoWhatsApp =
-  conversation.tipo_origem === "grupo"
-    ? conversation.whatsapp_jid
-    : String(conversation.phone || "").replace(/\D/g, "");
+  conversation.whatsapp_jid ||
+  String(conversation.phone || "").replace(/\D/g, "");
 
   if (!destinoWhatsApp) {
     alert("Cliente sem telefone WhatsApp cadastrado.");
