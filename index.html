@@ -7233,7 +7233,10 @@ const isGrupo = conversa.tipo_origem === "grupo";
 
 const nomeConversa = isGrupo
   ? conversa.nome_exibicao || "Grupo WhatsApp"
-  : cliente?.nome || "Cliente sem nome";
+  : cliente?.nome ||
+    identidadeWhatsApp?.push_name ||
+    conversa.nome_exibicao ||
+    "Cliente sem nome";
 
 const telefoneConversa = isGrupo
   ? conversa.whatsapp_jid || ""
