@@ -6429,6 +6429,65 @@ detailPhone.textContent = isLidPendente
 
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
+const identidadeBoxExistente =
+  document.getElementById("whatsappIdentityBox");
+
+if (identidadeBoxExistente) {
+  identidadeBoxExistente.remove();
+}
+
+const identidade = conversation.whatsapp_identidade;
+
+if (identidade || conversation.whatsapp_jid) {
+  const box = document.createElement("div");
+
+  box.id = "whatsappIdentityBox";
+  box.className = "details-section";
+
+  const vinculoTexto = conversation.whatsapp_vinculo_confirmado
+    ? "Confirmado automaticamente"
+    : "Pendente de vínculo";
+
+  box.innerHTML = `
+    <h3>Identidade WhatsApp</h3>
+
+    <div class="detail-line">
+      <div class="detail-label">Remote JID</div>
+      <div class="detail-value">
+        ${conversation.whatsapp_remote_jid || conversation.whatsapp_jid || "-"}
+      </div>
+    </div>
+
+    <div class="detail-line">
+      <div class="detail-label">Telefone resolvido</div>
+      <div class="detail-value">
+        ${conversation.whatsapp_telefone_resolvido || conversation.phone || "-"}
+      </div>
+    </div>
+
+    <div class="detail-line">
+      <div class="detail-label">Nome WhatsApp</div>
+      <div class="detail-value">
+        ${conversation.whatsapp_push_name || "-"}
+      </div>
+    </div>
+
+    <div class="detail-line">
+      <div class="detail-label">Vínculo</div>
+      <div class="detail-value">
+        ${vinculoTexto}
+      </div>
+    </div>
+  `;
+
+  const quickActionsCard =
+    document.querySelector(".quick-actions-card");
+
+  if (quickActionsCard) {
+    quickActionsCard.before(box);
+  }
+}
+
 if (isLidPendente) {
   detailPhone.previousElementSibling.textContent = "Identidade WhatsApp";
 } else {
@@ -7116,6 +7175,17 @@ if (loadingOldMessages) {
         return;
       }
 
+      const { data: identidadesData, error: identidadesError } = await supabaseClient
+ 			 .from("whatsapp_identidades")
+  			.select("*");
+
+      if (identidadesError) {
+  			console.error("Erro ao carregar identidades WhatsApp:", identidadesError);
+      }
+
+      const identidadesWhatsApp = identidadesData || [];
+	
+
 async function carregarUltimaMensagem(conversaId) {
   const { data, error } = await supabaseClient
     .from("mensagens")
@@ -7154,6 +7224,11 @@ async function carregarUltimaMensagem(conversaId) {
       conversations = await Promise.all(conversasData.map(async conversa => {
   const cliente = clientesData.find(c => c.id === conversa.cliente_id);
 
+const identidadeWhatsApp = identidadesWhatsApp.find(i =>
+  i.conversa_id === conversa.id ||
+  i.remote_jid === conversa.whatsapp_jid
+);
+
 const isGrupo = conversa.tipo_origem === "grupo";
 
 const nomeConversa = isGrupo
@@ -7184,6 +7259,12 @@ return {
     channel: canalConversa,
     whatsapp_jid: conversa.whatsapp_jid || "",
     tipo_origem: conversa.tipo_origem || "contato",
+    whatsapp_identidade: identidadeWhatsApp || null,
+    whatsapp_remote_jid: identidadeWhatsApp?.remote_jid || conversa.whatsapp_jid || "",
+    whatsapp_telefone_resolvido: identidadeWhatsApp?.telefone || "",
+    whatsapp_push_name: identidadeWhatsApp?.push_name || "",
+    whatsapp_profile_pic_url: identidadeWhatsApp?.profile_pic_url || "",
+    whatsapp_vinculo_confirmado: identidadeWhatsApp?.vinculo_confirmado === true,
 
     lastMessage: ultimaMensagem
   ? (ultimaMensagem.text || ultimaMensagem.media_nome || "Arquivo")
