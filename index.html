@@ -5058,6 +5058,36 @@ line-height: 1.15;
   </div>
 </div>
 
+<div class="forward-modal" id="linkClientModal">
+  <div class="forward-modal-card">
+    <div class="forward-modal-header">
+      <h3>Vincular Cliente</h3>
+
+      <button
+        type="button"
+        class="forward-modal-close"
+        id="closeLinkClientModalBtn"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="forward-modal-body">
+      <input
+        id="linkClientSearchInput"
+        type="text"
+        placeholder="Buscar cliente por nome, telefone ou e-mail..."
+        autocomplete="off"
+      />
+
+      <div
+        class="forward-list"
+        id="linkClientList"
+      ></div>
+    </div>
+  </div>
+</div>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
@@ -5581,12 +5611,170 @@ const expandClientBtn =
 const clientExtraInfo =
   document.getElementById("clientExtraInfo");
 
+const linkClientModal =
+  document.getElementById("linkClientModal");
+
+const closeLinkClientModalBtn =
+  document.getElementById("closeLinkClientModalBtn");
+
+const linkClientSearchInput =
+  document.getElementById("linkClientSearchInput");
+
+const linkClientList =
+  document.getElementById("linkClientList");
+
 
 let messagesToForward = [];
 let editingClientId = null;
 let clientModalMode = "edit";
 let editingWhatsappConnectionId = null;
 let whatsappConnectionsCache = [];
+
+function abrirModalVincularCliente() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  linkClientSearchInput.value = "";
+  linkClientModal.classList.add("open");
+
+  renderClientesParaVinculo();
+
+  setTimeout(() => {
+    linkClientSearchInput.focus();
+  }, 100);
+}
+
+function fecharModalVincularCliente() {
+  linkClientModal.classList.remove("open");
+  linkClientSearchInput.value = "";
+  linkClientList.innerHTML = "";
+}
+
+function renderClientesParaVinculo() {
+  const termo =
+    linkClientSearchInput.value.trim().toLowerCase();
+
+  const clientes = allClientes.filter(cliente => {
+    const nome = (cliente.nome || "").toLowerCase();
+    const telefone = (cliente.telefone || "").toLowerCase();
+    const email = (cliente.email || "").toLowerCase();
+
+    return (
+      !termo ||
+      nome.includes(termo) ||
+      telefone.includes(termo) ||
+      email.includes(termo)
+    );
+  });
+
+  if (clientes.length === 0) {
+    linkClientList.innerHTML = `
+      <div style="padding:16px;color:#667085;font-size:14px;">
+        Nenhum cliente encontrado.
+      </div>
+    `;
+    return;
+  }
+
+  linkClientList.innerHTML = clientes.map(cliente => {
+    const inicial =
+      (cliente.nome || "C").charAt(0).toUpperCase();
+
+    return `
+      <div
+        class="forward-item link-client-item"
+        data-client-id="${cliente.id}"
+      >
+        <div class="client-avatar">
+          ${inicial}
+        </div>
+
+        <div style="min-width:0;">
+          <div class="forward-name">
+            ${cliente.nome || "Cliente sem nome"}
+          </div>
+
+          <div class="forward-subtitle">
+            ${cliente.telefone || "-"} • ${cliente.email || "-"}
+          </div>
+        </div>
+
+        <div class="forward-send">
+          Vincular
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document
+    .querySelectorAll(".link-client-item")
+    .forEach(item => {
+      item.addEventListener("click", async () => {
+        const clienteId = Number(item.dataset.clientId);
+        await confirmarVinculoCliente(clienteId);
+      });
+    });
+}
+
+async function confirmarVinculoCliente(clienteId) {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  const cliente = allClientes.find(c => c.id === clienteId);
+
+  if (!cliente) {
+    alert("Cliente não encontrado.");
+    return;
+  }
+
+  const confirmar = confirm(
+    `Vincular esta conversa ao cliente "${cliente.nome}"?`
+  );
+
+  if (!confirmar) return;
+
+  const { error: conversaError } = await supabaseClient
+    .from("conversas")
+    .update({
+      cliente_id: cliente.id,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", conversation.id);
+
+  if (conversaError) {
+    console.error("Erro ao vincular conversa:", conversaError);
+    alert("Erro ao vincular conversa.");
+    return;
+  }
+
+  const { error: identidadeError } = await supabaseClient
+    .from("whatsapp_identidades")
+    .update({
+      cliente_id: cliente.id,
+      telefone: cliente.telefone,
+      vinculo_confirmado: true,
+      updated_at: new Date().toISOString()
+    })
+    .eq("remote_jid", conversation.whatsapp_remote_jid || conversation.whatsapp_jid);
+
+  if (identidadeError) {
+    console.error("Erro ao atualizar identidade WhatsApp:", identidadeError);
+    alert("Conversa vinculada, mas erro ao atualizar identidade WhatsApp.");
+    return;
+  }
+
+  fecharModalVincularCliente();
+
+  await carregarClientes();
+}
 
 function normalizarTelefoneBrasil(valor) {
   let telefone = String(valor || "").trim();
@@ -6504,6 +6692,21 @@ if (identidade || conversation.whatsapp_jid) {
         ${vinculoTexto}
       </div>
     </div>
+
+    ${
+      !conversation.whatsapp_vinculo_confirmado
+        ? `
+          <button
+            type="button"
+            class="secondary-action-btn"
+            id="linkWhatsappClientBtn"
+            style="margin-top:14px;"
+          >
+            Vincular Cliente
+          </button>
+        `
+        : ""
+    }
   `;
 
   const quickActionsCard =
@@ -6512,6 +6715,15 @@ if (identidade || conversation.whatsapp_jid) {
   if (quickActionsCard) {
     quickActionsCard.before(box);
   }
+
+const linkWhatsappClientBtn =
+  document.getElementById("linkWhatsappClientBtn");
+
+if (linkWhatsappClientBtn) {
+  linkWhatsappClientBtn.addEventListener("click", () => {
+    abrirModalVincularCliente();
+  });
+}
 }
 
 if (isLidPendente) {
@@ -7210,6 +7422,7 @@ if (loadingOldMessages) {
       }
 
       const identidadesWhatsApp = identidadesData || [];
+      allClientes = clientesData || [];
 	
 
 async function carregarUltimaMensagem(conversaId) {
@@ -7647,8 +7860,9 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
   }
 
   const destinoWhatsApp =
-  conversation.whatsapp_jid ||
-  String(conversation.phone || "").replace(/\D/g, "");
+  conversation.phone
+    ? String(conversation.phone).replace(/\D/g, "")
+    : conversation.whatsapp_jid;
 
   if (!destinoWhatsApp) {
   alert("Conversa sem destino WhatsApp disponível.");
@@ -11727,6 +11941,22 @@ async function salvarTagModal() {
   );
 }
 
+closeLinkClientModalBtn?.addEventListener(
+  "click",
+  fecharModalVincularCliente
+);
+
+linkClientSearchInput?.addEventListener(
+  "input",
+  renderClientesParaVinculo
+);
+
+linkClientModal?.addEventListener("click", event => {
+  if (event.target === linkClientModal) {
+    fecharModalVincularCliente();
+  }
+});
+
 sidebarTagsBtn.addEventListener("click", abrirPainelTags);
 
 newTagBtn.addEventListener("click", abrirModalNovaTag);
@@ -12144,6 +12374,7 @@ verificarSessao();
 atualizarEstadoBotaoEnviar();
 
 </script>
+
 
 </body>
 </html>
