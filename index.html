@@ -5795,7 +5795,13 @@ function criarCardConversa(conversation) {
 const unread = unreadMap[conversation.id] || conversation.unread || 0;
 
   card.innerHTML = `
-    <div class="client-avatar">${conversation.initials}</div>
+    <div class="client-avatar">
+  ${
+    conversation.whatsapp_profile_pic_url
+      ? `<img src="${conversation.whatsapp_profile_pic_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`
+      : conversation.initials
+  }
+</div>
 
     <div style="min-width:0;">
 
@@ -6408,7 +6414,16 @@ if (!conversation) {
   chatHeader.classList.remove("hidden");
 
   headerName.textContent = conversation.name;
+  if (conversation.whatsapp_profile_pic_url) {
+  headerAvatar.innerHTML = `
+    <img
+      src="${conversation.whatsapp_profile_pic_url}"
+      style="width:100%;height:100%;border-radius:50%;object-fit:cover;"
+    />
+  `;
+} else {
   headerAvatar.textContent = conversation.initials;
+}
 
   headerSubtitle.textContent =
     `${conversation.channel} • ${conversation.status}`;
@@ -6423,6 +6438,17 @@ detailPhone.textContent = isLidPendente
   : conversation.phone || "-";
   detailEmail.textContent = conversation.email;
   detailAvatar.textContent = conversation.initials;
+
+if (conversation.whatsapp_profile_pic_url) {
+  detailAvatar.innerHTML = `
+    <img
+      src="${conversation.whatsapp_profile_pic_url}"
+      style="width:100%;height:100%;border-radius:50%;object-fit:cover;"
+    />
+  `;
+} else {
+  detailAvatar.textContent = conversation.initials;
+}
 
   detailChannel.textContent = conversation.channel;
   detailStatus.textContent = conversation.status;
