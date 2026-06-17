@@ -158,9 +158,15 @@
       margin-bottom: 4px;
     }
 
-    .menu-item.active {
+.menu-item.active {
   background: rgba(37, 99, 235, 0.22);
   color: #ffffff;
+}
+
+.menu-item.sub-menu-item {
+  margin-left: 18px;
+  padding: 10px 14px;
+  font-size: 13px;
 }
 
 .settings-submenu {
@@ -430,7 +436,7 @@ line-height: 1.15;
     0 4px 14px rgba(16, 24, 40, 0.06);
 }
 
-    .client-avatar {
+.client-avatar {
       width: 46px;
       height: 46px;
       border-radius: 50%;
@@ -445,6 +451,43 @@ line-height: 1.15;
       color: white;
       font-weight: 800;
     }
+
+.group-avatar-icon {
+  position: relative;
+  width: 30px;
+  height: 22px;
+}
+
+.group-avatar-icon::before,
+.group-avatar-icon::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  width: 14px;
+  height: 14px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.group-avatar-icon::before {
+  left: 1px;
+}
+
+.group-avatar-icon::after {
+  right: 1px;
+}
+
+.group-avatar-icon span {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 0;
+  height: 9px;
+  border: 3px solid #ffffff;
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+}
 
     .conversation-name {
       font-size: 14px;
@@ -1361,8 +1404,12 @@ line-height: 1.15;
 }
 
 .image-modal img {
-  max-width: 92vw;
-  max-height: 88vh;
+  width: auto;
+  height: auto;
+  min-width: min(560px, 88vw);
+  max-width: 94vw;
+  max-height: 82vh;
+  object-fit: contain;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.35);
 }
@@ -1519,6 +1566,11 @@ line-height: 1.15;
   padding: 8px;
   display: none;
   z-index: 20;
+}
+
+.message-action-menu.open-up {
+  top: auto;
+  bottom: 38px;
 }
 
 .message-action-menu.open {
@@ -3241,6 +3293,15 @@ line-height: 1.15;
   word-break: break-word;
 }
 
+.client-link-row {
+  grid-column: 1 / -1;
+}
+
+.client-link-row .secondary-action-btn {
+  width: 100%;
+  margin-top: 4px;
+}
+
 .kanban-filterbar {
   display: grid;
   grid-template-columns: 1.8fr 1fr 1fr 0.8fr;
@@ -3578,6 +3639,10 @@ line-height: 1.15;
         <div class="menu-item">▦ <span>Dashboard</span></div>
         <div class="menu-item active" id="chatMenuItem">
   💬 <span>Conversas</span>
+</div>
+
+<div class="menu-item sub-menu-item" id="groupsMenuItem">
+  <span>Grupos</span>
 </div>
 
 <div class="menu-item" id="tasksMenuItem">
@@ -4228,15 +4293,6 @@ line-height: 1.15;
     <button class="details-tab" data-details-tab="tags">Tags</button>
   </div>
 
-  <div class="details-search">
-    <input
-      id="detailsSearchInput"
-      type="text"
-      placeholder="Buscar neste atendimento..."
-      autocomplete="off"
-    />
-  </div>
-
 <div class="details-scroll-area">
 
   <div class="details-section client-compact-card">
@@ -4252,7 +4308,7 @@ line-height: 1.15;
 
     <div class="client-compact-lines hidden" id="clientExtraInfo">
       <div>
-        <span>Telefone</span>
+        <span id="detailPhoneLabel">Telefone</span>
         <strong id="detailPhone">(51) 99999-9999</strong>
       </div>
 
@@ -4274,6 +4330,36 @@ line-height: 1.15;
       <div>
         <span>Responsável</span>
         <strong id="detailResponsible">Não atribuído</strong>
+      </div>
+
+      <div>
+        <span>Remote JID</span>
+        <strong id="detailRemoteJid">-</strong>
+      </div>
+
+      <div>
+        <span>Telefone resolvido</span>
+        <strong id="detailResolvedPhone">-</strong>
+      </div>
+
+      <div>
+        <span>Nome WhatsApp</span>
+        <strong id="detailWhatsappName">-</strong>
+      </div>
+
+      <div>
+        <span>Vínculo</span>
+        <strong id="detailWhatsappLink">-</strong>
+      </div>
+
+      <div class="client-link-row">
+        <button
+          type="button"
+          class="secondary-action-btn hidden"
+          id="linkWhatsappClientBtn"
+        >
+          Vincular Cliente
+        </button>
       </div>
     </div>
   </div>
@@ -5111,6 +5197,7 @@ line-height: 1.15;
     let unreadMap = {};
 
 let currentFilter = "aguardando";
+let conversationScope = "conversas";
 let selectedConversationId = null;
 let replyingToMessage = null;
 let selectionMode = false;
@@ -5145,12 +5232,17 @@ let kanbanVisibleByStatus = {
     const headerAvatar = document.getElementById("headerAvatar");
     const detailName = document.getElementById("detailName");
     const detailPhone = document.getElementById("detailPhone");
+    const detailPhoneLabel = document.getElementById("detailPhoneLabel");
     const detailEmail = document.getElementById("detailEmail");
     const detailAvatar = document.getElementById("detailAvatar");
     const headerSubtitle = document.getElementById("headerSubtitle");
     const detailChannel = document.getElementById("detailChannel");
     const detailStatus = document.getElementById("detailStatus");
     const detailResponsible = document.getElementById("detailResponsible");
+    const detailRemoteJid = document.getElementById("detailRemoteJid");
+    const detailResolvedPhone = document.getElementById("detailResolvedPhone");
+    const detailWhatsappName = document.getElementById("detailWhatsappName");
+    const detailWhatsappLink = document.getElementById("detailWhatsappLink");
     const input = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
     const attachBtn = document.getElementById("attachBtn");
@@ -5214,6 +5306,8 @@ let kanbanVisibleByStatus = {
       document.getElementById("newUserBtn");
     const chatMenuItem =
       document.getElementById("chatMenuItem");
+    const groupsMenuItem =
+      document.getElementById("groupsMenuItem");
 
 const settingsMenuItem =
   document.getElementById("settingsMenuItem");
@@ -5615,6 +5709,9 @@ const expandClientBtn =
 const clientExtraInfo =
   document.getElementById("clientExtraInfo");
 
+const linkWhatsappClientBtn =
+  document.getElementById("linkWhatsappClientBtn");
+
 const linkClientModal =
   document.getElementById("linkClientModal");
 
@@ -5742,6 +5839,39 @@ function isGrupoWhatsApp(conversation) {
     conversation?.tipo_origem === "grupo" ||
     conversation?.channel === "WhatsApp Grupo"
   );
+}
+
+function getGroupAvatarHtml() {
+  return `<span class="group-avatar-icon"><span></span></span>`;
+}
+
+function getConversationDisplayName(conversation) {
+  return isGrupoWhatsApp(conversation)
+    ? "grupo"
+    : conversation?.name || "Cliente sem nome";
+}
+
+function conversaPertenceAoEscopo(conversation) {
+  const isGrupo = isGrupoWhatsApp(conversation);
+  return conversationScope === "grupos" ? isGrupo : !isGrupo;
+}
+
+function conversaPassaFiltroAtual(conversation) {
+  if (!conversaPertenceAoEscopo(conversation)) return false;
+
+  if (conversationScope === "grupos") return true;
+
+  const matchStatus =
+    currentFilter === "aguardando"
+      ? conversation.status !== "em_atendimento"
+      : conversation.status === "em_atendimento";
+
+  const matchOwner =
+    ownerFilter === "todas"
+      ? true
+      : conversation.atendente === usuarioLogadoNome;
+
+  return matchStatus && matchOwner;
 }
 
 function isRpcNaoConfigurada(error) {
@@ -6130,11 +6260,15 @@ function criarCardConversa(conversation) {
   };
 
 const unread = unreadMap[conversation.id] || conversation.unread || 0;
+const isGrupo = isGrupoWhatsApp(conversation);
+const nomeExibicao = getConversationDisplayName(conversation);
 
   card.innerHTML = `
     <div class="client-avatar">
   ${
-    conversation.whatsapp_profile_pic_url
+    isGrupo
+      ? getGroupAvatarHtml()
+      : conversation.whatsapp_profile_pic_url
       ? `<img src="${conversation.whatsapp_profile_pic_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`
       : conversation.initials
   }
@@ -6145,7 +6279,7 @@ const unread = unreadMap[conversation.id] || conversation.unread || 0;
       <div class="conversation-name-row">
 
         <div class="conversation-name">
-          ${conversation.name}
+          ${nomeExibicao}
         </div>
 
         ${
@@ -6203,28 +6337,20 @@ function renderConversations() {
 
 if (ownerFilterBox) {
   ownerFilterBox.style.display =
-    currentFilter === "aguardando" ? "none" : "flex";
+    currentFilter === "aguardando" || conversationScope === "grupos"
+      ? "none"
+      : "flex";
 }
 
   const filteredConversations = conversations.filter(conversation => {
-    const matchStatus =
-  currentFilter === "aguardando"
-    ? conversation.status !== "em_atendimento"
-    : conversation.status === "em_atendimento";
-
-const matchOwner =
-  ownerFilter === "todas"
-    ? true
-    : conversation.atendente === usuarioLogadoNome;
-
     const matchSearch =
       !searchTerm ||
-      conversation.name?.toLowerCase().includes(searchTerm) ||
+      getConversationDisplayName(conversation)?.toLowerCase().includes(searchTerm) ||
       conversation.phone?.toLowerCase().includes(searchTerm) ||
       conversation.email?.toLowerCase().includes(searchTerm) ||
       conversation.channel?.toLowerCase().includes(searchTerm);
 
-    return matchStatus && matchOwner && matchSearch;
+    return conversaPassaFiltroAtual(conversation) && matchSearch;
   });
 
   filteredConversations.forEach(conversation => {
@@ -6685,6 +6811,21 @@ function obterIconeStatusEntrega(status) {
   return "✓";
 }
 
+function isMensagemExternaWhatsApp(message) {
+  return (
+    message?.direction === "out" &&
+    String(message?.autor_nome || "").trim().toLowerCase() === "whatsapp"
+  );
+}
+
+function obterStatusEntregaVisual(message) {
+  if (isMensagemExternaWhatsApp(message)) {
+    return "lida";
+  }
+
+  return message?.status_entrega || "enviada";
+}
+
 async function baixarArquivo(url, nomeArquivo = "arquivo") {
   try {
     const response = await fetch(url);
@@ -6748,6 +6889,12 @@ if (!conversation) {
   detailChannel.textContent = "-";
   detailStatus.textContent = "-";
   detailResponsible.textContent = "-";
+  detailRemoteJid.textContent = "-";
+  detailResolvedPhone.textContent = "-";
+  detailWhatsappName.textContent = "-";
+  detailWhatsappLink.textContent = "-";
+  detailPhoneLabel.textContent = "Telefone";
+  linkWhatsappClientBtn?.classList.add("hidden");
 
   acceptBtn.classList.add("hidden");
   topFinishBtn.classList.add("hidden");
@@ -6787,8 +6934,13 @@ if (!conversation) {
   messageSearchBox.classList.remove("hidden");
   chatHeader.classList.remove("hidden");
 
-  headerName.textContent = conversation.name;
-  if (conversation.whatsapp_profile_pic_url) {
+  const isGrupoAtual = isGrupoWhatsApp(conversation);
+  const nomeConversaAtual = getConversationDisplayName(conversation);
+
+  headerName.textContent = nomeConversaAtual;
+  if (isGrupoAtual) {
+  headerAvatar.innerHTML = getGroupAvatarHtml();
+} else if (conversation.whatsapp_profile_pic_url) {
   headerAvatar.innerHTML = `
     <img
       src="${conversation.whatsapp_profile_pic_url}"
@@ -6802,7 +6954,7 @@ if (!conversation) {
   headerSubtitle.textContent =
     `${conversation.channel} • ${conversation.status}`;
 
-  detailName.textContent = conversation.name;
+  detailName.textContent = nomeConversaAtual;
   const isLidPendente =
   conversation.whatsapp_jid?.includes("@lid") &&
   !conversation.phone;
@@ -6813,7 +6965,9 @@ detailPhone.textContent = isLidPendente
   detailEmail.textContent = conversation.email;
   detailAvatar.textContent = conversation.initials;
 
-if (conversation.whatsapp_profile_pic_url) {
+if (isGrupoAtual) {
+  detailAvatar.innerHTML = getGroupAvatarHtml();
+} else if (conversation.whatsapp_profile_pic_url) {
   detailAvatar.innerHTML = `
     <img
       src="${conversation.whatsapp_profile_pic_url}"
@@ -6829,93 +6983,37 @@ if (conversation.whatsapp_profile_pic_url) {
 
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
-const identidadeBoxExistente =
-  document.getElementById("whatsappIdentityBox");
+const vinculoTexto = conversation.whatsapp_vinculo_confirmado
+  ? "Confirmado automaticamente"
+  : "Pendente de vinculo";
 
-if (identidadeBoxExistente) {
-  identidadeBoxExistente.remove();
-}
+detailRemoteJid.textContent =
+  conversation.whatsapp_remote_jid || conversation.whatsapp_jid || "-";
 
-const identidade = conversation.whatsapp_identidade;
+detailResolvedPhone.textContent =
+  conversation.whatsapp_telefone_resolvido || conversation.phone || "-";
 
-if (identidade || conversation.whatsapp_jid) {
-  const box = document.createElement("div");
+detailWhatsappName.textContent =
+  conversation.whatsapp_push_name || "-";
 
-  box.id = "whatsappIdentityBox";
-  box.className = "details-section";
-
-  const vinculoTexto = conversation.whatsapp_vinculo_confirmado
-    ? "Confirmado automaticamente"
-    : "Pendente de vínculo";
-
-  box.innerHTML = `
-    <h3>Identidade WhatsApp</h3>
-
-    <div class="detail-line">
-      <div class="detail-label">Remote JID</div>
-      <div class="detail-value">
-        ${conversation.whatsapp_remote_jid || conversation.whatsapp_jid || "-"}
-      </div>
-    </div>
-
-    <div class="detail-line">
-      <div class="detail-label">Telefone resolvido</div>
-      <div class="detail-value">
-        ${conversation.whatsapp_telefone_resolvido || conversation.phone || "-"}
-      </div>
-    </div>
-
-    <div class="detail-line">
-      <div class="detail-label">Nome WhatsApp</div>
-      <div class="detail-value">
-        ${conversation.whatsapp_push_name || "-"}
-      </div>
-    </div>
-
-    <div class="detail-line">
-      <div class="detail-label">Vínculo</div>
-      <div class="detail-value">
-        ${vinculoTexto}
-      </div>
-    </div>
-
-    ${
-      !conversation.whatsapp_vinculo_confirmado
-        ? `
-          <button
-            type="button"
-            class="secondary-action-btn"
-            id="linkWhatsappClientBtn"
-            style="margin-top:14px;"
-          >
-            Vincular Cliente
-          </button>
-        `
-        : ""
-    }
-  `;
-
-  const quickActionsCard =
-    document.querySelector(".quick-actions-card");
-
-  if (quickActionsCard) {
-    quickActionsCard.before(box);
-  }
-
-const linkWhatsappClientBtn =
-  document.getElementById("linkWhatsappClientBtn");
+detailWhatsappLink.textContent =
+  conversation.whatsapp_jid || conversation.whatsapp_identidade
+    ? vinculoTexto
+    : "-";
 
 if (linkWhatsappClientBtn) {
-  linkWhatsappClientBtn.addEventListener("click", () => {
-    abrirModalVincularCliente();
-  });
-}
+  const podeVincular =
+    !isGrupoAtual &&
+    (conversation.whatsapp_jid || conversation.whatsapp_identidade) &&
+    !conversation.whatsapp_vinculo_confirmado;
+
+  linkWhatsappClientBtn.classList.toggle("hidden", !podeVincular);
 }
 
 if (isLidPendente) {
-  detailPhone.previousElementSibling.textContent = "Identidade WhatsApp";
+  detailPhoneLabel.textContent = "Identidade WhatsApp";
 } else {
-  detailPhone.previousElementSibling.textContent = "Telefone";
+  detailPhoneLabel.textContent = "Telefone";
 }
 
 carregarTagsDaConversa();
@@ -7158,6 +7256,8 @@ const autorMensagemHtml =
     `
     : "";
 
+const statusEntregaVisual = obterStatusEntregaVisual(message);
+
 row.innerHTML = `
   <div class="message-select-check"></div>
 
@@ -7200,8 +7300,8 @@ ${
         ${message.time}
         ${
           message.direction === "out"
-            ? `<span class="message-status status-${message.status_entrega}">
-                ${obterIconeStatusEntrega(message.status_entrega)}
+            ? `<span class="message-status status-${statusEntregaVisual}">
+                ${obterIconeStatusEntrega(statusEntregaVisual)}
               </span>`
             : ""
         }
@@ -7214,8 +7314,8 @@ ${
           ${message.time}
           ${
             message.direction === "out"
-              ? `<span class="message-status status-${message.status_entrega}">
-                  ${obterIconeStatusEntrega(message.status_entrega)}
+              ? `<span class="message-status status-${statusEntregaVisual}">
+                  ${obterIconeStatusEntrega(statusEntregaVisual)}
                 </span>`
               : ""
           }
@@ -7245,7 +7345,20 @@ menuBtn?.addEventListener("click", event => {
       }
     });
 
-  actionMenu?.classList.toggle("open");
+  if (!actionMenu) return;
+
+  actionMenu.classList.remove("open-up");
+  actionMenu.classList.toggle("open");
+
+  if (actionMenu.classList.contains("open")) {
+    const menuRect = actionMenu.getBoundingClientRect();
+    const composerRect = composer.getBoundingClientRect();
+    const limiteInferior = composerRect.top || window.innerHeight;
+
+    if (menuRect.bottom > limiteInferior - 8) {
+      actionMenu.classList.add("open-up");
+    }
+  }
 });
 
 const replyOption =
@@ -7414,11 +7527,11 @@ if (forceScrollToBottom || distanceFromBottom < 200) {
 }
 function atualizarContadores() {
   const totalConversas = conversations.filter(
-    c => c.status !== "em_atendimento"
+    c => !isGrupoWhatsApp(c) && c.status !== "em_atendimento"
   ).length;
 
   const totalAtendimento = conversations.filter(
-    c => c.status === "em_atendimento"
+    c => !isGrupoWhatsApp(c) && c.status === "em_atendimento"
   ).length;
 
   countAguardando.textContent = totalConversas;
@@ -7674,7 +7787,7 @@ const identidadeWhatsApp = identidadesWhatsApp.find(i =>
 const isGrupo = conversa.tipo_origem === "grupo";
 
 const nomeConversa = isGrupo
-  ? conversa.nome_exibicao || "Grupo WhatsApp"
+  ? "grupo"
   : cliente?.nome ||
     identidadeWhatsApp?.push_name ||
     conversa.nome_exibicao ||
@@ -7740,22 +7853,14 @@ conversations.sort((a, b) => {
   return atividadeB - atividadeA;
 });
 
-      const conversaSelecionadaAindaExiste =
-  conversations.find(c => c.id === selectedConversationId);
+const conversaSelecionadaAindaExiste =
+  conversations.find(c =>
+    c.id === selectedConversationId && conversaPassaFiltroAtual(c)
+  );
 
 if (!conversaSelecionadaAindaExiste) {
   const primeiraConversaDoFiltro =
-    conversations.find(c =>
-      (
-  currentFilter === "aguardando"
-    ? c.status !== "em_atendimento"
-    : c.status === "em_atendimento"
-) &&
-      (
-        ownerFilter === "todas" ||
-        c.atendente === usuarioLogadoNome
-      )
-    );
+    conversations.find(c => conversaPassaFiltroAtual(c));
 
   selectedConversationId =
     primeiraConversaDoFiltro?.id || null;
@@ -7817,7 +7922,7 @@ function formatarConversaResumo(row) {
     : null;
 
   const nomeConversa = isGrupo
-    ? row.nome_exibicao || "Grupo WhatsApp"
+    ? "grupo"
     : row.cliente_nome ||
       row.identidade_push_name ||
       row.nome_exibicao ||
@@ -7876,8 +7981,8 @@ function formatarConversaResumo(row) {
 
     unread: unreadMap[row.conversa_id] || 0,
     initials: isGrupo
-      ? "ðŸ‘¥"
-      : String(nomeConversa || "C").charAt(0).toUpperCase(),
+  ? ""
+  : String(nomeConversa || "C").charAt(0).toUpperCase(),
 
     messages: ultimaMensagem ? [ultimaMensagem] : []
   };
@@ -7897,21 +8002,13 @@ async function finalizarCarregamentoConversas() {
   });
 
   const conversaSelecionadaAindaExiste =
-    conversations.find(c => c.id === selectedConversationId);
+    conversations.find(c =>
+      c.id === selectedConversationId && conversaPassaFiltroAtual(c)
+    );
 
   if (!conversaSelecionadaAindaExiste) {
     const primeiraConversaDoFiltro =
-      conversations.find(c =>
-        (
-          currentFilter === "aguardando"
-            ? c.status !== "em_atendimento"
-            : c.status === "em_atendimento"
-        ) &&
-        (
-          ownerFilter === "todas" ||
-          c.atendente === usuarioLogadoNome
-        )
-      );
+      conversations.find(c => conversaPassaFiltroAtual(c));
 
     selectedConversationId =
       primeiraConversaDoFiltro?.id || null;
@@ -10472,6 +10569,10 @@ tabs.forEach(tab => {
     tabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
 
+    conversationScope = "conversas";
+    chatMenuItem.classList.add("active");
+    groupsMenuItem?.classList.remove("active");
+
     currentFilter = tab.dataset.filter;
 if (currentFilter === "aguardando") {
   ownerFilter = "todas";
@@ -10485,19 +10586,9 @@ if (currentFilter === "aguardando") {
   });
 }
 
-    const primeiraConversa = conversations.find(c => {
-  const matchStatus =
-  currentFilter === "aguardando"
-    ? c.status !== "em_atendimento"
-    : c.status === "em_atendimento";
-
-  const matchOwner =
-    ownerFilter === "todas"
-      ? true
-      : c.atendente === usuarioLogadoNome;
-
-  return matchStatus && matchOwner;
-});
+    const primeiraConversa = conversations.find(c =>
+      conversaPassaFiltroAtual(c)
+    );
     selectedConversationId = primeiraConversa?.id || null;
 
 forceScrollToBottom = true;
@@ -10517,21 +10608,9 @@ ownerFilterBtns.forEach(btn => {
 
     ownerFilter = btn.dataset.ownerFilter;
 
-    const primeiraConversa = conversations.find(c => {
-
-      const matchStatus =
-  currentFilter === "aguardando"
-    ? c.status !== "em_atendimento"
-    : c.status === "em_atendimento";
-
-      const matchOwner =
-        ownerFilter === "todas"
-          ? true
-          : c.atendente === usuarioLogadoNome;
-
-      return matchStatus && matchOwner;
-
-    });
+    const primeiraConversa = conversations.find(c =>
+      conversaPassaFiltroAtual(c)
+    );
 
     selectedConversationId =
       primeiraConversa?.id || null;
@@ -10554,6 +10633,10 @@ expandClientBtn.addEventListener("click", () => {
       ? "+"
       : "−";
 });
+linkWhatsappClientBtn?.addEventListener("click", () => {
+  abrirModalVincularCliente();
+});
+
 settingsMenuItem.addEventListener("click", () => {
 
   if (selectionMode) {
@@ -10793,17 +10876,58 @@ chatMenuItem.addEventListener("click", () => {
   sidebarConnectionsBtn.classList.remove("active");
   tasksMenuItem.classList.remove("active");
   sidebarTagsBtn.classList.remove("active");
+  groupsMenuItem?.classList.remove("active");
+  conversationScope = "conversas";
 
   mainConversationPanel.classList.remove("hidden");
 
   document.querySelector(".chat-area").classList.remove("hidden");
 
+  if (!conversaPassaFiltroAtual(getSelectedConversation())) {
+    selectedConversationId =
+      conversations.find(c => conversaPassaFiltroAtual(c))?.id || null;
+    forceScrollToBottom = true;
+  }
+
+  render();
+
+});
+
+groupsMenuItem?.addEventListener("click", () => {
+  settingsSubmenu.classList.add("hidden");
+  sidebarClientsBtn.classList.remove("active");
+  sidebarTeamBtn.classList.remove("active");
+  sidebarConnectionsBtn.classList.remove("active");
+  sidebarTagsBtn.classList.remove("active");
+  settingsMenuItem.classList.remove("active");
+  tasksMenuItem.classList.remove("active");
+  chatMenuItem.classList.remove("active");
+  groupsMenuItem.classList.add("active");
+
+  app.classList.remove("settings-open");
+  teamPanel.classList.add("hidden");
+  clientPanel.classList.add("hidden");
+  tagsPanel.classList.add("hidden");
+  tasksPanel.classList.add("hidden");
+  connectionsPanel.classList.add("hidden");
+  whatsappConnectionsPanel.classList.add("hidden");
+  mainConversationPanel.classList.remove("hidden");
+  document.querySelector(".chat-area").classList.remove("hidden");
+
+  conversationScope = "grupos";
+  ownerFilter = "todas";
+  selectedConversationId =
+    conversations.find(c => conversaPassaFiltroAtual(c))?.id || null;
+  forceScrollToBottom = true;
+
+  render();
 });
 
 function abrirPainelClientes() {
 
 app.classList.add("settings-open");
 chatMenuItem.classList.remove("active");
+groupsMenuItem?.classList.remove("active");
 settingsMenuItem.classList.add("active");
 settingsSubmenu.classList.remove("hidden");
 
@@ -10834,6 +10958,7 @@ function abrirPainelEquipe() {
 
 app.classList.add("settings-open");
 chatMenuItem.classList.remove("active");
+groupsMenuItem?.classList.remove("active");
 settingsMenuItem.classList.add("active");
 settingsSubmenu.classList.remove("hidden");
 
@@ -10876,6 +11001,7 @@ sidebarConnectionsBtn.addEventListener("click", () => {
   app.classList.add("settings-open");
 
   chatMenuItem.classList.remove("active");
+  groupsMenuItem?.classList.remove("active");
   tasksMenuItem.classList.remove("active");
   settingsMenuItem.classList.add("active");
 
@@ -11432,6 +11558,7 @@ function abrirPainelTarefas() {
   app.classList.add("settings-open");
 
   chatMenuItem.classList.remove("active");
+  groupsMenuItem?.classList.remove("active");
   settingsMenuItem.classList.remove("active");
   tasksMenuItem.classList.add("active");
 
@@ -11460,6 +11587,7 @@ function abrirPainelTags() {
   app.classList.add("settings-open");
 
   chatMenuItem.classList.remove("active");
+  groupsMenuItem?.classList.remove("active");
   settingsMenuItem.classList.add("active");
   settingsSubmenu.classList.remove("hidden");
 
@@ -11487,6 +11615,11 @@ async function salvarObservacaoModal() {
 
   if (!conversation) {
     alert("Selecione uma conversa.");
+    return;
+  }
+
+  if (!conversation.clienteId) {
+    alert("Vincule um cliente antes de registrar observações.");
     return;
   }
 
@@ -11613,6 +11746,15 @@ async function carregarObservacoesDaConversa() {
     return;
   }
 
+  if (!conversation.clienteId) {
+    conversationNotesList.innerHTML = `
+      <div style="font-size:12px;color:#667085;">
+        Vincule um cliente para carregar observações.
+      </div>
+    `;
+    return;
+  }
+
   const { data, error } = await supabaseClient
     .from("cliente_observacoes")
     .select("*")
@@ -11678,6 +11820,15 @@ async function carregarTagsDaConversa() {
     conversationTagsList.innerHTML = `
       <span style="font-size:12px;color:#667085;">
         Nenhuma conversa selecionada.
+      </span>
+    `;
+    return;
+  }
+
+  if (!conversation.clienteId) {
+    conversationTagsList.innerHTML = `
+      <span style="font-size:12px;color:#667085;">
+        Vincule um cliente para carregar TAGs.
       </span>
     `;
     return;
