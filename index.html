@@ -7741,18 +7741,7 @@ conversations.sort((a, b) => {
 });
 
       const conversaSelecionadaAindaExiste =
-  conversations.find(c =>
-    c.id === selectedConversationId &&
-(
-  currentFilter === "aguardando"
-    ? c.status !== "em_atendimento"
-    : c.status === "em_atendimento"
-) &&
-    (
-      ownerFilter === "todas" ||
-      c.atendente === usuarioLogadoNome
-    )
-  );
+  conversations.find(c => c.id === selectedConversationId);
 
 if (!conversaSelecionadaAindaExiste) {
   const primeiraConversaDoFiltro =
@@ -7908,18 +7897,7 @@ async function finalizarCarregamentoConversas() {
   });
 
   const conversaSelecionadaAindaExiste =
-    conversations.find(c =>
-      c.id === selectedConversationId &&
-      (
-        currentFilter === "aguardando"
-          ? c.status !== "em_atendimento"
-          : c.status === "em_atendimento"
-      ) &&
-      (
-        ownerFilter === "todas" ||
-        c.atendente === usuarioLogadoNome
-      )
-    );
+    conversations.find(c => c.id === selectedConversationId);
 
   if (!conversaSelecionadaAindaExiste) {
     const primeiraConversaDoFiltro =
