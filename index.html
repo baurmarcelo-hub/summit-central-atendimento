@@ -6230,11 +6230,11 @@ conversationList.appendChild(card);
   });
 }
 
-function openImageModal(url, nomeArquivo = "imagem") {
+function openImageModal(url, nomeArquivo = "imagem", downloadUrl = url) {
   imageModalImg.src = url;
   imageModalImg.dataset.fileName = nomeArquivo;
 
-  atualizarDownloadImagem(url, nomeArquivo);
+  atualizarDownloadImagem(downloadUrl, nomeArquivo);
 
   imageModal.classList.add("open");
 }
@@ -6582,6 +6582,7 @@ async function confirmarEncaminhamento(conversaDestinoId) {
     media_nome: mensagemOriginal.media_nome || null,
     media_mime: mensagemOriginal.media_mime || null,
     media_tamanho: mensagemOriginal.media_tamanho || null,
+    media_thumbnail: mensagemOriginal.media_thumbnail || null,
     reply_to_message_id: null
   }));
 
@@ -6642,6 +6643,36 @@ function getExtensaoArquivo(nomeArquivo, mime) {
   if (mime.includes("audio")) return "ÁUDIO";
 
   return mime.split("/").pop().toUpperCase();
+}
+
+function normalizarThumbnailMidia(thumbnail) {
+  if (!thumbnail) return "";
+
+  const valor = String(thumbnail).trim();
+  if (!valor) return "";
+
+  if (
+    valor.startsWith("data:") ||
+    valor.startsWith("http://") ||
+    valor.startsWith("https://") ||
+    valor.startsWith("blob:")
+  ) {
+    return valor;
+  }
+
+  return `data:image/jpeg;base64,${valor}`;
+}
+
+function obterPreviewMidia(message) {
+  return normalizarThumbnailMidia(message.media_thumbnail) || message.media_url || "";
+}
+
+function escapeJsString(valor) {
+  return String(valor || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r");
 }
 
 async function baixarArquivo(url, nomeArquivo = "arquivo") {
@@ -7012,22 +7043,33 @@ atualizarBarraSelecao();
     `
     : "";
 
-  const mediaHtml = message.media_url
-  ? message.media_mime?.startsWith("image/")
+  const mediaPreviewUrl = obterPreviewMidia(message);
+  const mediaDownloadUrl = message.media_url || mediaPreviewUrl;
+  const mediaNome = message.media_nome || "arquivo";
+  const mediaPreviewJs = escapeJsString(mediaPreviewUrl);
+  const mediaDownloadJs = escapeJsString(mediaDownloadUrl);
+  const mediaNomeJs = escapeJsString(mediaNome);
+  const isImagem =
+    message.media_mime?.startsWith("image/") ||
+    message.tipo === "imagem" ||
+    Boolean(message.media_thumbnail);
+
+  const mediaHtml = mediaPreviewUrl
+  ? isImagem
     ? `
       <div class="media-image-box">
         <img
-          src="${message.media_url}"
+          src="${mediaPreviewUrl}"
           class="chat-image"
           alt="${message.media_nome || "Imagem"}"
-          onclick="openImageModal('${message.media_url}', '${message.media_nome || "imagem"}')"
+          onclick="openImageModal('${mediaPreviewJs}', '${mediaNomeJs}', '${mediaDownloadJs}')"
         />
 
         <button
           type="button"
           class="media-download-link"
           title="Baixar imagem"
-          onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "imagem"}')"
+          onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')"
         >
           ⬇ Baixar
         </button>
@@ -7047,7 +7089,7 @@ atualizarBarraSelecao();
           type="button"
           class="media-download-link"
           title="Baixar vídeo"
-          onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "video"}')"
+          onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')"
         >
           ⬇ Baixar
         </button>
@@ -7086,7 +7128,7 @@ atualizarBarraSelecao();
         <div class="file-actions single-action">
   <button
     type="button"
-    onclick="baixarArquivo('${message.media_url}', '${message.media_nome || "arquivo"}')"
+    onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')"
   >
     ⬇ Baixar
   </button>
@@ -7422,6 +7464,7 @@ function adicionarMensagemNaConversa(conversaId, mensagem) {
   media_nome: msg.media_nome,
   media_mime: msg.media_mime,
   media_tamanho: msg.media_tamanho,
+  media_thumbnail: msg.media_thumbnail,
 
   status_entrega: msg.status_entrega || "enviada",
   reply_to_message_id: msg.reply_to_message_id,
@@ -7504,6 +7547,7 @@ if (loadingOldMessages) {
       media_nome: msg.media_nome,
       media_mime: msg.media_mime,
       media_tamanho: msg.media_tamanho,
+      media_thumbnail: msg.media_thumbnail,
 
       status_entrega: msg.status_entrega || "enviada",
       reply_to_message_id: msg.reply_to_message_id,
@@ -7595,6 +7639,7 @@ async function carregarUltimaMensagem(conversaId) {
     media_url: msg.media_url,
     media_nome: msg.media_nome,
     media_mime: msg.media_mime,
+    media_thumbnail: msg.media_thumbnail,
     status_entrega: msg.status_entrega || "enviada",
     reply_to_message_id: msg.reply_to_message_id,
     created_at: msg.created_at,
@@ -7737,6 +7782,7 @@ function formatarMensagemResumo(row) {
     media_nome: row.ultima_mensagem_media_nome,
     media_mime: row.ultima_mensagem_media_mime,
     media_tamanho: row.ultima_mensagem_media_tamanho,
+    media_thumbnail: row.ultima_mensagem_media_thumbnail,
     status_entrega:
       row.ultima_mensagem_status_entrega || "enviada",
     reply_to_message_id:
@@ -8439,7 +8485,8 @@ if (text) {
     media_url: null,
     media_nome: null,
     media_mime: null,
-    media_tamanho: null
+    media_tamanho: null,
+    media_thumbnail: null
   });
 }
 
@@ -8462,7 +8509,8 @@ arquivos.forEach(({ file, arquivo }) => {
     media_url: arquivo.url,
     media_nome: arquivo.nome,
     media_mime: arquivo.mime,
-    media_tamanho: arquivo.tamanho
+    media_tamanho: arquivo.tamanho,
+    media_thumbnail: null
   });
 });
 
@@ -12497,6 +12545,7 @@ const novaMsgFormatada = {
   media_nome: novaMensagem.media_nome,
   media_mime: novaMensagem.media_mime,
   media_tamanho: novaMensagem.media_tamanho,
+  media_thumbnail: novaMensagem.media_thumbnail,
 
   status_entrega:
     novaMensagem.status_entrega || "enviada",
