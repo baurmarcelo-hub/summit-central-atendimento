@@ -7521,7 +7521,7 @@ if (loadingOldMessages) {
   pagination.hasMore = mensagensAntigas.length >= 30;
 }
 
-    async function carregarClientes() {
+    async function carregarClientesLegado() {
       const { data: conversasData, error: conversasError } = await supabaseClient
         .from("conversas")
         .select("*")
@@ -7703,6 +7703,208 @@ if (selectedConversationId) {
 
 render();
     }
+
+function formatarMensagemResumo(row) {
+  if (!row?.ultima_mensagem_id) {
+    return null;
+  }
+
+  const createdAt = row.ultima_mensagem_created_at;
+
+  return {
+    id: row.ultima_mensagem_id,
+    direction: row.ultima_mensagem_direcao,
+    text: row.ultima_mensagem_conteudo,
+    tipo: row.ultima_mensagem_tipo || "texto",
+    media_url: row.ultima_mensagem_media_url,
+    media_nome: row.ultima_mensagem_media_nome,
+    media_mime: row.ultima_mensagem_media_mime,
+    media_tamanho: row.ultima_mensagem_media_tamanho,
+    status_entrega:
+      row.ultima_mensagem_status_entrega || "enviada",
+    reply_to_message_id:
+      row.ultima_mensagem_reply_to_message_id,
+    created_at: createdAt,
+    time: createdAt
+      ? new Date(createdAt).toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      : ""
+  };
+}
+
+function formatarConversaResumo(row) {
+  const isGrupo =
+    row.tipo_origem === "grupo" || row.is_grupo === true;
+
+  const identidadeWhatsApp = row.identidade_id
+    ? {
+        id: row.identidade_id,
+        remote_jid: row.identidade_remote_jid,
+        telefone: row.identidade_telefone,
+        push_name: row.identidade_push_name,
+        profile_pic_url: row.identidade_profile_pic_url,
+        vinculo_confirmado:
+          row.identidade_vinculo_confirmado === true
+      }
+    : null;
+
+  const nomeConversa = isGrupo
+    ? row.nome_exibicao || "Grupo WhatsApp"
+    : row.cliente_nome ||
+      row.identidade_push_name ||
+      row.nome_exibicao ||
+      "Cliente sem nome";
+
+  const telefoneConversa = isGrupo
+    ? row.whatsapp_jid || row.conversa_remote_jid || ""
+    : row.cliente_telefone || "";
+
+  const emailConversa = isGrupo
+    ? ""
+    : row.cliente_email || "";
+
+  const canalConversa =
+    row.canal || (isGrupo ? "WhatsApp Grupo" : "WhatsApp");
+
+  const ultimaMensagem = formatarMensagemResumo(row);
+
+  return {
+    id: row.conversa_id,
+    clienteId: row.cliente_id,
+    status: row.status,
+    atendente: row.atendente,
+    updated_at: row.updated_at,
+    name: nomeConversa,
+    phone: telefoneConversa,
+    email: emailConversa,
+    channel: canalConversa,
+    whatsapp_jid:
+      row.whatsapp_jid || row.conversa_remote_jid || "",
+    tipo_origem: row.tipo_origem || "contato",
+    whatsapp_identidade: identidadeWhatsApp,
+    whatsapp_remote_jid:
+      row.identidade_remote_jid ||
+      row.whatsapp_jid ||
+      row.conversa_remote_jid ||
+      "",
+    whatsapp_telefone_resolvido:
+      row.identidade_telefone || "",
+    whatsapp_push_name:
+      row.identidade_push_name || "",
+    whatsapp_profile_pic_url:
+      row.identidade_profile_pic_url || "",
+    whatsapp_vinculo_confirmado:
+      row.identidade_vinculo_confirmado === true,
+
+    lastMessage: ultimaMensagem
+      ? (
+          ultimaMensagem.text ||
+          ultimaMensagem.media_nome ||
+          "Arquivo"
+        )
+      : "Conversa iniciada",
+
+    time: ultimaMensagem ? ultimaMensagem.time : "",
+
+    unread: unreadMap[row.conversa_id] || 0,
+    initials: isGrupo
+      ? "ðŸ‘¥"
+      : String(nomeConversa || "C").charAt(0).toUpperCase(),
+
+    messages: ultimaMensagem ? [ultimaMensagem] : []
+  };
+}
+
+async function finalizarCarregamentoConversas() {
+  conversations.sort((a, b) => {
+    const atividadeA = new Date(
+      a.updated_at || a.messages?.[0]?.created_at || 0
+    );
+
+    const atividadeB = new Date(
+      b.updated_at || b.messages?.[0]?.created_at || 0
+    );
+
+    return atividadeB - atividadeA;
+  });
+
+  const conversaSelecionadaAindaExiste =
+    conversations.find(c =>
+      c.id === selectedConversationId &&
+      (
+        currentFilter === "aguardando"
+          ? c.status !== "em_atendimento"
+          : c.status === "em_atendimento"
+      ) &&
+      (
+        ownerFilter === "todas" ||
+        c.atendente === usuarioLogadoNome
+      )
+    );
+
+  if (!conversaSelecionadaAindaExiste) {
+    const primeiraConversaDoFiltro =
+      conversations.find(c =>
+        (
+          currentFilter === "aguardando"
+            ? c.status !== "em_atendimento"
+            : c.status === "em_atendimento"
+        ) &&
+        (
+          ownerFilter === "todas" ||
+          c.atendente === usuarioLogadoNome
+        )
+      );
+
+    selectedConversationId =
+      primeiraConversaDoFiltro?.id || null;
+  }
+
+  if (selectedConversationId) {
+    await carregarMensagensDaConversa(selectedConversationId);
+  }
+
+  render();
+}
+
+async function carregarClientes() {
+  const {
+    data: clientesData,
+    error: clientesError
+  } = await supabaseClient
+    .from("clientes")
+    .select("*");
+
+  if (clientesError) {
+    console.error("Erro ao carregar clientes:", clientesError);
+    return;
+  }
+
+  allClientes = clientesData || [];
+
+  const {
+    data: resumoData,
+    error: resumoError
+  } = await supabaseClient.rpc("listar_conversas_resumo");
+
+  if (resumoError) {
+    console.warn(
+      "Erro ao carregar resumo otimizado. Usando fallback:",
+      resumoError
+    );
+
+    await carregarClientesLegado();
+    return;
+  }
+
+  conversations = (resumoData || []).map(
+    formatarConversaResumo
+  );
+
+  await finalizarCarregamentoConversas();
+}
 
     async function assumirConversa() {
   const conversation = getSelectedConversation();
