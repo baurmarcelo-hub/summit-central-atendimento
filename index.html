@@ -5629,6 +5629,7 @@ let editingClientId = null;
 let clientModalMode = "edit";
 let editingWhatsappConnectionId = null;
 let whatsappConnectionsCache = [];
+let isLinkingClient = false;
 
 function abrirModalVincularCliente() {
   const conversation = getSelectedConversation();
@@ -5720,7 +5721,120 @@ function renderClientesParaVinculo() {
     });
 }
 
+function getRemoteJidConversa(conversation) {
+  return (
+    conversation?.whatsapp_remote_jid ||
+    conversation?.whatsapp_jid ||
+    conversation?.whatsapp_identidade?.remote_jid ||
+    ""
+  );
+}
+
+function isRpcNaoConfigurada(error) {
+  return (
+    error?.code === "PGRST202" ||
+    error?.code === "42883" ||
+    String(error?.message || "")
+      .toLowerCase()
+      .includes("vincular_cliente_whatsapp")
+  );
+}
+
+async function vincularClienteWhatsappRpc(conversation, cliente) {
+  const remoteJid = getRemoteJidConversa(conversation);
+
+  if (!remoteJid) {
+    throw new Error(
+      "Conversa sem identidade WhatsApp para vincular."
+    );
+  }
+
+  const { data, error } = await supabaseClient.rpc(
+    "vincular_cliente_whatsapp",
+    {
+      p_conversa_id: conversation.id,
+      p_cliente_id: cliente.id,
+      p_remote_jid: remoteJid,
+      p_telefone: cliente.telefone || null
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function vincularClienteWhatsappFallback(conversation, cliente) {
+  const remoteJid = getRemoteJidConversa(conversation);
+
+  if (!remoteJid) {
+    throw new Error(
+      "Conversa sem identidade WhatsApp para vincular."
+    );
+  }
+
+  const {
+    data: identidadeAnterior,
+    error: buscaIdentidadeError
+  } = await supabaseClient
+    .from("whatsapp_identidades")
+    .select("id, cliente_id, telefone, vinculo_confirmado")
+    .eq("remote_jid", remoteJid)
+    .maybeSingle();
+
+  if (buscaIdentidadeError) {
+    throw buscaIdentidadeError;
+  }
+
+  if (!identidadeAnterior) {
+    throw new Error(
+      "Identidade WhatsApp não encontrada para esta conversa."
+    );
+  }
+
+  const { error: identidadeError } = await supabaseClient
+    .from("whatsapp_identidades")
+    .update({
+      cliente_id: cliente.id,
+      telefone: cliente.telefone,
+      vinculo_confirmado: true,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", identidadeAnterior.id);
+
+  if (identidadeError) {
+    throw identidadeError;
+  }
+
+  const { error: conversaError } = await supabaseClient
+    .from("conversas")
+    .update({
+      cliente_id: cliente.id,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", conversation.id);
+
+  if (conversaError) {
+    await supabaseClient
+      .from("whatsapp_identidades")
+      .update({
+        cliente_id: identidadeAnterior.cliente_id,
+        telefone: identidadeAnterior.telefone,
+        vinculo_confirmado:
+          identidadeAnterior.vinculo_confirmado,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", identidadeAnterior.id);
+
+    throw conversaError;
+  }
+}
+
 async function confirmarVinculoCliente(clienteId) {
+  if (isLinkingClient) return;
+
   const conversation = getSelectedConversation();
 
   if (!conversation) {
@@ -5741,39 +5855,53 @@ async function confirmarVinculoCliente(clienteId) {
 
   if (!confirmar) return;
 
-  const { error: conversaError } = await supabaseClient
-    .from("conversas")
-    .update({
-      cliente_id: cliente.id,
-      updated_at: new Date().toISOString()
-    })
-    .eq("id", conversation.id);
+  isLinkingClient = true;
 
-  if (conversaError) {
-    console.error("Erro ao vincular conversa:", conversaError);
-    alert("Erro ao vincular conversa.");
-    return;
+  document
+    .querySelectorAll(".link-client-item")
+    .forEach(item => {
+      item.style.pointerEvents = "none";
+      item.style.opacity = "0.6";
+    });
+
+  try {
+    try {
+      await vincularClienteWhatsappRpc(conversation, cliente);
+    } catch (rpcError) {
+      if (!isRpcNaoConfigurada(rpcError)) {
+        throw rpcError;
+      }
+
+      console.warn(
+        "RPC vincular_cliente_whatsapp não encontrada. Usando fallback temporário.",
+        rpcError
+      );
+
+      await vincularClienteWhatsappFallback(conversation, cliente);
+    }
+
+    fecharModalVincularCliente();
+
+    await carregarClientes();
+
+    alert("Cliente vinculado com sucesso.");
+  } catch (error) {
+    console.error("Erro ao vincular cliente:", error);
+
+    alert(
+      "Erro ao vincular cliente.\n\n" +
+      (error.message || JSON.stringify(error, null, 2))
+    );
+  } finally {
+    isLinkingClient = false;
+
+    document
+      .querySelectorAll(".link-client-item")
+      .forEach(item => {
+        item.style.pointerEvents = "";
+        item.style.opacity = "";
+      });
   }
-
-  const { error: identidadeError } = await supabaseClient
-    .from("whatsapp_identidades")
-    .update({
-      cliente_id: cliente.id,
-      telefone: cliente.telefone,
-      vinculo_confirmado: true,
-      updated_at: new Date().toISOString()
-    })
-    .eq("remote_jid", conversation.whatsapp_remote_jid || conversation.whatsapp_jid);
-
-  if (identidadeError) {
-    console.error("Erro ao atualizar identidade WhatsApp:", identidadeError);
-    alert("Conversa vinculada, mas erro ao atualizar identidade WhatsApp.");
-    return;
-  }
-
-  fecharModalVincularCliente();
-
-  await carregarClientes();
 }
 
 function normalizarTelefoneBrasil(valor) {
