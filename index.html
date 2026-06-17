@@ -4318,16 +4318,6 @@ line-height: 1.15;
       </div>
 
       <div>
-        <span>Canal</span>
-        <strong id="detailChannel">WhatsApp</strong>
-      </div>
-
-      <div>
-        <span>Status</span>
-        <strong id="detailStatus">aguardando</strong>
-      </div>
-
-      <div>
         <span>Responsável</span>
         <strong id="detailResponsible">Não atribuído</strong>
       </div>
@@ -4335,11 +4325,6 @@ line-height: 1.15;
       <div>
         <span>Remote JID</span>
         <strong id="detailRemoteJid">-</strong>
-      </div>
-
-      <div>
-        <span>Nome WhatsApp</span>
-        <strong id="detailWhatsappName">-</strong>
       </div>
 
       <div>
@@ -5231,11 +5216,8 @@ let kanbanVisibleByStatus = {
     const detailEmail = document.getElementById("detailEmail");
     const detailAvatar = document.getElementById("detailAvatar");
     const headerSubtitle = document.getElementById("headerSubtitle");
-    const detailChannel = document.getElementById("detailChannel");
-    const detailStatus = document.getElementById("detailStatus");
     const detailResponsible = document.getElementById("detailResponsible");
     const detailRemoteJid = document.getElementById("detailRemoteJid");
-    const detailWhatsappName = document.getElementById("detailWhatsappName");
     const detailWhatsappLink = document.getElementById("detailWhatsappLink");
     const input = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
@@ -6880,11 +6862,8 @@ if (!conversation) {
   detailEmail.textContent = "-";
   detailAvatar.textContent = "-";
 
-  detailChannel.textContent = "-";
-  detailStatus.textContent = "-";
   detailResponsible.textContent = "-";
   detailRemoteJid.textContent = "-";
-  detailWhatsappName.textContent = "-";
   detailWhatsappLink.textContent = "-";
   detailPhoneLabel.textContent = "Telefone";
   linkWhatsappClientBtn?.classList.add("hidden");
@@ -6974,9 +6953,6 @@ if (isGrupoAtual) {
   detailAvatar.textContent = conversation.initials;
 }
 
-  detailChannel.textContent = conversation.channel;
-  detailStatus.textContent = conversation.status;
-
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
 const vinculoTexto = conversation.whatsapp_vinculo_confirmado
@@ -6990,9 +6966,6 @@ const temVinculoResolvido =
 
 detailRemoteJid.textContent =
   conversation.whatsapp_remote_jid || conversation.whatsapp_jid || "-";
-
-detailWhatsappName.textContent =
-  conversation.whatsapp_push_name || "-";
 
 detailWhatsappLink.textContent =
   conversation.whatsapp_jid || conversation.whatsapp_identidade
@@ -8062,8 +8035,6 @@ async function carregarClientes() {
   if (!conversation) {
     alert("Nenhuma conversa selecionada.");
     headerSubtitle.textContent = "Sem conversa";
-    detailChannel.textContent = "-";
-    detailStatus.textContent = "-";
     detailResponsible.textContent = "-";
     return;
   }
