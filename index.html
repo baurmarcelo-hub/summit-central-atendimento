@@ -12538,7 +12538,10 @@ const conversa = conversations.find(
   c => c.id === novaMensagem.conversa_id
 );
 
-if (!conversa) return;
+if (!conversa) {
+  await carregarClientes();
+  return;
+}
 
 const novaMsgFormatada = {
   id: novaMensagem.id,
@@ -12617,7 +12620,7 @@ conversa.messages = [novaMsgFormatada];
       });
 
       atualizarContadores();
-atualizarCardConversa(conversa);
+renderConversations();
 
 if (novaMensagem.conversa_id === selectedConversationId) {
   forceScrollToBottom = true;
@@ -12633,13 +12636,16 @@ if (novaMensagem.conversa_id === selectedConversationId) {
       schema: "public",
       table: "mensagens"
     },
-    (payload) => {
+    async (payload) => {
       const mensagemAtualizada = payload.new;
       const conversa = conversations.find(
         c => c.id === mensagemAtualizada.conversa_id
       );
 
-      if (!conversa) return;
+      if (!conversa) {
+        await carregarClientes();
+        return;
+      }
 
       const mensagens = messagesByConversation[mensagemAtualizada.conversa_id] || [];
       const mensagemLocal = mensagens.find(
