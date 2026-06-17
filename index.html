@@ -1426,6 +1426,10 @@ line-height: 1.15;
   color: #8696a0;
 }
 
+.message-status.status-pendente {
+  color: #8696a0;
+}
+
 .message-status.status-entregue {
   color: #8696a0;
 }
@@ -6675,6 +6679,12 @@ function escapeJsString(valor) {
     .replace(/\r/g, "\\r");
 }
 
+function obterIconeStatusEntrega(status) {
+  if (status === "pendente") return "◷";
+  if (status === "lida" || status === "entregue") return "✓✓";
+  return "✓";
+}
+
 async function baixarArquivo(url, nomeArquivo = "arquivo") {
   try {
     const response = await fetch(url);
@@ -7191,7 +7201,7 @@ ${
         ${
           message.direction === "out"
             ? `<span class="message-status status-${message.status_entrega}">
-                ${message.status_entrega === "lida" ? "✓✓" : message.status_entrega === "entregue" ? "✓✓" : "✓"}
+                ${obterIconeStatusEntrega(message.status_entrega)}
               </span>`
             : ""
         }
@@ -7205,7 +7215,7 @@ ${
           ${
             message.direction === "out"
               ? `<span class="message-status status-${message.status_entrega}">
-                  ${message.status_entrega === "lida" ? "✓✓" : message.status_entrega === "entregue" ? "✓✓" : "✓"}
+                  ${obterIconeStatusEntrega(message.status_entrega)}
                 </span>`
               : ""
           }
@@ -8485,7 +8495,7 @@ if (text) {
     reply_to_message_id: replyingToMessage?.id || null,
     canal: conversation.channel || "WhatsApp",
     direcao: "out",
-    status_entrega: "enviada",
+    status_entrega: "pendente",
     whatsapp_message_id: null,
     tipo: "texto",
     media_url: null,
@@ -8504,7 +8514,7 @@ arquivos.forEach(({ file, arquivo }) => {
     reply_to_message_id: null,
     canal: conversation.channel || "WhatsApp",
     direcao: "out",
-    status_entrega: "enviada",
+    status_entrega: "pendente",
     whatsapp_message_id: null,
     tipo: file.type.startsWith("audio/")
       ? "audio"
