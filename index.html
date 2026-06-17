@@ -4338,11 +4338,6 @@ line-height: 1.15;
       </div>
 
       <div>
-        <span>Telefone resolvido</span>
-        <strong id="detailResolvedPhone">-</strong>
-      </div>
-
-      <div>
         <span>Nome WhatsApp</span>
         <strong id="detailWhatsappName">-</strong>
       </div>
@@ -5240,7 +5235,6 @@ let kanbanVisibleByStatus = {
     const detailStatus = document.getElementById("detailStatus");
     const detailResponsible = document.getElementById("detailResponsible");
     const detailRemoteJid = document.getElementById("detailRemoteJid");
-    const detailResolvedPhone = document.getElementById("detailResolvedPhone");
     const detailWhatsappName = document.getElementById("detailWhatsappName");
     const detailWhatsappLink = document.getElementById("detailWhatsappLink");
     const input = document.getElementById("messageInput");
@@ -6890,7 +6884,6 @@ if (!conversation) {
   detailStatus.textContent = "-";
   detailResponsible.textContent = "-";
   detailRemoteJid.textContent = "-";
-  detailResolvedPhone.textContent = "-";
   detailWhatsappName.textContent = "-";
   detailWhatsappLink.textContent = "-";
   detailPhoneLabel.textContent = "Telefone";
@@ -6955,13 +6948,16 @@ if (!conversation) {
     `${conversation.channel} • ${conversation.status}`;
 
   detailName.textContent = nomeConversaAtual;
-  const isLidPendente =
-  conversation.whatsapp_jid?.includes("@lid") &&
-  !conversation.phone;
+  const telefonePrincipal =
+    conversation.phone ||
+    conversation.whatsapp_telefone_resolvido ||
+    "";
 
-detailPhone.textContent = isLidPendente
-  ? conversation.whatsapp_jid
-  : conversation.phone || "-";
+  const isLidPendente =
+    conversation.whatsapp_jid?.includes("@lid") &&
+    !telefonePrincipal;
+
+detailPhone.textContent = telefonePrincipal || conversation.whatsapp_jid || "-";
   detailEmail.textContent = conversation.email;
   detailAvatar.textContent = conversation.initials;
 
@@ -6984,28 +6980,30 @@ if (isGrupoAtual) {
   detailResponsible.textContent =
     conversation.atendente || "Não atribuído";
 const vinculoTexto = conversation.whatsapp_vinculo_confirmado
-  ? "Confirmado automaticamente"
-  : "Pendente de vinculo";
+  ? "Resolvido"
+  : "Pendente";
+
+const temVinculoResolvido =
+  conversation.whatsapp_vinculo_confirmado ||
+  Boolean(conversation.clienteId) ||
+  Boolean(conversation.whatsapp_telefone_resolvido);
 
 detailRemoteJid.textContent =
   conversation.whatsapp_remote_jid || conversation.whatsapp_jid || "-";
-
-detailResolvedPhone.textContent =
-  conversation.whatsapp_telefone_resolvido || conversation.phone || "-";
 
 detailWhatsappName.textContent =
   conversation.whatsapp_push_name || "-";
 
 detailWhatsappLink.textContent =
   conversation.whatsapp_jid || conversation.whatsapp_identidade
-    ? vinculoTexto
+    ? (temVinculoResolvido ? "Resolvido" : vinculoTexto)
     : "-";
 
 if (linkWhatsappClientBtn) {
   const podeVincular =
     !isGrupoAtual &&
     (conversation.whatsapp_jid || conversation.whatsapp_identidade) &&
-    !conversation.whatsapp_vinculo_confirmado;
+    !temVinculoResolvido;
 
   linkWhatsappClientBtn.classList.toggle("hidden", !podeVincular);
 }
