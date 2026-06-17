@@ -7467,6 +7467,7 @@ function adicionarMensagemNaConversa(conversaId, mensagem) {
   media_thumbnail: msg.media_thumbnail,
 
   status_entrega: msg.status_entrega || "enviada",
+  whatsapp_message_id: msg.whatsapp_message_id,
   reply_to_message_id: msg.reply_to_message_id,
 
   created_at: msg.created_at,
@@ -7550,6 +7551,7 @@ if (loadingOldMessages) {
       media_thumbnail: msg.media_thumbnail,
 
       status_entrega: msg.status_entrega || "enviada",
+      whatsapp_message_id: msg.whatsapp_message_id,
       reply_to_message_id: msg.reply_to_message_id,
 
       created_at: msg.created_at,
@@ -7641,6 +7643,7 @@ async function carregarUltimaMensagem(conversaId) {
     media_mime: msg.media_mime,
     media_thumbnail: msg.media_thumbnail,
     status_entrega: msg.status_entrega || "enviada",
+    whatsapp_message_id: msg.whatsapp_message_id,
     reply_to_message_id: msg.reply_to_message_id,
     created_at: msg.created_at,
     time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
@@ -7785,6 +7788,7 @@ function formatarMensagemResumo(row) {
     media_thumbnail: row.ultima_mensagem_media_thumbnail,
     status_entrega:
       row.ultima_mensagem_status_entrega || "enviada",
+    whatsapp_message_id: row.ultima_mensagem_whatsapp_message_id,
     reply_to_message_id:
       row.ultima_mensagem_reply_to_message_id,
     created_at: createdAt,
@@ -8282,6 +8286,7 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
+        mensagemId: mensagem.id,
         number: destinoWhatsApp,
         text: textoMensagem
       })
@@ -8481,6 +8486,7 @@ if (text) {
     canal: conversation.channel || "WhatsApp",
     direcao: "out",
     status_entrega: "enviada",
+    whatsapp_message_id: null,
     tipo: "texto",
     media_url: null,
     media_nome: null,
@@ -8499,6 +8505,7 @@ arquivos.forEach(({ file, arquivo }) => {
     canal: conversation.channel || "WhatsApp",
     direcao: "out",
     status_entrega: "enviada",
+    whatsapp_message_id: null,
     tipo: file.type.startsWith("audio/")
       ? "audio"
       : file.type.startsWith("image/")
@@ -12549,6 +12556,7 @@ const novaMsgFormatada = {
 
   status_entrega:
     novaMensagem.status_entrega || "enviada",
+  whatsapp_message_id: novaMensagem.whatsapp_message_id,
 
   reply_to_message_id:
     novaMensagem.reply_to_message_id,
@@ -12616,6 +12624,49 @@ if (novaMensagem.conversa_id === selectedConversationId) {
   renderChat();
 }
 
+    }
+  )
+  .on(
+    "postgres_changes",
+    {
+      event: "UPDATE",
+      schema: "public",
+      table: "mensagens"
+    },
+    (payload) => {
+      const mensagemAtualizada = payload.new;
+      const conversa = conversations.find(
+        c => c.id === mensagemAtualizada.conversa_id
+      );
+
+      if (!conversa) return;
+
+      const mensagens = messagesByConversation[mensagemAtualizada.conversa_id] || [];
+      const mensagemLocal = mensagens.find(
+        mensagem => mensagem.id === mensagemAtualizada.id
+      );
+
+      if (mensagemLocal) {
+        mensagemLocal.status_entrega =
+          mensagemAtualizada.status_entrega || mensagemLocal.status_entrega;
+        mensagemLocal.whatsapp_message_id =
+          mensagemAtualizada.whatsapp_message_id || mensagemLocal.whatsapp_message_id;
+      }
+
+      const ultimaMensagem = conversa.messages?.find(
+        mensagem => mensagem.id === mensagemAtualizada.id
+      );
+
+      if (ultimaMensagem) {
+        ultimaMensagem.status_entrega =
+          mensagemAtualizada.status_entrega || ultimaMensagem.status_entrega;
+        ultimaMensagem.whatsapp_message_id =
+          mensagemAtualizada.whatsapp_message_id || ultimaMensagem.whatsapp_message_id;
+      }
+
+      if (mensagemAtualizada.conversa_id === selectedConversationId) {
+        renderChat();
+      }
     }
   )
   .subscribe();
