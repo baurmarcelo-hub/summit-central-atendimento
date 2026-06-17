@@ -5730,6 +5730,16 @@ function getRemoteJidConversa(conversation) {
   );
 }
 
+function isGrupoWhatsApp(conversation) {
+  const remoteJid = getRemoteJidConversa(conversation);
+
+  return (
+    String(remoteJid || "").endsWith("@g.us") ||
+    conversation?.tipo_origem === "grupo" ||
+    conversation?.channel === "WhatsApp Grupo"
+  );
+}
+
 function isRpcNaoConfigurada(error) {
   return (
     error?.code === "PGRST202" ||
@@ -5839,6 +5849,13 @@ async function confirmarVinculoCliente(clienteId) {
 
   if (!conversation) {
     alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  if (isGrupoWhatsApp(conversation)) {
+    alert(
+      "Esta conversa é um grupo do WhatsApp. Vincule apenas contatos individuais/LID a clientes."
+    );
     return;
   }
 
