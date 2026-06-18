@@ -5825,6 +5825,19 @@ function getGroupAvatarHtml() {
   return `<span class="group-avatar-icon"><span></span></span>`;
 }
 
+function escolherNomeContato(...nomes) {
+  const valores = nomes
+    .map(nome => String(nome || "").trim())
+    .filter(Boolean);
+  const genericos = new Set([
+    "Contato WhatsApp",
+    "Cliente WhatsApp",
+    "Cliente sem nome"
+  ]);
+
+  return valores.find(nome => !genericos.has(nome)) || valores[0] || "Cliente sem nome";
+}
+
 function getConversationDisplayName(conversation) {
   return conversation?.name ||
     (isGrupoWhatsApp(conversation) ? "Grupo WhatsApp" : "Cliente sem nome");
@@ -7853,10 +7866,11 @@ const nomeConversa = isGrupo
   ? conversa.nome_exibicao ||
     identidadeWhatsApp?.push_name ||
     "Grupo WhatsApp"
-  : cliente?.nome ||
-    identidadeWhatsApp?.push_name ||
-    conversa.nome_exibicao ||
-    "Cliente sem nome";
+  : escolherNomeContato(
+      cliente?.nome,
+      conversa.nome_exibicao,
+      identidadeWhatsApp?.push_name
+    );
 
 const telefoneConversa = isGrupo
   ? conversa.whatsapp_jid || ""
@@ -7990,10 +8004,11 @@ function formatarConversaResumo(row) {
     ? row.nome_exibicao ||
       row.identidade_push_name ||
       "Grupo WhatsApp"
-    : row.cliente_nome ||
-      row.identidade_push_name ||
-      row.nome_exibicao ||
-      "Cliente sem nome";
+    : escolherNomeContato(
+        row.cliente_nome,
+        row.nome_exibicao,
+        row.identidade_push_name
+      );
 
   const telefoneConversa = isGrupo
     ? row.whatsapp_jid || row.conversa_remote_jid || ""
