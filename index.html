@@ -5825,9 +5825,8 @@ function getGroupAvatarHtml() {
 }
 
 function getConversationDisplayName(conversation) {
-  return isGrupoWhatsApp(conversation)
-    ? "grupo"
-    : conversation?.name || "Cliente sem nome";
+  return conversation?.name ||
+    (isGrupoWhatsApp(conversation) ? "Grupo WhatsApp" : "Cliente sem nome");
 }
 
 function conversaPertenceAoEscopo(conversation) {
@@ -7956,7 +7955,9 @@ function formatarConversaResumo(row) {
     : null;
 
   const nomeConversa = isGrupo
-    ? "grupo"
+    ? row.nome_exibicao ||
+      row.identidade_push_name ||
+      "Grupo WhatsApp"
     : row.cliente_nome ||
       row.identidade_push_name ||
       row.nome_exibicao ||
