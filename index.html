@@ -7654,18 +7654,18 @@ function ordenarMensagens(mensagens) {
 
     async function carregarMensagens(conversaId) {
       const { data, error } = await supabaseClient
-  	.from("mensagens")
-  	.select("*")
-  	.eq("conversa_id", conversaId)
-	.order("id", { ascending: false })
-  	.limit(MESSAGE_PAGE_SIZE);
+        .from("mensagens")
+        .select("*")
+        .eq("conversa_id", conversaId)
+        .order("id", { ascending: false })
+        .limit(MESSAGE_PAGE_SIZE);
 
       if (error) {
         console.error("Erro ao carregar mensagens:", error);
         return null;
       }
 
-	return (data || []).reverse().map(formatarMensagemBanco);
+      return (data || []).reverse().map(formatarMensagemBanco);
     }
 
 async function carregarMensagensDaConversa(conversaId) {
