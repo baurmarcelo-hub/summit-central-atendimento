@@ -5191,6 +5191,7 @@ let forceScrollToBottom = false;
 let messagesByConversation = {};
 let loadingMessagesConversationId = null;
 let messagePagination = {};
+const MESSAGE_PAGE_SIZE = 20;
 let usuarioLogadoNome = "";
 let ownerFilter = "todas";
 let mediaRecorder = null;
@@ -6862,6 +6863,27 @@ function obterStatusEntregaVisual(message) {
   return message?.status_entrega || "enviada";
 }
 
+function obterDataLocalSemHorario(valor) {
+  const data = new Date(valor);
+  return new Date(data.getFullYear(), data.getMonth(), data.getDate());
+}
+
+function formatarDivisorDataMensagem(valor) {
+  const data = obterDataLocalSemHorario(valor);
+  const hoje = obterDataLocalSemHorario(new Date());
+  const ontem = new Date(hoje);
+  ontem.setDate(hoje.getDate() - 1);
+
+  if (data.getTime() === hoje.getTime()) return "Hoje";
+  if (data.getTime() === ontem.getTime()) return "Ontem";
+
+  return data.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: data.getFullYear() === hoje.getFullYear() ? undefined : "numeric"
+  });
+}
+
 async function baixarArquivo(url, nomeArquivo = "arquivo") {
   try {
     const response = await fetch(url);
@@ -7095,15 +7117,14 @@ messagesEl.innerHTML = `
     Carregando mensagens antigas...
   </div>
 
-  <div class="date-divider">
-    <span>Hoje</span>
-  </div>
 `;
 
   const messageSearchTerm = messageSearchInput.value.trim().toLowerCase();
 
 const mensagensDaConversa =
   messagesByConversation[conversation.id] || [];
+
+let ultimaDataRenderizada = "";
 
 if (loadingMessagesConversationId === conversation.id) {
   messagesEl.innerHTML = `
@@ -7124,6 +7145,16 @@ mensagensDaConversa
     );
   })
   .forEach(message => {
+
+  const chaveData = obterDataLocalSemHorario(message.created_at).toISOString();
+
+  if (chaveData !== ultimaDataRenderizada) {
+    const divisorData = document.createElement("div");
+    divisorData.className = "date-divider";
+    divisorData.innerHTML = `<span>${formatarDivisorDataMensagem(message.created_at)}</span>`;
+    messagesEl.appendChild(divisorData);
+    ultimaDataRenderizada = chaveData;
+  }
 
   const row = document.createElement("div");
 
@@ -7591,52 +7622,56 @@ function adicionarMensagemNaConversa(conversaId, mensagem) {
   return true;
 }
 
+function formatarMensagemBanco(msg) {
+  return {
+    id: msg.id,
+    direction: msg.direcao,
+    text: msg.conteudo,
+    autor_nome: msg.autor_nome,
+    tipo: msg.tipo || "texto",
+    media_url: msg.media_url,
+    media_nome: msg.media_nome,
+    media_mime: msg.media_mime,
+    media_tamanho: msg.media_tamanho,
+    media_thumbnail: msg.media_thumbnail,
+    status_entrega: msg.status_entrega || "enviada",
+    whatsapp_message_id: msg.whatsapp_message_id,
+    reply_to_message_id: msg.reply_to_message_id,
+    created_at: msg.created_at,
+    time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    })
+  };
+}
+
+function ordenarMensagens(mensagens) {
+  return mensagens.sort((a, b) => {
+    const diferencaData = new Date(a.created_at) - new Date(b.created_at);
+    return diferencaData || Number(a.id) - Number(b.id);
+  });
+}
+
     async function carregarMensagens(conversaId) {
       const { data, error } = await supabaseClient
   	.from("mensagens")
   	.select("*")
   	.eq("conversa_id", conversaId)
-  	.order("created_at", { ascending: false })
-  	.limit(30);
+	.order("id", { ascending: false })
+  	.limit(MESSAGE_PAGE_SIZE);
 
       if (error) {
         console.error("Erro ao carregar mensagens:", error);
-        return [];
+        return null;
       }
 
-	data.reverse();
-
-  	return data.map(msg => ({
-  id: msg.id,
-
-  direction: msg.direcao,
-  text: msg.conteudo,
-  autor_nome: msg.autor_nome,
-
-  tipo: msg.tipo || "texto",
-  media_url: msg.media_url,
-  media_nome: msg.media_nome,
-  media_mime: msg.media_mime,
-  media_tamanho: msg.media_tamanho,
-  media_thumbnail: msg.media_thumbnail,
-
-  status_entrega: msg.status_entrega || "enviada",
-  whatsapp_message_id: msg.whatsapp_message_id,
-  reply_to_message_id: msg.reply_to_message_id,
-
-  created_at: msg.created_at,
-
-  time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit"
-  })
-}));
+	return (data || []).reverse().map(formatarMensagemBanco);
     }
 
 async function carregarMensagensDaConversa(conversaId) {
   if (!conversaId) return;
 
-  if (messagesByConversation[conversaId]) {
+  if (messagePagination[conversaId]) {
     return;
   }
 
@@ -7644,11 +7679,27 @@ async function carregarMensagensDaConversa(conversaId) {
 
   const mensagens = await carregarMensagens(conversaId);
 
-  messagesByConversation[conversaId] = mensagens;
+  if (!mensagens) {
+    loadingMessagesConversationId = null;
+    return;
+  }
+
+  const mensagensParciais = messagesByConversation[conversaId] || [];
+  const mensagensUnificadas = new Map();
+
+  [...mensagens, ...mensagensParciais].forEach(mensagem => {
+    mensagensUnificadas.set(mensagem.id, mensagem);
+  });
+
+  messagesByConversation[conversaId] = ordenarMensagens(
+    Array.from(mensagensUnificadas.values())
+  );
 
   messagePagination[conversaId] = {
-    offset: mensagens.length,
-    hasMore: mensagens.length >= 30,
+    oldestId: mensagens.length
+      ? Math.min(...mensagens.map(mensagem => Number(mensagem.id)))
+      : null,
+    hasMore: mensagens.length >= MESSAGE_PAGE_SIZE,
     loading: false
   };
 
@@ -7676,8 +7727,9 @@ if (loadingOldMessages) {
     .from("mensagens")
     .select("*")
     .eq("conversa_id", conversaId)
-    .order("created_at", { ascending: false })
-    .range(pagination.offset, pagination.offset + 29);
+    .lt("id", pagination.oldestId)
+    .order("id", { ascending: false })
+    .limit(MESSAGE_PAGE_SIZE);
 
   pagination.loading = false;
 if (loadingOldMessages) {
@@ -7691,30 +7743,7 @@ if (loadingOldMessages) {
 
   const mensagensAntigas = (data || [])
     .reverse()
-    .map(msg => ({
-      id: msg.id,
-      direction: msg.direcao,
-      text: msg.conteudo,
-      autor_nome: msg.autor_nome,
-
-      tipo: msg.tipo || "texto",
-      media_url: msg.media_url,
-      media_nome: msg.media_nome,
-      media_mime: msg.media_mime,
-      media_tamanho: msg.media_tamanho,
-      media_thumbnail: msg.media_thumbnail,
-
-      status_entrega: msg.status_entrega || "enviada",
-      whatsapp_message_id: msg.whatsapp_message_id,
-      reply_to_message_id: msg.reply_to_message_id,
-
-      created_at: msg.created_at,
-
-      time: new Date(msg.created_at).toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    }));
+    .map(formatarMensagemBanco);
 
   if (mensagensAntigas.length === 0) {
     pagination.hasMore = false;
@@ -7729,13 +7758,16 @@ if (loadingOldMessages) {
     m => !idsAtuais.has(m.id)
   );
 
-  messagesByConversation[conversaId] = [
+  messagesByConversation[conversaId] = ordenarMensagens([
     ...novasMensagensAntigas,
     ...mensagensAtuais
-  ];
+  ]);
 
-  pagination.offset += mensagensAntigas.length;
-  pagination.hasMore = mensagensAntigas.length >= 30;
+  pagination.oldestId = Math.min(
+    pagination.oldestId,
+    ...mensagensAntigas.map(mensagem => Number(mensagem.id))
+  );
+  pagination.hasMore = mensagensAntigas.length >= MESSAGE_PAGE_SIZE;
 }
 
     async function carregarClientesLegado() {
