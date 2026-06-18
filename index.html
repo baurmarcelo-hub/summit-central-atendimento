@@ -6303,10 +6303,10 @@ const nomeExibicao = getConversationDisplayName(conversation);
   card.innerHTML = `
     <div class="client-avatar">
   ${
-    isGrupo
-      ? getGroupAvatarHtml()
-      : conversation.whatsapp_profile_pic_url
+    conversation.whatsapp_profile_pic_url
       ? `<img src="${conversation.whatsapp_profile_pic_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`
+      : isGrupo
+      ? getGroupAvatarHtml()
       : conversation.initials
   }
 </div>
@@ -6971,15 +6971,15 @@ if (!conversation) {
   const nomeConversaAtual = getConversationDisplayName(conversation);
 
   headerName.textContent = nomeConversaAtual;
-  if (isGrupoAtual) {
-  headerAvatar.innerHTML = getGroupAvatarHtml();
-} else if (conversation.whatsapp_profile_pic_url) {
+  if (conversation.whatsapp_profile_pic_url) {
   headerAvatar.innerHTML = `
     <img
       src="${conversation.whatsapp_profile_pic_url}"
       style="width:100%;height:100%;border-radius:50%;object-fit:cover;"
     />
   `;
+} else if (isGrupoAtual) {
+  headerAvatar.innerHTML = getGroupAvatarHtml();
 } else {
   headerAvatar.textContent = conversation.initials;
 }
@@ -7001,15 +7001,15 @@ detailPhone.textContent = telefonePrincipal || conversation.whatsapp_jid || "-";
   detailEmail.textContent = conversation.email;
   detailAvatar.textContent = conversation.initials;
 
-if (isGrupoAtual) {
-  detailAvatar.innerHTML = getGroupAvatarHtml();
-} else if (conversation.whatsapp_profile_pic_url) {
+if (conversation.whatsapp_profile_pic_url) {
   detailAvatar.innerHTML = `
     <img
       src="${conversation.whatsapp_profile_pic_url}"
       style="width:100%;height:100%;border-radius:50%;object-fit:cover;"
     />
   `;
+} else if (isGrupoAtual) {
+  detailAvatar.innerHTML = getGroupAvatarHtml();
 } else {
   detailAvatar.textContent = conversation.initials;
 }
@@ -7819,7 +7819,9 @@ const identidadeWhatsApp = identidadesWhatsApp.find(i =>
 const isGrupo = conversa.tipo_origem === "grupo";
 
 const nomeConversa = isGrupo
-  ? "grupo"
+  ? conversa.nome_exibicao ||
+    identidadeWhatsApp?.push_name ||
+    "Grupo WhatsApp"
   : cliente?.nome ||
     identidadeWhatsApp?.push_name ||
     conversa.nome_exibicao ||
