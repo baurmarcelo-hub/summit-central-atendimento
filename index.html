@@ -6334,8 +6334,7 @@ function conversaPassaFiltroAtual(conversation) {
 
   const matchStatus =
     currentFilter === "aguardando"
-      ? conversation.status !== "em_atendimento" &&
-        obterNaoLidasConversa(conversation) > 0
+      ? conversation.status !== "em_atendimento"
       : conversation.status === "em_atendimento";
 
   const matchOwner =
