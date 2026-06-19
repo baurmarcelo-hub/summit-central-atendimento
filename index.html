@@ -4092,13 +4092,17 @@ line-height: 1.15;
   </div>
 
   <section class="dashboard-kpis" aria-label="Indicadores principais">
+    <article class="dashboard-kpi" style="--kpi-color:#0f172a;--kpi-soft:#eef2f7;">
+      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span></div>
+      <strong class="dashboard-kpi-value" id="dashboardKpiExistentes">—</strong><span class="dashboard-kpi-label">Conversas existentes</span>
+    </article>
     <article class="dashboard-kpi" style="--kpi-color:#2563eb;--kpi-soft:#eaf1ff;">
       <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span></div>
       <strong class="dashboard-kpi-value" id="dashboardKpiAtendimento">—</strong><span class="dashboard-kpi-label">Conversas em atendimento</span>
     </article>
     <article class="dashboard-kpi" style="--kpi-color:#d97706;--kpi-soft:#fff4db;">
       <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div>
-      <strong class="dashboard-kpi-value" id="dashboardKpiAguardando">—</strong><span class="dashboard-kpi-label">Conversas aguardando</span>
+      <strong class="dashboard-kpi-value" id="dashboardKpiAguardando">—</strong><span class="dashboard-kpi-label">Conversas aguardando atendimento</span>
     </article>
     <article class="dashboard-kpi" style="--kpi-color:#16a34a;--kpi-soft:#e6f8ec;">
       <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span></div>
@@ -6313,6 +6317,14 @@ function conversaPertenceAoEscopo(conversation) {
   return conversationScope === "grupos" ? isGrupo : !isGrupo;
 }
 
+function obterNaoLidasConversa(conversation) {
+  return Number(
+    unreadMap[conversation?.id] ||
+    conversation?.unread ||
+    0
+  );
+}
+
 function conversaPassaFiltroAtual(conversation) {
   if (conversation?.status === "finalizado") return false;
 
@@ -6322,7 +6334,8 @@ function conversaPassaFiltroAtual(conversation) {
 
   const matchStatus =
     currentFilter === "aguardando"
-      ? conversation.status !== "em_atendimento"
+      ? conversation.status !== "em_atendimento" &&
+        obterNaoLidasConversa(conversation) > 0
       : conversation.status === "em_atendimento";
 
   const matchOwner =
@@ -6774,7 +6787,7 @@ function criarCardConversa(conversation) {
 
   };
 
-const unread = unreadMap[conversation.id] || conversation.unread || 0;
+const unread = obterNaoLidasConversa(conversation);
 const isGrupo = isGrupoWhatsApp(conversation);
 const nomeExibicao = getConversationDisplayName(conversation);
 
@@ -8129,7 +8142,11 @@ if (forceScrollToBottom || distanceFromBottom < 200) {
 }
 function atualizarContadores() {
   const totalConversas = conversations.filter(
-    c => !isGrupoWhatsApp(c) && c.status !== "em_atendimento"
+    c =>
+      !isGrupoWhatsApp(c) &&
+      c.status !== "finalizado" &&
+      c.status !== "em_atendimento" &&
+      obterNaoLidasConversa(c) > 0
   ).length;
 
   const totalAtendimento = conversations.filter(
@@ -8460,9 +8477,7 @@ conversations.sort((a, b) => {
 });
 
 const conversaSelecionadaAindaExiste =
-  conversations.find(c =>
-    c.id === selectedConversationId && conversaPassaFiltroAtual(c)
-  );
+  conversations.find(c => c.id === selectedConversationId);
 
 if (!conversaSelecionadaAindaExiste) {
   const primeiraConversaDoFiltro =
@@ -8611,9 +8626,7 @@ async function finalizarCarregamentoConversas() {
   });
 
   const conversaSelecionadaAindaExiste =
-    conversations.find(c =>
-      c.id === selectedConversationId && conversaPassaFiltroAtual(c)
-    );
+    conversations.find(c => c.id === selectedConversationId);
 
   if (!conversaSelecionadaAindaExiste) {
     const primeiraConversaDoFiltro =
@@ -11453,6 +11466,9 @@ async function carregarDashboard() {
   const perfis = perfisResult.data || [];
   const mensagensHoje = mensagensHojeResult.data || [];
   const statusResolvidos = new Set(["finalizado", "finalizada", "resolvido", "resolvida"]);
+  const conversasExistentes = conversas.filter(
+    conversa => !statusResolvidos.has(conversa.status)
+  ).length;
 
   const resolvidasHoje = conversas.filter(conversa =>
     statusResolvidos.has(conversa.status) &&
@@ -11472,6 +11488,7 @@ async function carregarDashboard() {
     tarefa.updated_at >= inicio && tarefa.updated_at < fim
   ).length;
 
+  document.getElementById("dashboardKpiExistentes").textContent = conversasExistentes;
   document.getElementById("dashboardKpiAtendimento").textContent = atendimentoResult.count ?? 0;
   document.getElementById("dashboardKpiAguardando").textContent = aguardandoResult.count ?? 0;
   document.getElementById("dashboardKpiResolvidas").textContent = resolvidasHoje;
