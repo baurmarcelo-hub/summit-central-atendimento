@@ -6400,10 +6400,33 @@ function conversaPertenceAoEscopo(conversation) {
 
 function obterNaoLidasConversa(conversation) {
   return Number(
-    unreadMap[conversation?.id] ||
-    conversation?.unread ||
+    conversation?.nao_lidas ??
+    unreadMap[conversation?.id] ??
+    conversation?.unread ??
     0
   );
+}
+
+async function limparNaoLidasConversa(conversation) {
+  const quantidadeAnterior = obterNaoLidasConversa(conversation);
+
+  if (!conversation || quantidadeAnterior <= 0) return;
+
+  conversation.nao_lidas = 0;
+  conversation.unread = 0;
+  unreadMap[conversation.id] = 0;
+
+  const { error } = await supabaseClient
+    .from("conversas")
+    .update({ nao_lidas: 0 })
+    .eq("id", conversation.id);
+
+  if (error) {
+    conversation.nao_lidas = quantidadeAnterior;
+    conversation.unread = quantidadeAnterior;
+    unreadMap[conversation.id] = quantidadeAnterior;
+    console.error("Erro ao marcar conversa como lida:", error);
+  }
 }
 
 function obterResumoFilaConversas() {
@@ -6871,8 +6894,7 @@ function criarCardConversa(conversation) {
   selectionCountText.textContent = "0 itens selecionados";
 }
 
-  unreadMap[conversation.id] = 0;
-  conversation.unread = 0;
+  await limparNaoLidasConversa(conversation);
 
   selectedConversationId = conversation.id;
 
@@ -8553,7 +8575,8 @@ time: ultimaMensagem
   ? ultimaMensagem.time
   : "",
 
-    unread: unreadMap[conversa.id] || 0,
+    nao_lidas: Number(conversa.nao_lidas || 0),
+    unread: Number(conversa.nao_lidas || 0),
     initials: isGrupo
   ? "👥"
   : String(nomeConversa || "C").charAt(0).toUpperCase(),
@@ -8701,7 +8724,8 @@ function formatarConversaResumo(row) {
 
     time: ultimaMensagem ? ultimaMensagem.time : "",
 
-    unread: unreadMap[row.conversa_id] || 0,
+    nao_lidas: Number(row.nao_lidas || 0),
+    unread: Number(row.nao_lidas || 0),
     initials: isGrupo
   ? ""
   : String(nomeConversa || "C").charAt(0).toUpperCase(),
@@ -8771,8 +8795,32 @@ async function carregarClientes() {
     return;
   }
 
+  const {
+    data: naoLidasData,
+    error: naoLidasError
+  } = await supabaseClient
+    .from("conversas")
+    .select("id, nao_lidas");
+
+  if (naoLidasError) {
+    console.warn(
+      "Erro ao carregar contadores de mensagens não lidas:",
+      naoLidasError
+    );
+  }
+
+  const naoLidasPorConversa = new Map(
+    (naoLidasData || []).map(item => [
+      String(item.id),
+      Number(item.nao_lidas || 0)
+    ])
+  );
+
   conversations = (resumoData || []).map(
-    formatarConversaResumo
+    row => formatarConversaResumo({
+      ...row,
+      nao_lidas: naoLidasPorConversa.get(String(row.conversa_id)) || 0
+    })
   );
 
   await finalizarCarregamentoConversas();
@@ -13751,17 +13799,13 @@ conversa.messages = [novaMsgFormatada];
 
       conversa.time = novaMsgFormatada.time;
 
-      if (
-        novaMensagem.direcao === "in" &&
-        novaMensagem.conversa_id !== selectedConversationId
-      ) {
+      if (novaMensagem.direcao === "in") {
+        const quantidadeNaoLida =
+          obterNaoLidasConversa(conversa) + 1;
 
-        unreadMap[novaMensagem.conversa_id] =
-          (unreadMap[novaMensagem.conversa_id] || 0) + 1;
-
-        conversa.unread =
-          unreadMap[novaMensagem.conversa_id];
-
+        unreadMap[novaMensagem.conversa_id] = quantidadeNaoLida;
+        conversa.nao_lidas = quantidadeNaoLida;
+        conversa.unread = quantidadeNaoLida;
       }
 
       conversations.sort((a, b) => {
