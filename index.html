@@ -98,6 +98,16 @@
   grid-template-columns: 240px 1fr;
 }
 
+.app.dashboard-open {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.app.dashboard-open .chat-area,
+.app.dashboard-open .conversation-panel,
+.app.dashboard-open .details-panel {
+  display: none !important;
+}
+
 .app.settings-open #teamPanel,
 .app.settings-open #clientPanel,
 .app.settings-open #tagsPanel,
@@ -3645,6 +3655,330 @@ line-height: 1.15;
   grid-template-columns: 1.2fr 1fr 0.8fr 1fr 0.8fr 0.8fr 40px;
 }
 
+.dashboard-page {
+  grid-column: 2 / 3;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 30px 32px 42px;
+  background: #f6f8fb;
+}
+
+.dashboard-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.dashboard-heading h1 {
+  font-size: 26px;
+  line-height: 1.2;
+  color: #172033;
+  letter-spacing: -0.5px;
+}
+
+.dashboard-heading p,
+.dashboard-updated {
+  margin-top: 6px;
+  color: #667085;
+  font-size: 13px;
+}
+
+.dashboard-updated {
+  white-space: nowrap;
+}
+
+.dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.dashboard-kpi {
+  position: relative;
+  min-height: 138px;
+  padding: 20px;
+  border: 1px solid #e8ecf3;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.dashboard-kpi:hover {
+  transform: translateY(-2px);
+  border-color: #d9e2f2;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+}
+
+.dashboard-kpi::after {
+  content: "";
+  position: absolute;
+  right: -24px;
+  bottom: -38px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: var(--kpi-soft);
+}
+
+.dashboard-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.dashboard-kpi-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--kpi-soft);
+  color: var(--kpi-color);
+}
+
+.dashboard-kpi-icon svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dashboard-kpi-value {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: #111827;
+  font-size: 31px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.dashboard-kpi-label {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 9px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.dashboard-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.dashboard-block {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #e8ecf3;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.dashboard-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.dashboard-block-header h2 {
+  color: #182033;
+  font-size: 17px;
+  letter-spacing: -0.2px;
+}
+
+.dashboard-block-header span {
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.dashboard-queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.dashboard-queue-table th {
+  padding: 0 12px 11px;
+  color: #98a2b3;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+}
+
+.dashboard-queue-table th:not(:first-child),
+.dashboard-queue-table td:not(:first-child) {
+  text-align: center;
+}
+
+.dashboard-queue-table td {
+  padding: 13px 12px;
+  color: #344054;
+  border-top: 1px solid #f0f2f6;
+}
+
+.dashboard-agent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.dashboard-agent-avatar {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #3157a4;
+  background: #eaf0ff;
+  font-size: 11px;
+}
+
+.dashboard-load {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.dashboard-load::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--load-color);
+  box-shadow: 0 0 0 3px var(--load-soft);
+}
+
+.dashboard-load.healthy { --load-color: #22c55e; --load-soft: #dcfce7; }
+.dashboard-load.attention { --load-color: #f59e0b; --load-soft: #fef3c7; }
+.dashboard-load.overload { --load-color: #ef4444; --load-soft: #fee2e2; }
+
+.dashboard-task-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.dashboard-task-card {
+  border: 1px solid #edf0f5;
+  border-radius: 14px;
+  padding: 15px;
+  background: #fbfcfe;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.dashboard-task-card:hover {
+  background: #f4f7ff;
+  transform: translateY(-1px);
+}
+
+.dashboard-task-card strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #182033;
+  font-size: 23px;
+}
+
+.dashboard-task-card span {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dashboard-tag-bars {
+  display: grid;
+  gap: 14px;
+}
+
+.dashboard-tag-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 115px) minmax(90px, 1fr) 32px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.dashboard-tag-name {
+  color: #475467;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.dashboard-tag-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef2f7;
+}
+
+.dashboard-tag-fill {
+  height: 100%;
+  min-width: 5px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3157a4, #4f7de0);
+}
+
+.dashboard-tag-count {
+  color: #344054;
+  text-align: right;
+  font-weight: 800;
+}
+
+.dashboard-empty,
+.dashboard-error {
+  padding: 24px 10px;
+  color: #98a2b3;
+  text-align: center;
+  font-size: 13px;
+}
+
+.dashboard-error {
+  color: #b42318;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  body { overflow: auto; }
+  .app.dashboard-open { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
+  .app.dashboard-open .sidebar { display: none; }
+  .dashboard-page { grid-column: 1; padding: 22px 16px 34px; }
+  .dashboard-heading { align-items: flex-start; flex-direction: column; }
+  .dashboard-kpis { grid-template-columns: 1fr; }
+  .dashboard-task-cards { grid-template-columns: 1fr; }
+  .dashboard-block { padding: 17px; overflow-x: auto; }
+}
+
   </style>
 </head>
 
@@ -3673,7 +4007,7 @@ line-height: 1.15;
         <div class="logo-subtitle">Central de Atendimento</div>
         <div class="menu-item">🔔 <span>Notificações</span></div>
         <div class="menu-section-title">Geral</div>
-        <div class="menu-item">▦ <span>Dashboard</span></div>
+        <div class="menu-item" id="dashboardMenuItem">▦ <span>Dashboard</span></div>
         <div class="menu-item active" id="chatMenuItem">
   💬 <span>Conversas</span>
 </div>
@@ -3720,6 +4054,64 @@ line-height: 1.15;
         </div>
       </div>
     </aside>
+
+<main class="dashboard-page hidden" id="dashboardPanel">
+  <div class="dashboard-heading">
+    <div>
+      <h1>Visão geral do atendimento</h1>
+      <p>Acompanhe a operação comercial e identifique prioridades rapidamente.</p>
+    </div>
+    <div class="dashboard-updated" id="dashboardUpdated">Atualizando dados...</div>
+  </div>
+
+  <section class="dashboard-kpis" aria-label="Indicadores principais">
+    <article class="dashboard-kpi" style="--kpi-color:#2563eb;--kpi-soft:#eaf1ff;">
+      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span></div>
+      <strong class="dashboard-kpi-value" id="dashboardKpiAtendimento">—</strong><span class="dashboard-kpi-label">Conversas em atendimento</span>
+    </article>
+    <article class="dashboard-kpi" style="--kpi-color:#d97706;--kpi-soft:#fff4db;">
+      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div>
+      <strong class="dashboard-kpi-value" id="dashboardKpiAguardando">—</strong><span class="dashboard-kpi-label">Conversas aguardando</span>
+    </article>
+    <article class="dashboard-kpi" style="--kpi-color:#16a34a;--kpi-soft:#e6f8ec;">
+      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span></div>
+      <strong class="dashboard-kpi-value" id="dashboardKpiResolvidas">—</strong><span class="dashboard-kpi-label">Conversas resolvidas hoje</span>
+    </article>
+    <article class="dashboard-kpi" style="--kpi-color:#7c3aed;--kpi-soft:#f1eafe;">
+      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M17 11a4 4 0 0 1 4 4v2"/></svg></span></div>
+      <strong class="dashboard-kpi-value" id="dashboardKpiClientes">—</strong><span class="dashboard-kpi-label">Clientes atendidos hoje</span>
+    </article>
+    <article class="dashboard-kpi" style="--kpi-color:#db2777;--kpi-soft:#fdebf4;">
+      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span></div>
+      <strong class="dashboard-kpi-value" id="dashboardKpiTarefas">—</strong><span class="dashboard-kpi-label">Tarefas pendentes</span>
+    </article>
+    <article class="dashboard-kpi" style="--kpi-color:#0891b2;--kpi-soft:#e4f7fb;">
+      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H7l-3 3z"/><path d="M8 9h8M8 12h5"/></svg></span></div>
+      <strong class="dashboard-kpi-value" id="dashboardKpiMensagens">—</strong><span class="dashboard-kpi-label">Mensagens recebidas hoje</span>
+    </article>
+  </section>
+
+  <div class="dashboard-grid">
+    <section class="dashboard-block">
+      <div class="dashboard-block-header"><h2>Fila de atendimento</h2><span>Carga atual da equipe</span></div>
+      <div id="dashboardQueue"></div>
+    </section>
+    <div class="dashboard-stack">
+      <section class="dashboard-block">
+        <div class="dashboard-block-header"><h2>Tarefas</h2><span>Clique para abrir o módulo</span></div>
+        <div class="dashboard-task-cards" id="dashboardTasksSummary">
+          <button class="dashboard-task-card" type="button"><strong id="dashboardTaskPendente">—</strong><span>Pendentes</span></button>
+          <button class="dashboard-task-card" type="button"><strong id="dashboardTaskAndamento">—</strong><span>Em andamento</span></button>
+          <button class="dashboard-task-card" type="button"><strong id="dashboardTaskConcluida">—</strong><span>Concluídas hoje</span></button>
+        </div>
+      </section>
+      <section class="dashboard-block">
+        <div class="dashboard-block-header"><h2>TAGs mais utilizadas</h2><span>Top 10 aplicações</span></div>
+        <div class="dashboard-tag-bars" id="dashboardTags"><div class="dashboard-empty">Carregando TAGs...</div></div>
+      </section>
+    </div>
+  </div>
+</main>
 
 <section class="client-page hidden" id="clientPanel">
   <div class="settings-tabs">
@@ -5232,6 +5624,8 @@ let mediaRecorder = null;
 let audioChunks = [];
 let isRecordingAudio = false;
 const KANBAN_PAGE_SIZE = 20;
+let dashboardRealtimeChannel = null;
+let dashboardRefreshTimer = null;
 
 let kanbanVisibleByStatus = {
   pendente: KANBAN_PAGE_SIZE,
@@ -5320,6 +5714,10 @@ let kanbanVisibleByStatus = {
       document.getElementById("newUserBtn");
     const chatMenuItem =
       document.getElementById("chatMenuItem");
+    const dashboardMenuItem =
+      document.getElementById("dashboardMenuItem");
+    const dashboardPanel =
+      document.getElementById("dashboardPanel");
     const groupsMenuItem =
       document.getElementById("groupsMenuItem");
 
@@ -10751,6 +11149,250 @@ linkWhatsappClientBtn?.addEventListener("click", () => {
   abrirModalVincularCliente();
 });
 
+function escaparHtmlDashboard(valor) {
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function obterIntervaloHoje() {
+  const inicio = new Date();
+  inicio.setHours(0, 0, 0, 0);
+
+  const fim = new Date(inicio);
+  fim.setDate(fim.getDate() + 1);
+
+  return {
+    inicio: inicio.toISOString(),
+    fim: fim.toISOString()
+  };
+}
+
+function nomeCompletoPerfil(perfil) {
+  return `${perfil?.nome || ""} ${perfil?.sobrenome || ""}`.trim() ||
+    perfil?.email ||
+    "Usuário";
+}
+
+function classeCargaAtendimento(total) {
+  if (total <= 3) return "healthy";
+  if (total <= 6) return "attention";
+  return "overload";
+}
+
+function renderizarFilaDashboard(perfis, conversas, tarefas) {
+  const queue = document.getElementById("dashboardQueue");
+  if (!queue) return;
+
+  if (!perfis.length) {
+    queue.innerHTML = '<div class="dashboard-empty">Nenhum atendente ativo encontrado.</div>';
+    return;
+  }
+
+  const statusResolvidos = new Set([
+    "finalizado", "finalizada", "resolvido", "resolvida"
+  ]);
+  const { inicio, fim } = obterIntervaloHoje();
+
+  const linhas = perfis.map(perfil => {
+    const nome = nomeCompletoPerfil(perfil);
+    const emAtendimento = conversas.filter(conversa =>
+      conversa.status === "em_atendimento" && conversa.atendente === nome
+    ).length;
+    const resolvidasHoje = conversas.filter(conversa =>
+      conversa.atendente === nome &&
+      statusResolvidos.has(conversa.status) &&
+      conversa.updated_at >= inicio &&
+      conversa.updated_at < fim
+    ).length;
+    const tarefasAbertas = tarefas.filter(tarefa =>
+      tarefa.responsavel_nome === nome && tarefa.status !== "concluida"
+    ).length;
+
+    return { nome, emAtendimento, resolvidasHoje, tarefasAbertas };
+  }).sort((a, b) => b.emAtendimento - a.emAtendimento ||
+    a.nome.localeCompare(b.nome, "pt-BR"));
+
+  queue.innerHTML = `
+    <table class="dashboard-queue-table">
+      <thead><tr><th>Atendente</th><th>Em atendimento</th><th>Resolvidas hoje</th><th>Tarefas abertas</th></tr></thead>
+      <tbody>
+        ${linhas.map(item => {
+          const iniciais = item.nome.split(/\s+/).slice(0, 2).map(parte => parte[0]).join("").toUpperCase();
+          const classe = classeCargaAtendimento(item.emAtendimento);
+          return `
+            <tr>
+              <td><div class="dashboard-agent"><span class="dashboard-agent-avatar">${escaparHtmlDashboard(iniciais)}</span>${escaparHtmlDashboard(item.nome)}</div></td>
+              <td><span class="dashboard-load ${classe}">${item.emAtendimento}</span></td>
+              <td>${item.resolvidasHoje}</td>
+              <td>${item.tarefasAbertas}</td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+
+function renderizarTagsDashboard(tags, historico) {
+  const container = document.getElementById("dashboardTags");
+  if (!container) return;
+
+  const totalPorTag = historico.reduce((acc, registro) => {
+    const id = String(registro.tag_id ?? "");
+    if (id) acc[id] = (acc[id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const ranking = tags
+    .map(tag => ({ ...tag, total: totalPorTag[String(tag.id)] || 0 }))
+    .filter(tag => tag.total > 0)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  if (!ranking.length) {
+    container.innerHTML = '<div class="dashboard-empty">Ainda não há aplicações de TAG registradas.</div>';
+    return;
+  }
+
+  const maior = Math.max(...ranking.map(tag => tag.total), 1);
+  container.innerHTML = ranking.map(tag => `
+    <div class="dashboard-tag-row" title="${escaparHtmlDashboard(tag.nome)}: ${tag.total}">
+      <span class="dashboard-tag-name">${escaparHtmlDashboard(tag.nome || "Sem nome")}</span>
+      <div class="dashboard-tag-track"><div class="dashboard-tag-fill" style="width:${Math.max(5, (tag.total / maior) * 100)}%;background:${/^#[0-9a-f]{6}$/i.test(tag.cor || "") ? tag.cor : "#3157a4"}"></div></div>
+      <span class="dashboard-tag-count">${tag.total}</span>
+    </div>`).join("");
+}
+
+async function carregarDashboard() {
+  const atualizado = document.getElementById("dashboardUpdated");
+  if (atualizado) atualizado.textContent = "Atualizando dados...";
+
+  const { inicio, fim } = obterIntervaloHoje();
+
+  const [
+    atendimentoResult,
+    aguardandoResult,
+    inboundResult,
+    mensagensHojeResult,
+    conversasResult,
+    tarefasResult,
+    perfisResult,
+    tagsResult,
+    historicoTagsResult
+  ] = await Promise.all([
+    supabaseClient.from("conversas").select("id", { count: "exact", head: true }).eq("status", "em_atendimento"),
+    supabaseClient.from("conversas").select("id", { count: "exact", head: true }).eq("status", "aguardando"),
+    supabaseClient.from("mensagens").select("id", { count: "exact", head: true }).eq("direcao", "in").gte("created_at", inicio).lt("created_at", fim),
+    supabaseClient.from("mensagens").select("conversa_id").gte("created_at", inicio).lt("created_at", fim).limit(5000),
+    supabaseClient.from("conversas").select("id, cliente_id, status, atendente, updated_at").limit(5000),
+    supabaseClient.from("tarefas").select("status, responsavel_nome, updated_at").limit(5000),
+    supabaseClient.from("usuarios_perfis").select("nome, sobrenome, email, ativo").eq("ativo", true).order("nome"),
+    supabaseClient.from("tags").select("id, nome, cor").eq("ativo", true).limit(5000),
+    supabaseClient.from("cliente_tags_historico").select("tag_id").limit(5000)
+  ]);
+
+  const resultados = [atendimentoResult, aguardandoResult, inboundResult, mensagensHojeResult,
+    conversasResult, tarefasResult, perfisResult, tagsResult, historicoTagsResult];
+  const primeiroErro = resultados.find(resultado => resultado.error)?.error;
+
+  if (primeiroErro) {
+    console.error("Erro ao carregar dashboard:", primeiroErro);
+    if (atualizado) atualizado.textContent = "Não foi possível atualizar todos os dados";
+  }
+
+  const conversas = conversasResult.data || [];
+  const tarefas = tarefasResult.data || [];
+  const perfis = perfisResult.data || [];
+  const mensagensHoje = mensagensHojeResult.data || [];
+  const statusResolvidos = new Set(["finalizado", "finalizada", "resolvido", "resolvida"]);
+
+  const resolvidasHoje = conversas.filter(conversa =>
+    statusResolvidos.has(conversa.status) &&
+    conversa.updated_at >= inicio &&
+    conversa.updated_at < fim
+  ).length;
+
+  const conversaPorId = new Map(conversas.map(conversa => [String(conversa.id), conversa]));
+  const clientesAtendidos = new Set(
+    mensagensHoje.map(mensagem => conversaPorId.get(String(mensagem.conversa_id))?.cliente_id).filter(Boolean)
+  ).size;
+
+  const pendentes = tarefas.filter(tarefa => (tarefa.status || "pendente") === "pendente").length;
+  const andamento = tarefas.filter(tarefa => tarefa.status === "em_andamento").length;
+  const concluidasHoje = tarefas.filter(tarefa =>
+    tarefa.status === "concluida" &&
+    tarefa.updated_at >= inicio && tarefa.updated_at < fim
+  ).length;
+
+  document.getElementById("dashboardKpiAtendimento").textContent = atendimentoResult.count ?? 0;
+  document.getElementById("dashboardKpiAguardando").textContent = aguardandoResult.count ?? 0;
+  document.getElementById("dashboardKpiResolvidas").textContent = resolvidasHoje;
+  document.getElementById("dashboardKpiClientes").textContent = clientesAtendidos;
+  document.getElementById("dashboardKpiTarefas").textContent = pendentes + andamento;
+  document.getElementById("dashboardKpiMensagens").textContent = inboundResult.count ?? 0;
+  document.getElementById("dashboardTaskPendente").textContent = pendentes;
+  document.getElementById("dashboardTaskAndamento").textContent = andamento;
+  document.getElementById("dashboardTaskConcluida").textContent = concluidasHoje;
+
+  renderizarFilaDashboard(perfis, conversas, tarefas);
+  renderizarTagsDashboard(tagsResult.data || [], historicoTagsResult.data || []);
+
+  if (atualizado && !primeiroErro) {
+    atualizado.textContent = `Atualizado às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  }
+}
+
+function agendarAtualizacaoDashboard() {
+  if (!dashboardPanel || dashboardPanel.classList.contains("hidden")) return;
+  clearTimeout(dashboardRefreshTimer);
+  dashboardRefreshTimer = setTimeout(carregarDashboard, 500);
+}
+
+function iniciarRealtimeDashboard() {
+  if (dashboardRealtimeChannel) return;
+
+  dashboardRealtimeChannel = supabaseClient
+    .channel("dashboard-operacional-realtime")
+    .on("postgres_changes", { event: "*", schema: "public", table: "conversas" }, agendarAtualizacaoDashboard)
+    .on("postgres_changes", { event: "*", schema: "public", table: "mensagens" }, agendarAtualizacaoDashboard)
+    .on("postgres_changes", { event: "*", schema: "public", table: "tarefas" }, agendarAtualizacaoDashboard)
+    .on("postgres_changes", { event: "*", schema: "public", table: "cliente_tags_historico" }, agendarAtualizacaoDashboard)
+    .subscribe();
+}
+
+function abrirDashboard() {
+  if (selectionMode) limparSelecaoMensagens();
+
+  app.classList.remove("settings-open");
+  app.classList.add("dashboard-open");
+  dashboardMenuItem.classList.add("active");
+  chatMenuItem.classList.remove("active");
+  groupsMenuItem?.classList.remove("active");
+  tasksMenuItem.classList.remove("active");
+  settingsMenuItem.classList.remove("active");
+  settingsSubmenu.classList.add("hidden");
+
+  mainConversationPanel.classList.add("hidden");
+  document.querySelector(".chat-area").classList.add("hidden");
+  [clientPanel, teamPanel, tagsPanel, tasksPanel, connectionsPanel, whatsappConnectionsPanel]
+    .forEach(painel => painel?.classList.add("hidden"));
+  dashboardPanel.classList.remove("hidden");
+
+  carregarDashboard();
+  iniciarRealtimeDashboard();
+}
+
+function fecharDashboard() {
+  app.classList.remove("dashboard-open");
+  dashboardPanel?.classList.add("hidden");
+  dashboardMenuItem?.classList.remove("active");
+}
+
+dashboardMenuItem?.addEventListener("click", abrirDashboard);
+document.getElementById("dashboardTasksSummary")?.addEventListener("click", abrirPainelTarefas);
+
 settingsMenuItem.addEventListener("click", () => {
 
   if (selectionMode) {
@@ -10972,6 +11614,8 @@ forwardModal.addEventListener("click", event => {
 
 chatMenuItem.addEventListener("click", () => {
 
+  fecharDashboard();
+
   settingsSubmenu.classList.add("hidden");
   sidebarClientsBtn.classList.remove("active");
   sidebarTeamBtn.classList.remove("active");
@@ -11008,6 +11652,7 @@ chatMenuItem.addEventListener("click", () => {
 });
 
 groupsMenuItem?.addEventListener("click", () => {
+  fecharDashboard();
   settingsSubmenu.classList.add("hidden");
   sidebarClientsBtn.classList.remove("active");
   sidebarTeamBtn.classList.remove("active");
@@ -11039,6 +11684,8 @@ groupsMenuItem?.addEventListener("click", () => {
 
 function abrirPainelClientes() {
 
+fecharDashboard();
+
 app.classList.add("settings-open");
 chatMenuItem.classList.remove("active");
 groupsMenuItem?.classList.remove("active");
@@ -11069,6 +11716,8 @@ document.querySelector(".chat-area").classList.add("hidden");
 }
 
 function abrirPainelEquipe() {
+
+fecharDashboard();
 
 app.classList.add("settings-open");
 chatMenuItem.classList.remove("active");
@@ -11112,6 +11761,7 @@ sidebarClientsBtn.addEventListener("click", abrirPainelClientes);
 sidebarTeamBtn.addEventListener("click", abrirPainelEquipe);
 
 sidebarConnectionsBtn.addEventListener("click", () => {
+  fecharDashboard();
   app.classList.add("settings-open");
 
   chatMenuItem.classList.remove("active");
@@ -11142,6 +11792,7 @@ sidebarConnectionsBtn.addEventListener("click", () => {
 });
 
 openWhatsappConnections.addEventListener("click", async () => {
+  fecharDashboard();
   app.classList.add("settings-open");
 
   mainConversationPanel.classList.add("hidden");
@@ -11665,6 +12316,7 @@ function configurarDragAndDropKanban() {
 }
 
 function abrirPainelTarefas() {
+  fecharDashboard();
   if (selectionMode) {
     limparSelecaoMensagens();
   }
@@ -11698,6 +12350,7 @@ carregarKanbanTarefas();
 }
 
 function abrirPainelTags() {
+  fecharDashboard();
   app.classList.add("settings-open");
 
   chatMenuItem.classList.remove("active");
