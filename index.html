@@ -2862,6 +2862,33 @@ line-height: 1.15;
   max-width: 100%;
 }
 
+.pdf-preview-box {
+  display: block;
+  width: 360px;
+  max-width: 100%;
+}
+
+.pdf-preview-frame,
+.pdf-preview-thumbnail {
+  display: block;
+  width: 100%;
+  height: 220px;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.pdf-preview-thumbnail {
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.pdf-preview-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 7px;
+}
+
 .media-download-link {
   display: inline-flex;
   margin-top: 4px;
@@ -4542,6 +4569,10 @@ line-height: 1.15;
   Transferir
 </button>
 
+  <button class="secondary-action-btn header-action-btn" id="topDeleteConversationBtn" title="Remove a conversa da lista sem apagar o histórico">
+    Excluir do chat
+  </button>
+
   <button class="danger-btn header-action-btn" id="topFinishBtn">
     Finalizar
   </button>
@@ -5680,6 +5711,8 @@ let kanbanVisibleByStatus = {
     const acceptBtn = document.getElementById("acceptBtn");
     const topFinishBtn =
       document.getElementById("topFinishBtn");
+    const topDeleteConversationBtn =
+      document.getElementById("topDeleteConversationBtn");
     const tabs = document.querySelectorAll(".tab[data-filter]");
     const countAtendimento = document.getElementById("countAtendimento");
     const countAguardando = document.getElementById("countAguardando");
@@ -7276,7 +7309,14 @@ function normalizarThumbnailMidia(thumbnail) {
 }
 
 function obterPreviewMidia(message) {
-  return message.media_url || normalizarThumbnailMidia(message.media_thumbnail) || "";
+  const thumbnail = normalizarThumbnailMidia(message.media_thumbnail);
+  const isImagem =
+    message.media_mime?.startsWith("image/") ||
+    message.tipo === "imagem";
+
+  return isImagem
+    ? message.media_url || thumbnail || ""
+    : thumbnail || "";
 }
 
 function escapeJsString(valor) {
@@ -7291,6 +7331,20 @@ function obterIconeStatusEntrega(status) {
   if (status === "pendente") return "◷";
   if (status === "lida" || status === "entregue") return "✓✓";
   return "✓";
+}
+
+function obterDescricaoStatusEntrega(status) {
+  return {
+    pendente: "Pendente",
+    enviada: "Enviada",
+    entregue: "Entregue",
+    lida: "Lida"
+  }[status] || "Enviada";
+}
+
+function abrirArquivoNovaAba(url) {
+  const novaAba = window.open(url, "_blank", "noopener,noreferrer");
+  if (novaAba) novaAba.opener = null;
 }
 
 function isMensagemExternaWhatsApp(message) {
@@ -7397,6 +7451,7 @@ if (!conversation) {
 
   acceptBtn.classList.add("hidden");
   topFinishBtn.classList.add("hidden");
+  topDeleteConversationBtn?.classList.add("hidden");
   transferConversationBtn.classList.add("hidden");
   chatTabs.classList.add("hidden");
   composer.classList.add("hidden");
@@ -7432,6 +7487,7 @@ if (!conversation) {
   composer.classList.remove("hidden");
   messageSearchBox.classList.remove("hidden");
   chatHeader.classList.remove("hidden");
+  topDeleteConversationBtn?.classList.remove("hidden");
 
   const isGrupoAtual = isGrupoWhatsApp(conversation);
   const nomeConversaAtual = getConversationDisplayName(conversation);
@@ -7659,18 +7715,57 @@ atualizarBarraSelecao();
     : "";
 
   const mediaPreviewUrl = obterPreviewMidia(message);
+  const mediaThumbnailUrl = normalizarThumbnailMidia(message.media_thumbnail);
   const mediaDownloadUrl = message.media_url || mediaPreviewUrl;
   const mediaNome = message.media_nome || "arquivo";
   const mediaPreviewJs = escapeJsString(mediaPreviewUrl);
   const mediaDownloadJs = escapeJsString(mediaDownloadUrl);
   const mediaNomeJs = escapeJsString(mediaNome);
+  const isPdf =
+    message.media_mime?.toLowerCase().includes("pdf") ||
+    message.media_nome?.toLowerCase().endsWith(".pdf");
   const isImagem =
     message.media_mime?.startsWith("image/") ||
-    message.tipo === "imagem" ||
-    Boolean(message.media_thumbnail);
+    message.tipo === "imagem";
 
-  const mediaHtml = mediaPreviewUrl
-  ? isImagem
+  const mediaHtml = mediaDownloadUrl
+  ? isPdf
+    ? `
+      <div class="pdf-preview-box">
+        ${
+          mediaThumbnailUrl
+            ? `<img
+                src="${mediaThumbnailUrl}"
+                class="pdf-preview-thumbnail"
+                alt="Preview de ${message.media_nome || "PDF"}"
+                onclick="abrirArquivoNovaAba('${mediaDownloadJs}')"
+              />`
+            : `<iframe
+                src="${mediaDownloadUrl}#toolbar=0&navpanes=0"
+                class="pdf-preview-frame"
+                title="Preview de ${message.media_nome || "PDF"}"
+                loading="lazy"
+              ></iframe>`
+        }
+        <div class="pdf-preview-actions">
+          <button
+            type="button"
+            class="media-download-link"
+            onclick="abrirArquivoNovaAba('${mediaDownloadJs}')"
+          >
+            Abrir PDF
+          </button>
+          <button
+            type="button"
+            class="media-download-link"
+            onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')"
+          >
+            ↓ Baixar
+          </button>
+        </div>
+      </div>
+    `
+    : mediaPreviewUrl && isImagem
     ? `
       <div class="media-image-box">
         <img
@@ -7807,7 +7902,7 @@ ${
         ${message.time}
         ${
           message.direction === "out"
-            ? `<span class="message-status status-${statusEntregaVisual}">
+             ? `<span class="message-status status-${statusEntregaVisual}" title="${obterDescricaoStatusEntrega(statusEntregaVisual)}" aria-label="${obterDescricaoStatusEntrega(statusEntregaVisual)}">
                 ${obterIconeStatusEntrega(statusEntregaVisual)}
               </span>`
             : ""
@@ -7821,7 +7916,7 @@ ${
           ${message.time}
           ${
             message.direction === "out"
-              ? `<span class="message-status status-${statusEntregaVisual}">
+              ? `<span class="message-status status-${statusEntregaVisual}" title="${obterDescricaoStatusEntrega(statusEntregaVisual)}" aria-label="${obterDescricaoStatusEntrega(statusEntregaVisual)}">
                   ${obterIconeStatusEntrega(statusEntregaVisual)}
                 </span>`
               : ""
@@ -8679,6 +8774,48 @@ const novoFiltro = "aguardando";
   await carregarClientes();
 }
 
+async function excluirConversaDoChat() {
+  const conversation = getSelectedConversation();
+
+  if (!conversation) {
+    alert("Nenhuma conversa selecionada.");
+    return;
+  }
+
+  const confirmou = confirm(
+    `Remover a conversa com "${getConversationDisplayName(conversation)}" do chat?\n\nO histórico de mensagens e o vínculo do WhatsApp serão preservados.`
+  );
+
+  if (!confirmou) return;
+
+  topDeleteConversationBtn.disabled = true;
+
+  try {
+    const { error } = await supabaseClient
+      .from("conversas")
+      .update({
+        status: "finalizado",
+        atendente: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", conversation.id);
+
+    if (error) throw error;
+
+    delete messagesByConversation[conversation.id];
+    delete messagePagination[conversation.id];
+    delete unreadMap[conversation.id];
+    selectedConversationId = null;
+
+    await carregarClientes();
+  } catch (error) {
+    console.error("Erro ao excluir conversa do chat:", error);
+    alert("Não foi possível remover a conversa do chat.");
+  } finally {
+    topDeleteConversationBtn.disabled = false;
+  }
+}
+
 async function uploadArquivo(file) {
   const fileExt = file.name.split(".").pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -8853,9 +8990,12 @@ async function enviarMensagemWhatsApp(conversation, mensagem) {
     };
   }
 
-  const destinoWhatsApp =
-  conversation.phone
-    ? String(conversation.phone).replace(/\D/g, "")
+  const telefoneDestino =
+    conversation.phone ||
+    conversation.whatsapp_telefone_resolvido;
+
+  const destinoWhatsApp = telefoneDestino
+    ? String(telefoneDestino).replace(/\D/g, "")
     : conversation.whatsapp_jid;
 
   if (!destinoWhatsApp) {
@@ -9029,7 +9169,8 @@ if (!conversation) {
 
 const isLidPendente =
   conversation?.whatsapp_jid?.includes("@lid") &&
-  !conversation?.phone;
+  !conversation?.phone &&
+  !conversation?.whatsapp_telefone_resolvido;
 
 if (isLidPendente) {
   alert(
@@ -11035,6 +11176,11 @@ chatArea.addEventListener("drop", event => {
 topFinishBtn.addEventListener(
   "click",
   finalizarAtendimento
+);
+
+topDeleteConversationBtn.addEventListener(
+  "click",
+  excluirConversaDoChat
 );
 
 transferConversationBtn.addEventListener(
