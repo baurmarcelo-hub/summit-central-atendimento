@@ -496,8 +496,13 @@ line-height: 1.15;
 }
 
 .tab-unread-count.is-zero {
-  background: #dbe3e8;
-  color: #667085 !important;
+  min-width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #d97706 !important;
 }
 
 .group-avatar-icon::before,
@@ -6411,7 +6416,9 @@ function obterResumoFilaConversas() {
   return {
     total: aguardandoAceite.length,
     naoLidas: aguardandoAceite.filter(
-      conversation => obterNaoLidasConversa(conversation) > 0
+      conversation =>
+        !isGrupoWhatsApp(conversation) &&
+        obterNaoLidasConversa(conversation) > 0
     ).length
   };
 }
