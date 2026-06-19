@@ -3332,10 +3332,13 @@ line-height: 1.15;
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   height: calc(100vh - 178px);
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .kanban-column {
@@ -3345,6 +3348,7 @@ line-height: 1.15;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
 }
@@ -3382,7 +3386,9 @@ line-height: 1.15;
 .kanban-list {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 14px;
 }
 
@@ -3392,6 +3398,9 @@ line-height: 1.15;
   border-radius: 16px;
   padding: 14px;
   margin-bottom: 12px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
 }
 
@@ -3417,6 +3426,7 @@ line-height: 1.15;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 8px;
+  min-width: 0;
 }
 
 .kanban-card-code {
@@ -3471,13 +3481,23 @@ line-height: 1.15;
   color: #0f172a;
   margin-bottom: 8px;
   line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.kanban-card p {
+.kanban-card-description {
   font-size: 12px;
   color: #64748b;
   line-height: 1.45;
   margin-bottom: 10px;
+  max-height: 88px;
+  padding-right: 6px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  scrollbar-width: thin;
 }
 
 .kanban-card-meta {
@@ -3485,6 +3505,20 @@ line-height: 1.15;
   color: #64748b;
   line-height: 1.5;
   margin-bottom: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 760px) {
+  .kanban-board {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  .kanban-column {
+    min-height: 420px;
+  }
 }
 
 .kanban-actions {
@@ -11450,7 +11484,7 @@ function renderKanbanLista(listaEl, tarefas, statusAtual) {
 
         <h4>${tarefa.titulo || "Tarefa sem título"}</h4>
 
-        <p>${descricao}</p>
+        <p class="kanban-card-description">${descricao}</p>
 
         <div class="kanban-card-meta">
           <strong>Cliente:</strong> ${cliente}<br />
