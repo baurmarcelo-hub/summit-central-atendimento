@@ -468,6 +468,38 @@ line-height: 1.15;
   height: 22px;
 }
 
+.tab-counts {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 20px;
+}
+
+.tab-count-separator {
+  opacity: 0.65;
+}
+
+.tab-unread-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #16c784;
+  color: #ffffff !important;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.tab-unread-count.is-zero {
+  background: #dbe3e8;
+  color: #667085 !important;
+}
+
 .group-avatar-icon::before,
 .group-avatar-icon::after {
   content: "";
@@ -4100,9 +4132,9 @@ line-height: 1.15;
       <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span></div>
       <strong class="dashboard-kpi-value" id="dashboardKpiAtendimento">—</strong><span class="dashboard-kpi-label">Conversas em atendimento</span>
     </article>
-    <article class="dashboard-kpi" style="--kpi-color:#d97706;--kpi-soft:#fff4db;">
+    <article class="dashboard-kpi" style="--kpi-color:#16a34a;--kpi-soft:#e6f8ec;">
       <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div>
-      <strong class="dashboard-kpi-value" id="dashboardKpiAguardando">—</strong><span class="dashboard-kpi-label">Conversas aguardando atendimento</span>
+      <strong class="dashboard-kpi-value" id="dashboardKpiAguardando">—</strong><span class="dashboard-kpi-label">Conversas com mensagens não lidas</span>
     </article>
     <article class="dashboard-kpi" style="--kpi-color:#16a34a;--kpi-soft:#e6f8ec;">
       <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span></div>
@@ -4115,10 +4147,6 @@ line-height: 1.15;
     <article class="dashboard-kpi" style="--kpi-color:#db2777;--kpi-soft:#fdebf4;">
       <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span></div>
       <strong class="dashboard-kpi-value" id="dashboardKpiTarefas">—</strong><span class="dashboard-kpi-label">Tarefas pendentes</span>
-    </article>
-    <article class="dashboard-kpi" style="--kpi-color:#0891b2;--kpi-soft:#e4f7fb;">
-      <div class="dashboard-kpi-top"><span class="dashboard-kpi-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H7l-3 3z"/><path d="M8 9h8M8 12h5"/></svg></span></div>
-      <strong class="dashboard-kpi-value" id="dashboardKpiMensagens">—</strong><span class="dashboard-kpi-label">Mensagens recebidas hoje</span>
     </article>
   </section>
 
@@ -4497,7 +4525,12 @@ line-height: 1.15;
     <section class="conversation-panel">
       <div class="tabs">
   <button class="tab active" data-filter="aguardando">
-    Conversas <span id="countAguardando">0</span>
+    Conversas
+    <span class="tab-counts">
+      <span id="countConversasTotal">0</span>
+      <span class="tab-count-separator">/</span>
+      <span id="countAguardando" class="tab-unread-count is-zero">0</span>
+    </span>
   </button>
 
   <button class="tab" data-filter="em_atendimento">
@@ -5719,6 +5752,7 @@ let kanbanVisibleByStatus = {
       document.getElementById("topDeleteConversationBtn");
     const tabs = document.querySelectorAll(".tab[data-filter]");
     const countAtendimento = document.getElementById("countAtendimento");
+    const countConversasTotal = document.getElementById("countConversasTotal");
     const countAguardando = document.getElementById("countAguardando");
     const createConversationBtn =
                document.getElementById("createConversationBtn");
@@ -6323,6 +6357,21 @@ function obterNaoLidasConversa(conversation) {
     conversation?.unread ||
     0
   );
+}
+
+function obterResumoFilaConversas() {
+  const aguardandoAceite = conversations.filter(
+    conversation =>
+      conversation.status !== "finalizado" &&
+      conversation.status !== "em_atendimento"
+  );
+
+  return {
+    total: aguardandoAceite.length,
+    naoLidas: aguardandoAceite.filter(
+      conversation => obterNaoLidasConversa(conversation) > 0
+    ).length
+  };
 }
 
 function conversaPassaFiltroAtual(conversation) {
@@ -8140,20 +8189,21 @@ if (forceScrollToBottom || distanceFromBottom < 200) {
 }
 }
 function atualizarContadores() {
-  const totalConversas = conversations.filter(
-    c =>
-      !isGrupoWhatsApp(c) &&
-      c.status !== "finalizado" &&
-      c.status !== "em_atendimento" &&
-      obterNaoLidasConversa(c) > 0
-  ).length;
+  const resumoFila = obterResumoFilaConversas();
 
   const totalAtendimento = conversations.filter(
     c => !isGrupoWhatsApp(c) && c.status === "em_atendimento"
   ).length;
 
-  countAguardando.textContent = totalConversas;
+  countConversasTotal.textContent = resumoFila.total;
+  countAguardando.textContent = resumoFila.naoLidas;
+  countAguardando.classList.toggle("is-zero", resumoFila.naoLidas === 0);
   countAtendimento.textContent = totalAtendimento;
+
+  const dashboardKpiAguardando = document.getElementById("dashboardKpiAguardando");
+  if (dashboardKpiAguardando) {
+    dashboardKpiAguardando.textContent = resumoFila.naoLidas;
+  }
 }
     function render() {
   atualizarContadores();
@@ -11431,8 +11481,6 @@ async function carregarDashboard() {
 
   const [
     atendimentoResult,
-    aguardandoResult,
-    inboundResult,
     mensagensHojeResult,
     conversasResult,
     tarefasResult,
@@ -11441,8 +11489,6 @@ async function carregarDashboard() {
     historicoTagsResult
   ] = await Promise.all([
     supabaseClient.from("conversas").select("id", { count: "exact", head: true }).eq("status", "em_atendimento"),
-    supabaseClient.from("conversas").select("id", { count: "exact", head: true }).eq("status", "aguardando"),
-    supabaseClient.from("mensagens").select("id", { count: "exact", head: true }).eq("direcao", "in").gte("created_at", inicio).lt("created_at", fim),
     supabaseClient.from("mensagens").select("conversa_id").gte("created_at", inicio).lt("created_at", fim).limit(5000),
     supabaseClient.from("conversas").select("id, cliente_id, status, atendente, updated_at").limit(5000),
     supabaseClient.from("tarefas").select("status, responsavel_nome, updated_at").limit(5000),
@@ -11451,7 +11497,7 @@ async function carregarDashboard() {
     supabaseClient.from("cliente_tags_historico").select("tag_id").limit(5000)
   ]);
 
-  const resultados = [atendimentoResult, aguardandoResult, inboundResult, mensagensHojeResult,
+  const resultados = [atendimentoResult, mensagensHojeResult,
     conversasResult, tarefasResult, perfisResult, tagsResult, historicoTagsResult];
   const primeiroErro = resultados.find(resultado => resultado.error)?.error;
 
@@ -11489,11 +11535,10 @@ async function carregarDashboard() {
 
   document.getElementById("dashboardKpiExistentes").textContent = conversasExistentes;
   document.getElementById("dashboardKpiAtendimento").textContent = atendimentoResult.count ?? 0;
-  document.getElementById("dashboardKpiAguardando").textContent = aguardandoResult.count ?? 0;
+  document.getElementById("dashboardKpiAguardando").textContent = obterResumoFilaConversas().naoLidas;
   document.getElementById("dashboardKpiResolvidas").textContent = resolvidasHoje;
   document.getElementById("dashboardKpiClientes").textContent = clientesAtendidos;
   document.getElementById("dashboardKpiTarefas").textContent = pendentes + andamento;
-  document.getElementById("dashboardKpiMensagens").textContent = inboundResult.count ?? 0;
   document.getElementById("dashboardTaskPendente").textContent = pendentes;
   document.getElementById("dashboardTaskAndamento").textContent = andamento;
   document.getElementById("dashboardTaskConcluida").textContent = concluidasHoje;
