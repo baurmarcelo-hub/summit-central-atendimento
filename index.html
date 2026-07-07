@@ -758,7 +758,7 @@ line-height: 1.15;
   display: inline-flex;
   flex-direction: column;
 
-  max-width: 55%;
+  max-width: min(72%, 760px);
   width: fit-content;
   min-width: 0;
 
@@ -1713,11 +1713,11 @@ line-height: 1.15;
   word-break: break-word;
   display: inline;
 
-  font-size: 15px;
+  font-size: 15.5px;
 
-  font-weight: 500;
+  font-weight: 400;
 
-  line-height: 1.42;
+  line-height: 1.38;
 
   letter-spacing: -0.012em;
 
@@ -2901,29 +2901,107 @@ line-height: 1.15;
 
 .pdf-preview-box {
   display: block;
-  width: 360px;
+  width: 420px;
   max-width: 100%;
+  overflow: hidden;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.34);
 }
 
-.pdf-preview-frame,
-.pdf-preview-thumbnail {
+.pdf-preview-viewport {
   display: block;
   width: 100%;
-  height: 220px;
-  border: 1px solid #d9dee8;
-  border-radius: 12px;
+  height: 126px;
+  overflow: hidden;
+  border-radius: 7px 7px 0 0;
   background: #ffffff;
-}
-
-.pdf-preview-thumbnail {
-  object-fit: contain;
   cursor: pointer;
 }
 
-.pdf-preview-actions {
+.pdf-preview-frame {
+  display: block;
+  width: 100%;
+  height: 520px;
+  border: 0;
+  background: #ffffff;
+  pointer-events: none;
+}
+
+.pdf-preview-thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  cursor: pointer;
+}
+
+.pdf-document-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px 11px;
+}
+
+.pdf-document-icon {
+  width: 30px;
+  height: 38px;
+  border-radius: 6px;
+  background: #e40046;
+  color: #ffffff;
   display: flex;
-  gap: 14px;
-  margin-top: 7px;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.pdf-document-info {
+  min-width: 0;
+}
+
+.pdf-document-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #111b21;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pdf-document-meta {
+  margin-top: 3px;
+  color: #667781;
+  font-size: 12px;
+}
+
+.pdf-preview-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid rgba(17, 27, 33, 0.10);
+}
+
+.pdf-preview-actions .media-download-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 10px;
+  color: #00a884;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pdf-preview-actions .media-download-link + .media-download-link {
+  border-left: 1px solid rgba(17, 27, 33, 0.10);
+}
+
+.pdf-preview-actions .media-download-link:hover {
+  background: rgba(0, 168, 132, 0.08);
+  text-decoration: none;
 }
 
 .media-download-link {
@@ -7864,35 +7942,43 @@ atualizarBarraSelecao();
   ? isPdf
     ? `
       <div class="pdf-preview-box">
-        ${
-          mediaThumbnailUrl
-            ? `<img
-                src="${mediaThumbnailUrl}"
-                class="pdf-preview-thumbnail"
-                alt="Preview de ${message.media_nome || "PDF"}"
-                onclick="abrirArquivoNovaAba('${mediaDownloadJs}')"
-              />`
-            : `<iframe
-                src="${mediaDownloadUrl}#toolbar=0&navpanes=0"
-                class="pdf-preview-frame"
-                title="Preview de ${message.media_nome || "PDF"}"
-                loading="lazy"
-              ></iframe>`
-        }
+        <div class="pdf-preview-viewport" onclick="abrirArquivoNovaAba('${mediaDownloadJs}')">
+          ${
+            mediaThumbnailUrl
+              ? `<img
+                  src="${mediaThumbnailUrl}"
+                  class="pdf-preview-thumbnail"
+                  alt="Preview de ${message.media_nome || "PDF"}"
+                />`
+              : `<iframe
+                  src="${mediaDownloadUrl}#toolbar=0&navpanes=0&view=FitH"
+                  class="pdf-preview-frame"
+                  title="Preview de ${message.media_nome || "PDF"}"
+                  loading="lazy"
+                ></iframe>`
+          }
+        </div>
+        <div class="pdf-document-row">
+          <div class="pdf-document-icon">PDF</div>
+          <div class="pdf-document-info">
+            <div class="pdf-document-name">${message.media_nome || "Arquivo PDF"}</div>
+            <div class="pdf-document-meta">${formatarTipoArquivo(message.media_mime, message.media_tamanho, message.media_nome)}</div>
+          </div>
+        </div>
         <div class="pdf-preview-actions">
           <button
             type="button"
             class="media-download-link"
             onclick="abrirArquivoNovaAba('${mediaDownloadJs}')"
           >
-            Abrir PDF
+            Abrir
           </button>
           <button
             type="button"
             class="media-download-link"
             onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')"
           >
-            ↓ Baixar
+            Salvar como...
           </button>
         </div>
       </div>
