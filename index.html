@@ -2899,6 +2899,106 @@ line-height: 1.15;
   max-width: 100%;
 }
 
+.media-rich-card {
+  display: block;
+  width: 420px;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.media-rich-preview {
+  width: 100%;
+  height: 238px;
+  overflow: hidden;
+  background: #dfe3e5;
+  cursor: pointer;
+}
+
+.media-rich-preview .chat-image,
+.media-rich-preview .chat-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+.media-rich-info {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px 11px;
+}
+
+.media-rich-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.media-rich-icon.image {
+  background: #00a884;
+}
+
+.media-rich-icon.video {
+  background: #3b82f6;
+}
+
+.media-rich-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #111b21;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.media-rich-meta {
+  margin-top: 3px;
+  color: #667781;
+  font-size: 12px;
+}
+
+.media-rich-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid rgba(17, 27, 33, 0.10);
+}
+
+.media-rich-actions .media-download-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 10px;
+  color: #00a884;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.media-rich-actions .media-download-link + .media-download-link {
+  border-left: 1px solid rgba(17, 27, 33, 0.10);
+}
+
+.media-rich-actions .media-download-link:hover {
+  background: rgba(0, 168, 132, 0.08);
+  text-decoration: none;
+}
+
 .pdf-preview-box {
   display: block;
   width: 420px;
@@ -7890,6 +7990,7 @@ row.addEventListener("click", event => {
     event.target.closest(".message-action-menu") ||
     event.target.closest(".media-download-link") ||
     event.target.closest(".chat-image") ||
+    event.target.closest(".chat-video") ||
     event.target.closest("audio")
   ) {
     return;
@@ -7985,42 +8086,50 @@ atualizarBarraSelecao();
     `
     : mediaPreviewUrl && isImagem
     ? `
-      <div class="media-image-box">
-        <img
-          src="${mediaPreviewUrl}"
-          class="chat-image"
-          alt="${message.media_nome || "Imagem"}"
-          onclick="openImageModal('${mediaPreviewJs}', '${mediaNomeJs}', '${mediaDownloadJs}')"
-        />
-
-        <button
-          type="button"
-          class="media-download-link"
-          title="Baixar imagem"
-          onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')"
-        >
-          ⬇ Baixar
-        </button>
+      <div class="media-rich-card">
+        <div class="media-rich-preview">
+          <img
+            src="${mediaPreviewUrl}"
+            class="chat-image"
+            alt="${message.media_nome || "Imagem"}"
+            onclick="openImageModal('${mediaPreviewJs}', '${mediaNomeJs}', '${mediaDownloadJs}')"
+          />
+        </div>
+        <div class="media-rich-info">
+          <div class="media-rich-icon image">IMG</div>
+          <div>
+            <div class="media-rich-name">${message.media_nome || "Imagem"}</div>
+            <div class="media-rich-meta">${formatarTipoArquivo(message.media_mime, message.media_tamanho, message.media_nome)}</div>
+          </div>
+        </div>
+        <div class="media-rich-actions">
+          <button type="button" class="media-download-link" onclick="openImageModal('${mediaPreviewJs}', '${mediaNomeJs}', '${mediaDownloadJs}')">Abrir</button>
+          <button type="button" class="media-download-link" onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')">Salvar como...</button>
+        </div>
       </div>
     `
     : message.media_mime?.startsWith("video/")
     ? `
-      <div class="media-image-box">
-        <video
-          src="${message.media_url}"
-          controls
-          class="chat-video"
-          preload="metadata"
-        ></video>
-
-        <button
-          type="button"
-          class="media-download-link"
-          title="Baixar vídeo"
-          onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')"
-        >
-          ⬇ Baixar
-        </button>
+      <div class="media-rich-card">
+        <div class="media-rich-preview">
+          <video
+            src="${message.media_url}"
+            controls
+            class="chat-video"
+            preload="metadata"
+          ></video>
+        </div>
+        <div class="media-rich-info">
+          <div class="media-rich-icon video">VÍD</div>
+          <div>
+            <div class="media-rich-name">${message.media_nome || "Vídeo"}</div>
+            <div class="media-rich-meta">${formatarTipoArquivo(message.media_mime, message.media_tamanho, message.media_nome)}</div>
+          </div>
+        </div>
+        <div class="media-rich-actions">
+          <button type="button" class="media-download-link" onclick="abrirArquivoNovaAba('${mediaDownloadJs}')">Abrir</button>
+          <button type="button" class="media-download-link" onclick="baixarArquivo('${mediaDownloadJs}', '${mediaNomeJs}')">Salvar como...</button>
+        </div>
       </div>
     `
       : message.media_mime?.startsWith("audio/") ||
