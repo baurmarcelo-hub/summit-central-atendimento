@@ -796,6 +796,11 @@ line-height: 1.15;
     0 1px 1px rgba(0,0,0,0.06);
 }
 
+.bubble.has-rich-media {
+  width: 438px;
+  max-width: calc(100% - 24px);
+}
+
     .msg-time {
   font-size: 11px;
 
@@ -1732,6 +1737,9 @@ line-height: 1.15;
   display: block;
   margin: 8px 3px 2px;
   white-space: pre-wrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .message-author-name {
@@ -8044,6 +8052,11 @@ atualizarBarraSelecao();
   const isImagem =
     message.media_mime?.startsWith("image/") ||
     message.tipo === "imagem";
+  const isVideo = message.media_mime?.startsWith("video/");
+  const classeBalaoMidia =
+    mediaDownloadUrl && (isPdf || isImagem || isVideo)
+      ? " has-rich-media"
+      : "";
 
   const mediaHtml = mediaDownloadUrl
   ? isPdf
@@ -8114,7 +8127,7 @@ atualizarBarraSelecao();
         </div>
       </div>
     `
-    : message.media_mime?.startsWith("video/")
+    : isVideo
     ? `
       <div class="media-rich-card">
         <div class="media-rich-preview">
@@ -8200,7 +8213,7 @@ const statusEntregaVisual = obterStatusEntregaVisual(message);
 row.innerHTML = `
   <div class="message-select-check"></div>
 
-  <div class="bubble ${message.direction}">
+  <div class="bubble ${message.direction}${classeBalaoMidia}">
     <button class="reply-btn message-menu-btn" title="Ações">⋮</button>
 
 <div class="message-action-menu">
