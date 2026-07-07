@@ -1728,6 +1728,12 @@ line-height: 1.15;
   text-rendering: optimizeLegibility;
 }
 
+.media-caption {
+  display: block;
+  margin: 8px 3px 2px;
+  white-space: pre-wrap;
+}
+
 .message-author-name {
   font-size: 12px;
   font-weight: 700;
@@ -8176,13 +8182,17 @@ atualizarBarraSelecao();
 
 const autorMensagemHtml =
   message.direction === "out" &&
-  message.text?.trim() &&
-  !message.media_url
+  message.text?.trim()
     ? `
       <div class="message-author-name">
         ${message.autor_nome || "Atendente"}:
       </div>
     `
+    : "";
+
+const legendaMidiaHtml =
+  mediaDownloadUrl && message.text?.trim()
+    ? `<div class="message-text media-caption">${message.text}</div>`
     : "";
 
 const statusEntregaVisual = obterStatusEntregaVisual(message);
@@ -8221,9 +8231,10 @@ row.innerHTML = `
     ${replyHtml}
 ${mediaHtml}
 ${autorMensagemHtml}
+${legendaMidiaHtml}
 
 ${
-  message.media_url
+  mediaDownloadUrl
     ? `
       <div class="msg-time">
         ${message.time}
