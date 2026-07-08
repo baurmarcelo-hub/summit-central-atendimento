@@ -1694,9 +1694,10 @@ line-height: 1.15;
 }
 
 .message-content-line .message-text {
-  white-space: normal;
+  white-space: pre-wrap;
   word-break: break-word;
-  display: inline;
+  overflow-wrap: anywhere;
+  display: inline-block;
 
   flex: unset;
 }
@@ -7651,6 +7652,24 @@ function escapeJsString(valor) {
     .replace(/\r/g, "\\r");
 }
 
+function escapeHtml(valor) {
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatarTextoMensagemWhatsApp(texto) {
+  const textoSeguro = escapeHtml(texto);
+
+  return textoSeguro
+    .replace(/\*(\S(?:[^*]*?\S)?)\*/g, "<strong>$1</strong>")
+    .replace(/_(\S(?:[^_]*?\S)?)_/g, "<em>$1</em>")
+    .replace(/~(\S(?:[^~]*?\S)?)~/g, "<s>$1</s>");
+}
+
 function obterIconeStatusEntrega(status) {
   if (status === "pendente") return "◷";
   if (status === "lida" || status === "entregue") return "✓✓";
@@ -8057,6 +8076,7 @@ atualizarBarraSelecao();
     mediaDownloadUrl && (isPdf || isImagem || isVideo)
       ? " has-rich-media"
       : "";
+  const textoMensagemHtml = formatarTextoMensagemWhatsApp(message.text || "");
 
   const mediaHtml = mediaDownloadUrl
   ? isPdf
@@ -8205,7 +8225,7 @@ const autorMensagemHtml =
 
 const legendaMidiaHtml =
   mediaDownloadUrl && message.text?.trim()
-    ? `<div class="message-text media-caption">${message.text}</div>`
+    ? `<div class="message-text media-caption">${textoMensagemHtml}</div>`
     : "";
 
 const statusEntregaVisual = obterStatusEntregaVisual(message);
@@ -8262,7 +8282,7 @@ ${
     `
     : `
       <div class="message-content-line">
-        <div class="message-text">${message.text || ""}</div>
+        <div class="message-text">${textoMensagemHtml}</div>
         <div class="msg-time">
           ${message.time}
           ${
