@@ -9241,6 +9241,65 @@ async function uploadArquivo(file) {
   };
 }
 
+const WHATSAPP_API_BASE = "https://summit-backend-hdtr.onrender.com/whatsapp";
+let whatsappQrPollingInterval = null;
+
+function limparJidWhatsApp(valor) {
+  return String(valor || "")
+    .replace(/@s\.whatsapp\.net$/i, "")
+    .replace(/@c\.us$/i, "")
+    .trim();
+}
+
+function formatarNumeroConexaoWhatsApp(valor) {
+  const limpo = limparJidWhatsApp(valor);
+  const digitos = limpo.replace(/\D/g, "");
+
+  if (!digitos) return limpo || "-";
+
+  if (digitos.length === 13 && digitos.startsWith("55")) {
+    return `+${digitos.slice(0, 2)} (${digitos.slice(2, 4)}) ${digitos.slice(4, 9)}-${digitos.slice(9)}`;
+  }
+
+  if (digitos.length === 12 && digitos.startsWith("55")) {
+    return `+${digitos.slice(0, 2)} (${digitos.slice(2, 4)}) ${digitos.slice(4, 8)}-${digitos.slice(8)}`;
+  }
+
+  return `+${digitos}`;
+}
+
+function obterOwnerStatusWhatsApp(status = {}) {
+  const instancia = status.data?.instance || {};
+  return (
+    instancia.owner ||
+    instancia.ownerJid ||
+    instancia.number ||
+    status.owner ||
+    null
+  );
+}
+
+function normalizarQrCodeImagem(qrcode) {
+  if (!qrcode) return null;
+
+  const valor = String(qrcode).trim();
+
+  if (valor.startsWith("data:image")) return valor;
+  if (/^[A-Za-z0-9+/=\r\n]+$/.test(valor) && valor.length > 100) {
+    return `data:image/png;base64,${valor}`;
+  }
+
+  return null;
+}
+
+function obterTextoStatusConexao(status = {}) {
+  if (status.connected) return "conectado";
+  if (status.inconsistent) return "instável";
+  if (status.status === "status_error") return "erro";
+  if (status.status === "not_configured") return "não configurado";
+  return "desconectado";
+}
+
 async function carregarConexoesWhatsApp() {
   const lista = document.getElementById("whatsappConnectionsList");
 
@@ -9253,22 +9312,29 @@ async function carregarConexoesWhatsApp() {
   `;
 
   try {
-    const response = await fetch(
-      "https://summit-backend-hdtr.onrender.com/whatsapp/status"
-    );
+    const response = await fetch(`${WHATSAPP_API_BASE}/status`, {
+      cache: "no-store"
+    });
 
     const status = await response.json();
-
     const conectado = status.connected === true;
+    const owner = obterOwnerStatusWhatsApp(status);
+    const numero = formatarNumeroConexaoWhatsApp(owner);
+    const statusTexto = obterTextoStatusConexao(status);
+    const aviso = status.inconsistent
+      ? `<div style="margin-top:6px;color:#b45309;font-size:12px;font-weight:700;">Evolution retornou estados diferentes: connectionState=${status.connectionState || "-"} / instance=${status.instanceState || "-"}</div>`
+      : "";
 
     whatsappConnectionsCache = [
       {
         id: "summit01",
         nome: "summit01",
-        numero: status.data?.instance?.owner || "-",
+        numero,
+        owner,
         ia_ativa: false,
         ultima_atualizacao: new Date().toISOString(),
-        status: conectado ? "conectado" : "desconectado"
+        status: conectado ? "conectado" : statusTexto,
+        raw: status
       }
     ];
 
@@ -9277,7 +9343,8 @@ async function carregarConexoesWhatsApp() {
         <div class="team-name">summit01</div>
 
         <div class="team-email">
-          ${status.data?.instance?.owner || "-"}
+          ${numero}
+          ${aviso}
         </div>
 
         <div>Inativa</div>
@@ -9286,19 +9353,20 @@ async function carregarConexoesWhatsApp() {
           ${new Date().toLocaleString("pt-BR")}
         </div>
 
-        <div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           ${
             conectado
-              ? "Conectado"
-              : `<button class="secondary-action-btn" id="openQrCodeBtn" style="width:auto;padding:0 12px;margin:0;">Ver QR</button>`
+              ? `<span style="font-weight:800;color:#15803d;">Conectado</span>`
+              : `<button class="secondary-action-btn" data-whatsapp-action="open-qr" style="width:auto;padding:0 12px;margin:0;">Ver QR</button>`
           }
+          <button class="secondary-action-btn" data-whatsapp-action="refresh-status" style="width:auto;padding:0 12px;margin:0;">Atualizar</button>
         </div>
 
         <div>
           <span class="status-badge ${
             conectado ? "status-finalizado" : "status-aguardando"
           }">
-            ${conectado ? "conectado" : "desconectado"}
+            ${statusTexto}
           </span>
         </div>
 
@@ -9315,6 +9383,150 @@ async function carregarConexoesWhatsApp() {
     `;
   }
 }
+
+function garantirModalQrWhatsApp() {
+  let modal = document.getElementById("whatsappQrCodeModal");
+
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.className = "tag-modal";
+  modal.id = "whatsappQrCodeModal";
+  modal.innerHTML = `
+    <div class="tag-modal-card" style="max-width:520px;">
+      <div class="tag-modal-header">
+        <h3>Conectar WhatsApp</h3>
+        <button class="icon-btn" type="button" data-whatsapp-action="close-qr">×</button>
+      </div>
+      <div class="tag-modal-body" id="whatsappQrCodeBody">
+        <div style="padding:18px;color:#667085;">Carregando QR Code...</div>
+      </div>
+      <div class="tag-modal-actions">
+        <button class="secondary-action-btn" type="button" data-whatsapp-action="reload-qr">Gerar novamente</button>
+        <button class="primary-action-btn" type="button" data-whatsapp-action="close-qr">Fechar</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function renderizarQrWhatsApp(html) {
+  const body = document.getElementById("whatsappQrCodeBody");
+  if (body) body.innerHTML = html;
+}
+
+function pararPollingQrWhatsApp() {
+  if (whatsappQrPollingInterval) {
+    clearInterval(whatsappQrPollingInterval);
+    whatsappQrPollingInterval = null;
+  }
+}
+
+async function verificarStatusQrWhatsApp() {
+  try {
+    const response = await fetch(`${WHATSAPP_API_BASE}/status`, {
+      cache: "no-store"
+    });
+    const status = await response.json();
+
+    if (status.connected) {
+      const numero = formatarNumeroConexaoWhatsApp(obterOwnerStatusWhatsApp(status));
+      pararPollingQrWhatsApp();
+      renderizarQrWhatsApp(`
+        <div style="text-align:center;padding:22px;">
+          <div style="font-size:42px;margin-bottom:8px;">✅</div>
+          <div style="font-weight:900;font-size:18px;color:#15803d;">WhatsApp conectado</div>
+          <div style="margin-top:8px;color:#475467;">Número conectado: <strong>${numero}</strong></div>
+        </div>
+      `);
+      await carregarConexoesWhatsApp();
+    }
+  } catch (error) {
+    console.error("Erro ao verificar conexão WhatsApp:", error);
+  }
+}
+
+function iniciarPollingQrWhatsApp() {
+  pararPollingQrWhatsApp();
+  whatsappQrPollingInterval = setInterval(verificarStatusQrWhatsApp, 4000);
+}
+
+async function carregarQrCodeWhatsApp() {
+  renderizarQrWhatsApp(`
+    <div style="padding:18px;color:#667085;text-align:center;">
+      Solicitando QR Code para a Evolution...
+    </div>
+  `);
+
+  try {
+    const response = await fetch(`${WHATSAPP_API_BASE}/qrcode`, {
+      cache: "no-store"
+    });
+    const resultado = await response.json();
+
+    if (resultado.status === "already_connected") {
+      const numero = formatarNumeroConexaoWhatsApp(
+        obterOwnerStatusWhatsApp(resultado.connection || {})
+      );
+      renderizarQrWhatsApp(`
+        <div style="text-align:center;padding:22px;">
+          <div style="font-size:42px;margin-bottom:8px;">✅</div>
+          <div style="font-weight:900;font-size:18px;color:#15803d;">WhatsApp já conectado</div>
+          <div style="margin-top:8px;color:#475467;">Número conectado: <strong>${numero}</strong></div>
+        </div>
+      `);
+      await carregarConexoesWhatsApp();
+      return;
+    }
+
+    const qrImagem = normalizarQrCodeImagem(resultado.qrcode);
+
+    if (!qrImagem) {
+      renderizarQrWhatsApp(`
+        <div style="padding:18px;text-align:center;">
+          <div style="font-weight:900;color:#b45309;margin-bottom:8px;">QR Code ainda não disponível</div>
+          <div style="color:#475467;line-height:1.5;">${resultado.message || "A Evolution não retornou um QR Code."}</div>
+          <div style="margin-top:12px;color:#667085;font-size:13px;">Se a instância estiver travada em reconexão, será necessário reiniciar/desconectar a sessão na Evolution antes de gerar um novo QR.</div>
+        </div>
+      `);
+      iniciarPollingQrWhatsApp();
+      return;
+    }
+
+    renderizarQrWhatsApp(`
+      <div style="text-align:center;padding:8px 18px 20px;">
+        <div style="font-weight:900;font-size:16px;margin-bottom:8px;">Escaneie este QR Code no WhatsApp</div>
+        <div style="color:#667085;font-size:13px;margin-bottom:14px;">WhatsApp &gt; Aparelhos conectados &gt; Conectar um aparelho</div>
+        <img src="${qrImagem}" alt="QR Code WhatsApp" style="width:280px;max-width:100%;border:1px solid #d0d5dd;border-radius:18px;padding:12px;background:#fff;" />
+        ${resultado.pairingCode ? `<div style="margin-top:12px;color:#475467;">Código: <strong>${resultado.pairingCode}</strong></div>` : ""}
+        <div style="margin-top:14px;color:#667085;font-size:13px;">Vou atualizar automaticamente assim que conectar.</div>
+      </div>
+    `);
+    iniciarPollingQrWhatsApp();
+  } catch (error) {
+    console.error("Erro ao carregar QR Code WhatsApp:", error);
+    renderizarQrWhatsApp(`
+      <div style="padding:18px;color:#dc2626;font-weight:800;text-align:center;">
+        Erro ao carregar QR Code do WhatsApp.
+      </div>
+    `);
+  }
+}
+
+async function abrirQrCodeWhatsApp() {
+  const modal = garantirModalQrWhatsApp();
+  modal.classList.add("open");
+  await carregarQrCodeWhatsApp();
+}
+
+function fecharQrCodeWhatsApp() {
+  pararPollingQrWhatsApp();
+  const modal = document.getElementById("whatsappQrCodeModal");
+  if (modal) modal.classList.remove("open");
+}
+
 function abrirModalNovaConexaoWhatsApp() {
   editingWhatsappConnectionId = null;
 
@@ -11966,6 +12178,36 @@ if (teamProfileFilter) {
 }
 
 document.addEventListener("click", async event => {
+  const whatsappActionBtn = event.target.closest("[data-whatsapp-action]");
+
+  if (whatsappActionBtn) {
+    const action = whatsappActionBtn.dataset.whatsappAction;
+
+    if (action === "open-qr") {
+      event.preventDefault();
+      await abrirQrCodeWhatsApp();
+      return;
+    }
+
+    if (action === "reload-qr") {
+      event.preventDefault();
+      await carregarQrCodeWhatsApp();
+      return;
+    }
+
+    if (action === "close-qr") {
+      event.preventDefault();
+      fecharQrCodeWhatsApp();
+      return;
+    }
+
+    if (action === "refresh-status") {
+      event.preventDefault();
+      await carregarConexoesWhatsApp();
+      return;
+    }
+  }
+
     const whatsappEditBtn =
     event.target.closest(".whatsapp-edit-btn");
 
@@ -12365,8 +12607,8 @@ backToConnectionsBtn.addEventListener("click", () => {
   connectionsPanel.classList.remove("hidden");
 });
 
-newWhatsappConnectionBtn.addEventListener("click", () => {
-  abrirModalNovaConexaoWhatsApp();
+newWhatsappConnectionBtn.addEventListener("click", async () => {
+  await abrirQrCodeWhatsApp();
 });
 
 closeWhatsappConnectionModalBtn.addEventListener("click", () => {
