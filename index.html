@@ -9293,11 +9293,59 @@ function normalizarQrCodeImagem(qrcode) {
 }
 
 function obterTextoStatusConexao(status = {}) {
-  if (status.connected) return "conectado";
-  if (status.inconsistent) return "instável";
+  if (status.stuck) return "travado";
+  if (status.operational || (status.connected && !status.stuck)) return "conectado";
+  if (status.inconsistent) return "instavel";
   if (status.status === "status_error") return "erro";
-  if (status.status === "not_configured") return "não configurado";
+  if (status.status === "not_configured") return "nao configurado";
   return "desconectado";
+}
+
+function conexaoWhatsAppOperacional(status = {}) {
+  return status.operational === true || (status.connected === true && status.stuck !== true);
+}
+
+async function executarAcaoConexaoWhatsApp(action) {
+  const mensagens = {
+    restart: "Reiniciando instancia WhatsApp...",
+    logout: "Desconectando sessao para gerar novo QR..."
+  };
+
+  const confirmarLogout =
+    action !== "logout" ||
+    confirm("Isso vai desconectar a sessao atual do WhatsApp e exigir leitura de QR Code. Continuar?");
+
+  if (!confirmarLogout) return;
+
+  const lista = document.getElementById("whatsappConnectionsList");
+  if (lista) {
+    lista.innerHTML = '<div style="padding:18px;color:#667085;font-size:14px;">' +
+      (mensagens[action] || "Executando acao...") +
+      '</div>';
+  }
+
+  try {
+    const response = await fetch(`${WHATSAPP_API_BASE}/${action}`, {
+      method: "POST",
+      cache: "no-store"
+    });
+
+    const resultado = await response.json();
+
+    if (!response.ok || resultado.success === false) {
+      alert(resultado.message || "Nao foi possivel executar a acao na Evolution.");
+    }
+
+    await carregarConexoesWhatsApp();
+
+    if (action === "logout") {
+      await abrirQrCodeWhatsApp();
+    }
+  } catch (error) {
+    console.error("Erro ao executar acao WhatsApp:", error);
+    alert("Erro ao executar acao WhatsApp.");
+    await carregarConexoesWhatsApp();
+  }
 }
 
 async function carregarConexoesWhatsApp() {
@@ -9317,13 +9365,15 @@ async function carregarConexoesWhatsApp() {
     });
 
     const status = await response.json();
-    const conectado = status.connected === true;
+    const conectado = conexaoWhatsAppOperacional(status);
     const owner = obterOwnerStatusWhatsApp(status);
     const numero = formatarNumeroConexaoWhatsApp(owner);
     const statusTexto = obterTextoStatusConexao(status);
-    const aviso = status.inconsistent
-      ? `<div style="margin-top:6px;color:#b45309;font-size:12px;font-weight:700;">Evolution retornou estados diferentes: connectionState=${status.connectionState || "-"} / instance=${status.instanceState || "-"}</div>`
-      : "";
+    const aviso = status.stuck
+      ? `<div style="margin-top:6px;color:#b91c1c;font-size:12px;font-weight:800;">Conexao travada: connectionState=${status.connectionState || "-"} / instance=${status.instanceState || "-"}. Reconecte com QR.</div>`
+      : status.inconsistent
+        ? `<div style="margin-top:6px;color:#b45309;font-size:12px;font-weight:700;">Evolution retornou estados diferentes: connectionState=${status.connectionState || "-"} / instance=${status.instanceState || "-"}</div>`
+        : "";
 
     whatsappConnectionsCache = [
       {
@@ -9359,6 +9409,8 @@ async function carregarConexoesWhatsApp() {
               ? `<span style="font-weight:800;color:#15803d;">Conectado</span>`
               : `<button class="secondary-action-btn" data-whatsapp-action="open-qr" style="width:auto;padding:0 12px;margin:0;">Ver QR</button>`
           }
+          <button class="secondary-action-btn" data-whatsapp-action="restart" style="width:auto;padding:0 12px;margin:0;">Reiniciar</button>
+          <button class="secondary-action-btn" data-whatsapp-action="logout" style="width:auto;padding:0 12px;margin:0;">Reconectar QR</button>
           <button class="secondary-action-btn" data-whatsapp-action="refresh-status" style="width:auto;padding:0 12px;margin:0;">Atualizar</button>
         </div>
 
@@ -12204,6 +12256,12 @@ document.addEventListener("click", async event => {
     if (action === "refresh-status") {
       event.preventDefault();
       await carregarConexoesWhatsApp();
+      return;
+    }
+
+    if (action === "restart" || action === "logout") {
+      event.preventDefault();
+      await executarAcaoConexaoWhatsApp(action);
       return;
     }
   }
